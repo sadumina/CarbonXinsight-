@@ -1,10 +1,10 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, NavLink } from "react-router-dom";
 import UploadPDF from "./components/UploadPDF";
 import AnalyticsChart from "./components/AnalyticsChart";
 import MonthlyAnalytics from "./components/MonthlyAnalytics";
-import ChartsForPDF from "./components/ChartsForPDF";  // ✅ new page
-
-import "./App.css"; // if you have global styling
+import ChartsForPDF from "./components/ChartsForPDF";
+import ComparePDF from "./components/ComparePDF";
+import "./App.css";
 
 function App() {
   return (
@@ -14,23 +14,58 @@ function App() {
           🚀 NexPulse Dashboard
         </h1>
 
-        {/* ✅ Navigation Tabs */}
-        <nav style={{ marginBottom: "30px" }}>
-          <Link to="/" className="nav-btn">Upload</Link>
-          <Link to="/analytics" className="nav-btn">Analytics</Link>
-          <Link to="/monthly" className="nav-btn">Monthly View</Link>
-          <Link to="/charts" className="nav-btn">Visual Charts</Link>
+        {/* Navigation */}
+        <nav style={{ marginBottom: "28px", display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <NavLink to="/" end className="nav-btn" style={linkStyle}>
+            Upload
+          </NavLink>
+          <NavLink to="/analytics" className="nav-btn" style={linkStyle}>
+            Analytics
+          </NavLink>
+          <NavLink to="/monthly" className="nav-btn" style={linkStyle}>
+            Monthly View
+          </NavLink>
+          <NavLink to="/charts" className="nav-btn" style={linkStyle}>
+            Visual Charts
+          </NavLink>
+          <NavLink to="/compare" className="nav-btn" style={linkStyle}>
+            Compare PDFs
+          </NavLink>
         </nav>
 
-        {/* ✅ Routing */}
+        {/* Routes */}
         <Routes>
-          <Route path="/" element={<UploadPDF />} />
+          {/* index = "/" */}
+          <Route index element={<UploadPDF />} />
           <Route path="/analytics" element={<AnalyticsChart />} />
           <Route path="/monthly" element={<MonthlyAnalytics />} />
-          <Route path="/charts" element={<ChartsForPDF />} /> {/* ✅ new charts page */}
+          <Route path="/charts" element={<ChartsForPDF />} />
+          <Route path="/compare" element={<ComparePDF />} />
+
+          {/* 404 */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </Router>
+  );
+}
+
+/* Small inline style so it looks good even without App.css */
+const linkStyle = ({ isActive }) => ({
+  padding: "10px 14px",
+  border: "1px solid rgba(0,255,179,0.25)",
+  borderRadius: 8,
+  textDecoration: "none",
+  color: isActive ? "var(--bg)" : "var(--accent)",
+  background: isActive ? "rgba(0,255,179,0.2)" : "transparent",
+});
+
+function NotFound() {
+  return (
+    <div style={{ color: "var(--accent)" }}>
+      <h2>404 — Page not found</h2>
+      <p>Use the navigation above to continue.</p>
+    </div>
   );
 }
 

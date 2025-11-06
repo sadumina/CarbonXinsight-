@@ -1,0 +1,35 @@
+/* src/theme.css */
+:root {
+  --bg: #0b0f14;
+  --panel: #0f141a;
+  --border: rgba(0,255,179,.16);
+  --primary: #16ffc6;
+  --accent: #7dfbd9;
+  --text: #cfeee6;
+  --muted: #9bdac7;
+  --danger: #ff7b7b;
+  --warn: #ffce6b;
+  --shadow: 0 10px 40px rgba(0,255,179,.07);
+  --radius: 14px;
+}
+
+body { background: var(--bg); color: var(--text); }
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.btn {
+  border: 1px solid var(--border);
+  background: rgba(0,255,179,.08);
+  color: var(--accent);
+  padding: 10px 14px;
+  border-radius: 10px;
+  transition: transform .08s ease, box-shadow .2s ease;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 6px 30px rgba(0,255,179,.12); }
+.input {
+  background: #0e1319; border: 1px solid var(--border);
+  color: var(--accent); padding: 10px 12px; border-radius: 10px;
+}

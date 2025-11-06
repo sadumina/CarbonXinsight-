@@ -11,7 +11,7 @@ function App() {
     <Router>
       <div style={{ padding: "40px" }}>
         <h1 style={{ color: "var(--primary)", marginBottom: "20px" }}>
-          🚀 NexPulse Dashboard
+           CarbonXInsight Dashboard
         </h1>
 
         {/* Navigation */}

@@ -450,6 +450,210 @@ async def compare_scopes(
         "label_b": label_b,
         "countries": rows
     }
+# --- Market Average Only (per country) ---
+@app.get("/analytics/avg")
+async def average_only(pdf: str | None = None, month: int | None = None, year: int | None = None):
+    pipeline = [
+        {"$match": {"product": PRODUCT}},
+        {"$unwind": "$prices"},
+    ]
+    if pdf:
+        pipeline.append({"$match": {"source_pdf": pdf}})
+    date_expr = []
+    if month is not None:
+        date_expr.append({"$eq": [{"$month": "$prices.date"}, month]})
+    if year is not None:
+        date_expr.append({"$eq": [{"$year": "$prices.date"}, year]})
+    if date_expr:
+        pipeline.append({"$match": {"$expr": {"$and": date_expr}}})
+
+    pipeline += [
+        {"$group": {
+            "_id": "$country",
+            "avg_price": {"$avg": "$prices.price"},
+        }},
+        {"$project": {"_id": 0, "country": "$_id", "avg_price": {"$round": ["$avg_price", 2]}}},
+        {"$sort": {"country": 1}}
+    ]
+    return list(charcoal_collection.aggregate(pipeline))
+
+PRODUCT_DEFAULT = "Coconut Shell Charcoal"
+
+# Utility: normalize header
+def _norm(s: str) -> str:
+    return re.sub(r"\s+", "", s.strip().lower()) if isinstance(s, str) else ""
+
+# Utility: best-effort parse of Excel "date" cells
+def _to_datetime(val):
+    if pd.isna(val):
+        return None
+    if isinstance(val, (datetime, np.datetime64)):
+        return pd.to_datetime(val)
+    # Excel serial?
+    try:
+        return pd.to_datetime(val, unit="D", origin="1899-12-30")
+    except Exception:
+        pass
+    # string date
+    try:
+        return pd.to_datetime(str(val), dayfirst=True, errors="coerce")
+    except Exception:
+        return None
+
+def _to_float(val):
+    try:
+        s = re.sub(r"[^\d.\-]", "", str(val)).strip()
+        if s == "" or s == "-" or s == ".":
+            return None
+        return float(s)
+    except Exception:
+        return None
+
+# -----------------------------
+# 1) Upload Excel (flat schema)
+# -----------------------------
+@app.post("/upload-excel")
+async def upload_excel(file: UploadFile = File(...)):
+    if not (file.filename.endswith(".xlsx") or file.filename.endswith(".xls")):
+        raise HTTPException(status_code=400, detail="Please upload an Excel file (.xlsx / .xls)")
+
+    try:
+        df = pd.read_excel(file.file)
+
+        # Map headers
+        cols = { _norm(c): c for c in df.columns }
+        date_col    = cols.get("date") or cols.get("week")
+        country_col = cols.get("country") or cols.get("market")
+        price_col   = cols.get("price") or cols.get("usd/mt")
+        product_col = cols.get("product")
+
+        if not (date_col and country_col and price_col):
+            raise HTTPException(status_code=400, detail=(
+                "Missing required columns. Expected Date/Week, Country/Market, Price (optional: Product)."
+            ))
+
+        # Clean + Project
+        df["_date"]    = df[date_col].apply(_to_datetime)
+        df["_country"] = df[country_col].astype(str).str.strip()
+        df["_price"]   = df[price_col].apply(_to_float)
+        df["_product"] = df[product_col].astype(str).str.strip() if product_col else PRODUCT_DEFAULT
+
+        df = df.dropna(subset=["_date", "_country", "_price"])
+        df["_date"] = pd.to_datetime(df["_date"]).dt.normalize()
+
+        docs = []
+        for _, r in df.iterrows():
+            d = {
+                "product": r.get("_product", PRODUCT_DEFAULT),
+                "country": r["_country"],
+                "date":    r["_date"].to_pydatetime(),
+                "price":   float(r["_price"]),
+                "source_type": "excel",
+                "source_file": file.filename,
+                "year": int(r["_date"].year),
+                "month": int(r["_date"].month),
+            }
+            docs.append(d)
+
+        if not docs:
+            return {"message": "No valid rows found in Excel."}
+
+        # Optional: de-dup for this file before insert
+        # charcoal_collection.delete_many({"source_type": "excel", "source_file": file.filename})
+
+        charcoal_collection.insert_many(docs)
+        return {"message": "Excel data ingested", "rows": len(docs)}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {e}")
+
+# -----------------------------------------
+# 2) Countries available in Excel dataset
+# -----------------------------------------
+@app.get("/countries-series")
+def countries_series(product: Optional[str] = None):
+    q = {"source_type": "excel"}
+    if product:
+        q["product"] = product
+    return sorted(charcoal_collection.distinct("country", q))
+
+# ---------------------------------------------------------
+# 3) Time series with running stats for hover/click tooltip
+#    GET /series-excel?countries=Sri%20Lanka&countries=Indonesia&start=2023-01-01&end=2025-12-31
+# ---------------------------------------------------------
+@app.get("/series-excel")
+def series_excel(
+    countries: List[str] = Query(default=[]),
+    start: Optional[str] = None,
+    end: Optional[str] = None,
+    product: Optional[str] = None,
+):
+    match = {"source_type": "excel"}
+    if countries:
+        match["country"] = {"$in": countries}
+    if product:
+        match["product"] = product
+
+    if start or end:
+        date_q = {}
+        if start:
+            date_q["$gte"] = pd.to_datetime(start)
+        if end:
+            date_q["$lte"] = pd.to_datetime(end)
+        match["date"] = date_q
+
+    pipeline = [
+        {"$match": match},
+        {"$project": {"_id": 0, "country": 1, "date": 1, "price": 1}},
+        {"$sort": {"country": 1, "date": 1}},
+    ]
+    rows = list(charcoal_collection.aggregate(pipeline))
+    if not rows:
+        return {"series": []}
+
+    # Build per-country running stats
+    out = []
+    from collections import defaultdict
+    groups = defaultdict(list)
+    for r in rows:
+        groups[r["country"]].append(r)
+
+    for country, pts in groups.items():
+        first_price = None
+        run_min = None
+        run_max = None
+        run_sum = 0.0
+        run_n = 0
+
+        series_points = []
+        for r in pts:
+            p = float(r["price"])
+            if first_price is None:
+                first_price = p
+            run_min = p if run_min is None else min(run_min, p)
+            run_max = p if run_max is None else max(run_max, p)
+            run_sum += p
+            run_n += 1
+            avg = run_sum / run_n
+            change_pct = None if first_price in (None, 0) else ( (p - first_price) / first_price ) * 100.0
+
+            series_points.append({
+                "date": r["date"],
+                "price": p,
+                "min_to_date": run_min,
+                "max_to_date": run_max,
+                "avg_to_date": avg,
+                "change_pct_from_start": change_pct,
+            })
+
+        out.append({
+            "country": country,
+            "points": series_points
+        })
+
+    return {"series": out}
 
 # ---------------------------------------------------------------------
 # Maintenance / Health

@@ -1,9 +1,8 @@
-// src/components/AnalyticsChart.jsx
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import KpiCards from "./KpiCards";
 import "./AnalyticsChart.css";
 import {
+  ResponsiveContainer,
   LineChart,
   Line,
   XAxis,
@@ -11,247 +10,194 @@ import {
   Tooltip,
   CartesianGrid,
   Legend,
-  ResponsiveContainer,
 } from "recharts";
 
 const API = "http://localhost:8000";
-const fmt = (n) => (n == null ? "—" : `$${Number(n).toFixed(2)}`);
 
 export default function AnalyticsChart() {
-  const [pdfs, setPdfs] = useState([]);
-  const [selectedPdf, setSelectedPdf] = useState(""); // "" => all PDFs
-
-  const [chartData, setChartData] = useState([]);
-  const [kpis, setKpis] = useState(null);
-  const [countryCards, setCountryCards] = useState([]);
+  const [countries, setCountries] = useState([]);
+  const [selected, setSelected] = useState([]); // multi select
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  const [series, setSeries] = useState([]); // [{country, points:[{date,...}]}]
   const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState(null);
 
-  // load PDFs once
+  // load list of countries from excel data
   useEffect(() => {
-    axios
-      .get(`${API}/pdfs`)
-      .then((res) => setPdfs(Array.isArray(res.data) ? res.data : []))
-      .catch(() => setPdfs([]));
+    axios.get(`${API}/countries-series`).then((res) => {
+      setCountries(res.data || []);
+      // pick first 2 by default
+      setSelected((res.data || []).slice(0, 2));
+    });
   }, []);
 
-  // (re)load analytics whenever selectedPdf changes
+  // fetch time series when filters change
   useEffect(() => {
-    const load = async () => {
+    const fetchSeries = async () => {
       setLoading(true);
-      setErr(null);
       try {
         const params = {};
-        if (selectedPdf) params.pdf = selectedPdf;
-
-        // parallel calls
-        const [chartRes, kpiRes, cardsRes] = await Promise.all([
-          axios.get(`${API}/analytics`, { params }),           // country avg/min/max
-          axios.get(`${API}/analytics/global`, { params }),    // global KPI (scoped to pdf)
-          axios.get(`${API}/analytics/country-kpis`, { params }) // per-country KPI cards
-        ]);
-
-        setChartData(chartRes.data || []);
-        setKpis(kpiRes.data || null);
-        setCountryCards(cardsRes.data || []);
-      } catch (e) {
-        const msg =
-          (e && e.response && e.response.data && e.response.data.detail) ||
-          e.message ||
-          "Failed to load analytics";
-        setErr(msg);
+        selected.forEach((c) => (params.countries = [...(params.countries || []), c]));
+        if (start) params.start = start;
+        if (end) params.end = end;
+        const { data } = await axios.get(`${API}/series-excel`, { params });
+        setSeries(data.series || []);
       } finally {
         setLoading(false);
       }
     };
+    fetchSeries();
+  }, [selected, start, end]);
 
-    load();
-  }, [selectedPdf]);
+  // Build one merged array per country for Recharts
+  const merged = useMemo(() => {
+    // flatten to [{country, date, price, ...stats}]
+    const flat = [];
+    for (const s of series) {
+      for (const p of s.points) {
+        flat.push({
+          country: s.country,
+          date: new Date(p.date),
+          price: p.price,
+          min: p.min_to_date,
+          max: p.max_to_date,
+          avg: p.avg_to_date,
+          change: p.change_pct_from_start,
+        });
+      }
+    }
+    return flat;
+  }, [series]);
 
-  const kpiCards = useMemo(() => {
-    if (!kpis) return [];
-    return [
-      { title: "Average Price", value: fmt(kpis.avg_price) },
-      { title: "Min Price", value: fmt(kpis.min_price) },
-      { title: "Max Price", value: fmt(kpis.max_price) },
-      {
-        title: "MoM Change",
-        value:
-          kpis.mom_change_percent == null
-            ? "—"
-            : `${Number(kpis.mom_change_percent).toFixed(2)}%`,
-        sub:
-          kpis.mom_change_percent == null
-            ? undefined
-            : Number(kpis.mom_change_percent).toFixed(2),
-      },
-    ];
-  }, [kpis]);
+  // For X axis as string
+  const allDates = useMemo(() => {
+    const set = new Set(merged.map((d) => d.date.toISOString().slice(0, 10)));
+    return [...set].sort();
+  }, [merged]);
+
+  // Build chart data rows: one row per date, fields price_<country>
+  const chartRows = useMemo(() => {
+    const map = new Map();
+    for (const d of allDates) {
+      map.set(d, { date: d });
+    }
+    for (const r of merged) {
+      const key = r.date.toISOString().slice(0, 10);
+      const row = map.get(key);
+      row[`price_${r.country}`] = r.price;
+      // keep latest stats per country for tooltip enrichment
+      row[`stats_${r.country}`] = {
+        min: r.min,
+        max: r.max,
+        avg: r.avg,
+        change: r.change,
+      };
+    }
+    return [...map.values()].sort((a, b) => a.date.localeCompare(b.date));
+  }, [merged, allDates]);
+
+  // Colors (no hard-coded brand colors)
+  const colorAt = (i) => ["#00ffd5", "#ffaa00", "#ff5ea3", "#9fff00", "#00a2ff"][i % 5];
 
   return (
-    <>
-      {/* PDF Filter */}
-      <div style={filterBar}>
-        <label style={labelStyle}>Filter by PDF:</label>
-        <select
-          style={selectStyle}
-          value={selectedPdf}
-          onChange={(e) => setSelectedPdf(e.target.value)}
-        >
-          <option value="">All PDFs</option>
-          {pdfs.map((p) => (
-            <option key={p} value={p}>
-              {p}
-            </option>
-          ))}
-        </select>
-      </div>
+    <section className="panel">
+      <header className="panel-head">
+        <h2>📈 Time Series — Excel (2023–2025)</h2>
+        <div className="filters">
+          {/* multi select (simple) */}
+          <select
+            multiple
+            value={selected}
+            onChange={(e) =>
+              setSelected(Array.from(e.target.selectedOptions, (o) => o.value))
+            }
+          >
+            {countries.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
 
-      {/* KPIs */}
-      {kpis && <KpiCards cards={kpiCards} />}
+          <input
+            type="date"
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+            placeholder="Start"
+          />
+          <input
+            type="date"
+            value={end}
+            onChange={(e) => setEnd(e.target.value)}
+            placeholder="End"
+          />
+          <button className="clear-btn" onClick={() => { setStart(""); setEnd(""); }}>
+            Clear Range
+          </button>
+        </div>
+      </header>
 
-      {err && (
-        <p style={{ color: "#ff6b6b", marginTop: 10, marginBottom: 0 }}>{err}</p>
-      )}
-
-      {/* Line Chart */}
-      <div className="chart-container">
-        <h2 className="chart-title">
-          📊 Country Comparison (Avg / Min / Max)
-          {selectedPdf ? ` — ${selectedPdf}` : ""}
-        </h2>
-
-        <ResponsiveContainer width="100%" height={420}>
-          <LineChart data={chartData}>
-            <CartesianGrid stroke="rgba(0, 255, 179, 0.08)" />
-            <XAxis dataKey="_id" stroke="var(--accent)" />
-            <YAxis stroke="var(--accent)" />
-            <Tooltip />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="avg_price"
-              stroke="var(--primary)"
-              name="Average"
-              dot
-            />
-            <Line
-              type="monotone"
-              dataKey="max_price"
-              stroke="#ffaa00"
-              name="Max"
-              dot
-            />
-            <Line
-              type="monotone"
-              dataKey="min_price"
-              stroke="#ff006a"
-              name="Min"
-              dot
-            />
-          </LineChart>
-        </ResponsiveContainer>
-
-        {loading && (
-          <p style={{ color: "var(--accent)", marginTop: 10 }}>Loading…</p>
+      <div className="chart-wrap">
+        {loading ? (
+          <p className="muted">Loading…</p>
+        ) : chartRows.length === 0 ? (
+          <p className="muted">No data. Upload an Excel or widen your filters.</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={420}>
+            <LineChart data={chartRows}>
+              <CartesianGrid stroke="rgba(0,255,179,0.08)" />
+              <XAxis dataKey="date" stroke="var(--accent)" />
+              <YAxis stroke="var(--accent)" />
+              <Tooltip
+                content={({ payload, label }) => {
+                  if (!payload || payload.length === 0) return null;
+                  return (
+                    <div className="tooltip-card">
+                      <div className="tip-title">{label}</div>
+                      {selected.map((c, i) => {
+                        const row = payload.find((p) => p.dataKey === `price_${c}`);
+                        const stats = chartRows.find((r) => r.date === label)?.[`stats_${c}`];
+                        if (!row) return null;
+                        return (
+                          <div key={c} className="tip-block">
+                            <div className="tip-country" style={{ borderColor: colorAt(i) }}>
+                              {c}
+                            </div>
+                            <div className="tip-line">Price: <b>${row.value?.toFixed(2)}</b></div>
+                            {stats && (
+                              <>
+                                <div className="tip-line">Min: <b>${stats.min.toFixed(2)}</b></div>
+                                <div className="tip-line">Max: <b>${stats.max.toFixed(2)}</b></div>
+                                <div className="tip-line">Avg: <b>${stats.avg.toFixed(2)}</b></div>
+                                <div className="tip-line">
+                                  Change from start:{" "}
+                                  <b>{(stats.change ?? 0).toFixed(2)}%</b>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                }}
+              />
+              <Legend />
+              {selected.map((c, i) => (
+                <Line
+                  key={c}
+                  type="monotone"
+                  dataKey={`price_${c}`}
+                  stroke={colorAt(i)}
+                  dot={false}
+                  strokeWidth={2.5}
+                  name={c}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
         )}
       </div>
-
-      {/* Country KPI Cards Grid */}
-      {countryCards?.length > 0 && (
-        <section style={{ marginTop: 24 }}>
-          <h2 className="chart-title">
-            🌍 Country KPIs — Coconut Shell Charcoal
-            {selectedPdf ? ` — ${selectedPdf}` : ""}
-          </h2>
-
-          <div style={grid}>
-            {countryCards.map((c) => (
-              <div key={c.country} style={card}>
-                <h3 style={cardTitle}>{c.country}</h3>
-
-                <div style={row}>
-                  <div style={tile}>
-                    <div style={tileLabel}>Average</div>
-                    <div style={tileValue}>{fmt(c.avg_price)}</div>
-                  </div>
-                  <div style={tile}>
-                    <div style={tileLabel}>Min</div>
-                    <div style={tileValue}>{fmt(c.min_price)}</div>
-                  </div>
-                </div>
-
-                <div style={row}>
-                  <div style={tile}>
-                    <div style={tileLabel}>Max</div>
-                    <div style={tileValue}>{fmt(c.max_price)}</div>
-                  </div>
-                  {/* MoM may be null if only one week in pdf */}
-                  <div style={tile}>
-                    <div style={tileLabel}>MoM</div>
-                    <div style={badge(c.mom_change_percent)}>
-                      {c.mom_change_percent == null
-                        ? "—"
-                        : `${Number(c.mom_change_percent).toFixed(2)}%`}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-    </>
+    </section>
   );
 }
-
-/* tiny styles */
-const filterBar = {
-  display: "flex",
-  alignItems: "center",
-  gap: 12,
-  margin: "10px 0 20px",
-};
-const labelStyle = { color: "var(--accent)", fontWeight: 600 };
-const selectStyle = {
-  padding: "8px 12px",
-  borderRadius: 10,
-  background: "#0d1117",
-  color: "#aef9e5",
-  border: "1px solid rgba(0,255,179,0.2)",
-};
-
-const grid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-  gap: 16,
-};
-const card = {
-  border: "1px solid rgba(0,255,179,0.18)",
-  borderRadius: 16,
-  padding: 14,
-  background: "rgba(0, 255, 179, 0.03)",
-};
-const cardTitle = { color: "var(--primary)", margin: 0, marginBottom: 10 };
-const row = { display: "flex", gap: 12, marginBottom: 8 };
-const tile = {
-  flex: 1,
-  border: "1px solid rgba(0,255,179,0.15)",
-  borderRadius: 12,
-  padding: "10px 12px",
-};
-const tileLabel = { fontSize: 12, color: "#9be6d3", marginBottom: 4 };
-const tileValue = { fontSize: 20, fontWeight: 700, color: "#c8fff0" };
-const badge = (val) => ({
-  display: "inline-block",
-  padding: "6px 10px",
-  borderRadius: 999,
-  fontWeight: 700,
-  color: val == null ? "#c8fff0" : val >= 0 ? "#19f79f" : "#ff7b7b",
-  background:
-    val == null
-      ? "rgba(255,255,255,0.06)"
-      : val >= 0
-      ? "rgba(25, 247, 159, 0.12)"
-      : "rgba(255, 123, 123, 0.12)",
-});

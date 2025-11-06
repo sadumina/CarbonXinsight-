@@ -4,6 +4,7 @@ import AnalyticsChart from "./components/AnalyticsChart";
 import MonthlyAnalytics from "./components/MonthlyAnalytics";
 import ChartsForPDF from "./components/ChartsForPDF";
 import ComparePDF from "./components/ComparePDF";
+import AverageMarkets from "./components/AverageMarkets"; // ✅ NEW
 import "./App.css";
 
 function App() {
@@ -11,26 +12,17 @@ function App() {
     <Router>
       <div style={{ padding: "40px" }}>
         <h1 style={{ color: "var(--primary)", marginBottom: "20px" }}>
-           CarbonXInsight Dashboard
+          CarbonXInsight Dashboard
         </h1>
 
         {/* Navigation */}
         <nav style={{ marginBottom: "28px", display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <NavLink to="/" end className="nav-btn" style={linkStyle}>
-            Upload
-          </NavLink>
-          <NavLink to="/analytics" className="nav-btn" style={linkStyle}>
-            Analytics
-          </NavLink>
-          <NavLink to="/monthly" className="nav-btn" style={linkStyle}>
-            Monthly View
-          </NavLink>
-          <NavLink to="/charts" className="nav-btn" style={linkStyle}>
-            Visual Charts
-          </NavLink>
-          <NavLink to="/compare" className="nav-btn" style={linkStyle}>
-            Compare PDFs
-          </NavLink>
+          <NavLink to="/" end style={linkStyle}>Upload</NavLink>
+          <NavLink to="/analytics" style={linkStyle}>Analytics</NavLink>
+          <NavLink to="/averages" style={linkStyle}>Market Averages</NavLink> {/* ✅ NEW */}
+          <NavLink to="/monthly" style={linkStyle}>Monthly View</NavLink>
+          <NavLink to="/charts" style={linkStyle}>Visual Charts</NavLink>
+          <NavLink to="/compare" style={linkStyle}>Compare PDFs</NavLink>
         </nav>
 
         {/* Routes */}
@@ -38,6 +30,7 @@ function App() {
           {/* index = "/" */}
           <Route index element={<UploadPDF />} />
           <Route path="/analytics" element={<AnalyticsChart />} />
+          <Route path="/averages" element={<AverageMarkets />} /> {/* ✅ NEW */}
           <Route path="/monthly" element={<MonthlyAnalytics />} />
           <Route path="/charts" element={<ChartsForPDF />} />
           <Route path="/compare" element={<ComparePDF />} />
@@ -50,7 +43,7 @@ function App() {
   );
 }
 
-/* Small inline style so it looks good even without App.css */
+/* Active-tab styling via NavLink's style function */
 const linkStyle = ({ isActive }) => ({
   padding: "10px 14px",
   border: "1px solid rgba(0,255,179,0.25)",
@@ -58,6 +51,7 @@ const linkStyle = ({ isActive }) => ({
   textDecoration: "none",
   color: isActive ? "var(--bg)" : "var(--accent)",
   background: isActive ? "rgba(0,255,179,0.2)" : "transparent",
+  transition: "background 160ms ease, color 160ms ease",
 });
 
 function NotFound() {

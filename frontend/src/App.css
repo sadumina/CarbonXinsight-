@@ -1,0 +1,15 @@
+.nav-btn {
+  margin-right: 15px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  text-decoration: none;
+  font-weight: bold;
+  transition: 0.3s ease;
+}
+
+.nav-btn:hover {
+  background: var(--primary);
+  color: black;
+}

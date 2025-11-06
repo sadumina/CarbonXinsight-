@@ -1,0 +1,17 @@
+.chart-container {
+  margin-top: 50px;
+  padding: 25px;
+  border: 1px solid rgba(0, 255, 179, 0.2);
+  border-radius: 12px;
+  background: rgba(0, 255, 179, 0.04);
+  backdrop-filter: blur(8px);
+  width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.chart-title {
+  color: var(--accent);
+  margin-bottom: 20px;
+  text-align: center;
+}

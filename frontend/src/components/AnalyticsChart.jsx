@@ -337,7 +337,7 @@ export default function AnalyticsChart() {
       )}
 
       {/* Country KPI chips */}
-      <div className="kpi-chips">
+      {/* <div className="kpi-chips">
         {kpis.map((k) => {
           const up = (k.change_pct ?? 0) >= 0;
           return (
@@ -364,7 +364,7 @@ export default function AnalyticsChart() {
             </div>
           );
         })}
-      </div>
+      </div> */}
 
       {/* Highcharts */}
       <HighchartsReact

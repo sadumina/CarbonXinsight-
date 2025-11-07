@@ -1,44 +1,75 @@
-# main.py — CarbonXInsight (PDF ONLY Version)
+# ---------------------------------------------------------
+# ✅ CarbonXInsight Backend (PDF + Excel + Time Filter)
+# ---------------------------------------------------------
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from typing import List, Optional
+from datetime import datetime
 import camelot
 import pandas as pd
 import re
-from typing import Optional, Dict, Any, List
-from db import charcoal_collection  # ✅ Mongo collection (correct name)
-from datetime import datetime       # ✅ Needed for fromDate/toDate filtering
+from db import charcoal_collection  # Mongo collection
 
+
+# ─────────────────────────────────────────────
+# CONSTANT
+# ─────────────────────────────────────────────
 PRODUCT = "Coconut Shell Charcoal"
+DATE_RX = re.compile(r"\d{1,2}/\d{1,2}/\d{2,4}")  # Matches 12/10/23, 1/1/2024 etc.
 
-app = FastAPI(title="CarbonXInsight – PDF Analytics (CSC only)")
+
+# ─────────────────────────────────────────────
+# INITIALIZE API
+# ─────────────────────────────────────────────
+app = FastAPI(title="✅ CarbonXInsight — Market Analytics Dashboard")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Change later to frontend domain
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ----------------------
-# Helpers
-# ----------------------
-DATE_RX = re.compile(r"\d{1,2}/\d{1,2}/\d{2,4}")
 
+# ---------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------
 def clean_to_float(val):
+    """Remove commas & convert price to float safely."""
     val = re.sub(r"[^\d.]", "", str(val)).strip()
-    if val == "" or val.replace(".", "") == "":
-        return None
     try:
         return float(val)
     except:
         return None
 
 
-# ----------------------------------------------------------------------------
-# ✅ Upload PDF → Extract ONLY "Coconut Shell Charcoal"
-# ----------------------------------------------------------------------------
+def normalize_country(raw: str):
+    """
+    ✅ Keep full country name including details inside parentheses.
+    - Only remove trailing spaces
+    - Do NOT remove text inside parentheses
+    Example:
+        "India (Domestic, Tamil Nadu)"  ✅ stays the same
+        "Indonesia (FOB)"               ✅ stays the same
+    """
+    if not raw:
+        return None
+
+    raw = raw.strip()
+
+    # Fix formatting: remove double spaces
+    raw = " ".join(raw.split())
+
+    return raw
+
+
+
+
+# ---------------------------------------------------------
+# ✅ PDF Upload & Extract Coconut Shell Charcoal rows
+# ---------------------------------------------------------
 @app.post("/upload")
 async def upload_pdf(pdf: List[UploadFile] = File(...)):
     total_rows = 0
@@ -47,6 +78,7 @@ async def upload_pdf(pdf: List[UploadFile] = File(...)):
     for file in pdf:
         try:
             path = f"./{file.filename}"
+
             with open(path, "wb") as f:
                 f.write(file.file.read())
 
@@ -56,48 +88,48 @@ async def upload_pdf(pdf: List[UploadFile] = File(...)):
             for tbl in tables:
                 df = tbl.df
 
-                # detect date header
+                # Find dates row
                 date_row_idx = None
                 dates = []
+
                 for i, row in df.iterrows():
                     hits = [c for c in row if DATE_RX.search(str(c))]
-                    if len(hits) >= 2:
+                    if len(hits) >= 2:  # at least 2 dates
                         date_row_idx = i
                         dates = [pd.to_datetime(d, dayfirst=True) for d in hits]
                         break
+
                 if not dates:
                     continue
 
-                # extract CSC rows
+                # Read rows below date row (product + price rows)
                 for _, row in df.iloc[date_row_idx + 1:].iterrows():
                     product = str(row[0]).strip()
-                    country = str(row[1]).strip()
+                    raw_country = str(row[1]).strip()
 
                     if product == "" or product.lower().startswith("source"):
                         break
 
                     if "coconut shell charcoal" not in product.lower():
-                        continue
+                        continue  # skip different product
 
+                    country = normalize_country(raw_country)
                     prices = []
-                    cells = row.to_list()[2:2 + len(dates)]
-                    for idx, raw in enumerate(cells):
-                        price = clean_to_float(raw)
-                        if price is None:
-                            continue
-                        prices.append({"date": dates[idx], "price": price})
 
-                    if not prices:
-                        continue
+                    for idx, raw_price in enumerate(row.to_list()[2:2 + len(dates)]):
+                        price = clean_to_float(raw_price)
+                        if price:
+                            prices.append({"date": dates[idx], "price": price})
 
-                    grouped_docs.append({
-                        "product": PRODUCT,
-                        "country": country,
-                        "prices": prices,
-                        "month": prices[0]["date"].month,
-                        "year": prices[0]["date"].year,
-                        "source_pdf": file.filename
-                    })
+                    if prices:
+                        grouped_docs.append({
+                            "product": PRODUCT,
+                            "country": country,
+                            "prices": prices,
+                            "month": prices[0]["date"].month,
+                            "year": prices[0]["date"].year,
+                            "source_pdf": file.filename,
+                        })
 
             if grouped_docs:
                 charcoal_collection.insert_many(grouped_docs)
@@ -105,32 +137,61 @@ async def upload_pdf(pdf: List[UploadFile] = File(...)):
                 processed_files.append(file.filename)
 
         except Exception as e:
-            print("❌ PDF Error:", e)
+            print("❌ PDF Parsing Error:", e)
 
     return {
-        "message": "✅ Upload completed",
+        "message": "✅ PDF Upload completed",
         "files_processed": processed_files,
-        "total_rows_imported": total_rows
+        "total_rows_imported": total_rows,
     }
 
 
-# ----------------------------------------------------------------------------
-# ✅ List countries for dropdown (used by React)
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------
+# ✅ Excel Upload (Supervisor Request)
+# ---------------------------------------------------------
+@app.post("/upload-excel")
+async def upload_excel(file: UploadFile = File(...)):
+    if not file.filename.endswith((".xlsx", ".xls")):
+        raise HTTPException(status_code=400, detail="Upload a .xlsx or .xls file")
+
+    df = pd.read_excel(file.file, sheet_name="Data")
+
+    required_cols = ["Country", "Product", "Date", "Price"]
+    if not all(col in df.columns for col in required_cols):
+        raise HTTPException(status_code=400, detail="Excel format incorrect")
+
+    docs = []
+
+    for _, row in df.iterrows():
+        docs.append({
+            "product": PRODUCT,
+            "country": normalize_country(row["Country"]),
+            "prices": [{"date": pd.to_datetime(row["Date"]), "price": float(row["Price"])}],
+            "source_excel": file.filename,
+        })
+
+    charcoal_collection.insert_many(docs)
+
+    return {"message": "✅ Excel upload successful", "rows_inserted": len(docs)}
+
+
+# ---------------------------------------------------------
+# ✅ List Countries for Filters
+# ---------------------------------------------------------
 @app.get("/countries")
 def list_countries():
     return sorted(charcoal_collection.distinct("country", {"product": PRODUCT}))
 
 
-# ----------------------------------------------------------------------------
-# ✅ Time-series endpoint — now supports date range + country filtering
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------
+# ✅ Time Series + Dynamic Filtering (Country + Date range)
+# ---------------------------------------------------------
 @app.get("/series")
 async def get_series(
     product: str = PRODUCT,
-    countries: str | None = None,     # ✅ Multiple countries: India,Indonesia
-    fromDate: str | None = None,      # ✅ YYYY-MM-DD
-    toDate: str | None = None         # ✅ YYYY-MM-DD
+    countries: str | None = None,
+    fromDate: str | None = None,
+    toDate: str | None = None,
 ):
     match_stage = {"product": product}
 
@@ -140,19 +201,8 @@ async def get_series(
     pipeline = [
         {"$match": match_stage},
         {"$unwind": "$prices"},
-        {"$sort": {"prices.date": 1}},
-        {
-            "$project": {
-                "_id": 0,
-                "country": "$country",
-                "date": "$prices.date",
-                "price": "$prices.price",
-                "source_pdf": 1,
-            }
-        }
     ]
 
-    # ✅ Backend Date Filter (From → To)
     if fromDate or toDate:
         date_filter = {}
         if fromDate:
@@ -160,98 +210,61 @@ async def get_series(
         if toDate:
             date_filter["$lte"] = datetime.fromisoformat(toDate)
 
-        pipeline.insert(1, {"$match": {"prices.date": date_filter}})
+        pipeline.append({"$match": {"prices.date": date_filter}})
 
-    docs = list(charcoal_collection.aggregate(pipeline))
-    return docs
-
-
-# ----------------------------------------------------------------------------
-# ✅ KPI (min/max/avg/change % per country)
-# ----------------------------------------------------------------------------
-@app.get("/analytics/country-kpis")
-def country_kpis(country: str):
-    pipeline = [
-        {"$match": {"product": PRODUCT, "country": country}},
-        {"$unwind": "$prices"},
+    pipeline.extend([
         {"$sort": {"prices.date": 1}},
-        {"$group": {
-            "_id": "$country",
-            "min": {"$min": "$prices.price"},
-            "max": {"$max": "$prices.price"},
-            "avg": {"$avg": "$prices.price"},
-            "start": {"$first": "$prices.price"},
-            "end": {"$last": "$prices.price"},
-        }},
-        {"$project": {
-            "_id": 0,
-            "country": "$_id",
-            "min": 1, "max": 1, "avg": 1,
-            "change_pct": {
-                "$multiply": [
-                    {"$divide": [{"$subtract": ["$end", "$start"]}, "$start"]},
-                    100,
-                ]
-            }
-        }}
-    ]
+        {"$project": {"_id": 0, "country": "$country", "date": "$prices.date", "price": "$prices.price"}},
+    ])
+
     return list(charcoal_collection.aggregate(pipeline))
 
 
-# ----------------------------------------------------------------------------
-# ✅ Global Market KPI Summary (Min / Max / Avg / MoM Change)
-# ----------------------------------------------------------------------------
-@app.get("/analytics/current-kpis")
-def current_kpis(countries: List[str] = Query(default=[])):
-
-    match = {"product": PRODUCT}
-    if countries:
-        match["country"] = {"$in": countries}
-
+# ---------------------------------------------------------
+# ✅ Market KPI Summary (Min / Max / Avg / Delta%)
+# ---------------------------------------------------------
+@app.get("/analytics/market-kpis")
+async def market_kpis():
     pipeline = [
-        {"$match": match},
+        {"$match": {"product": PRODUCT}},
         {"$unwind": "$prices"},
         {"$sort": {"prices.date": 1}},
         {"$group": {
             "_id": "$country",
             "min_price": {"$min": "$prices.price"},
             "max_price": {"$max": "$prices.price"},
+            "avg_price": {"$avg": "$prices.price"},
             "first_price": {"$first": "$prices.price"},
             "last_price": {"$last": "$prices.price"},
-            "last_date":  {"$last": "$prices.date"}
         }},
         {"$project": {
             "_id": 0,
             "country": "$_id",
-            "min":  {"$round": ["$min_price", 2]},
-            "max":  {"$round": ["$max_price", 2]},
-            "current": {"$round": ["$last_price", 2]},
-            "last_date": "$last_date",
+            "min_price": 1,
+            "max_price": 1,
+            "avg_price": {"$round": ["$avg_price", 2]},
             "change_pct": {
-                "$cond": [
-                    {"$or": [{"$eq": ["$first_price", 0]}, {"$eq": ["$first_price", None]}]},
-                    None,
-                    {"$round": [
-                        {"$multiply": [
-                            {"$divide": [{"$subtract": ["$last_price", "$first_price"]}, "$first_price"]},
-                            100
-                        ]},
-                        2
-                    ]}
+                "$round": [
+                    {"$multiply": [
+                        {"$divide": [{"$subtract": ["$last_price", "$first_price"]}, "$first_price"]},
+                        100,
+                    ]},
+                    2
                 ]
             }
         }},
-        {"$sort": {"country": 1}}
     ]
+
     return list(charcoal_collection.aggregate(pipeline))
 
 
-# ----------------------------------------------------------------------------
-# ✅ Test + Clear Data (DEV ONLY)
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------
+# Utilities
+# ---------------------------------------------------------
 @app.get("/test-db")
 def test_db():
     return {"ok": True, "count": charcoal_collection.count_documents({"product": PRODUCT})}
+
 
 @app.delete("/clear-data")
 def clear_data():
@@ -261,4 +274,4 @@ def clear_data():
 
 @app.get("/")
 def root():
-    return {"message": "PDF-only backend running ✅"}
+    return {"message": "✅ CarbonXInsight backend running (PDF + EXCEL)"}

@@ -263,6 +263,38 @@ body{
 .highcharts-navigator-outline{ stroke:var(--brand-border) }
 .highcharts-scrollbar{ stroke:rgba(255,255,255,.15) }
 
+/* ✅ Checkbox Markets Selector */
+.market-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checkbox-scroll {
+  max-height: 120px;
+  overflow-y: auto;
+  background: var(--panel-2);
+  border: 1px solid var(--brand-border);
+  border-radius: 10px;
+  padding: 6px 12px;
+  min-width: 260px;
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.check-item input[type="checkbox"] {
+  accent-color: var(--brand);
+  width: 16px;
+  height: 16px;
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 900px){
   .panel{ padding:18px }

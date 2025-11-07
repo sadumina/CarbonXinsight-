@@ -60,6 +60,39 @@
 .btn.primary:hover{filter:brightness(1.05)}
 .btn.ghost:hover{background:rgba(255,255,255,.04)}
 
+.excel-upload {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid var(--brand-border);
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--brand-soft);
+  font-size: 15px;
+  gap: 8px;
+}
+
+.excel-upload input {
+  display: none;
+}
+
+.download-template-btn {
+  margin-top: 12px;
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px dashed var(--brand-border);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.download-template-btn:hover {
+  background: var(--brand-glow);
+}
+
+
 /* Chart panel extra spacing on mobile */
 @media (max-width: 720px){
   .panel{padding:18px}

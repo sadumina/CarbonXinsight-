@@ -114,6 +114,16 @@ body{background:var(--bg-primary); color:var(--text-primary); font-family:Inter,
 .chip-label{font-size:12px; color:var(--text-secondary)}
 .chip-value{font-weight:600}
 
+/* 🚨 FORCE remove inner border to avoid double border */
+.panel > div:first-child {
+  border: none !important;
+  outline: none !important;
+}
+/* Remove Highcharts auto border */
+.highcharts-container {
+  border: none !important;
+}
+
 /* ---------- Comparison Drawer ---------- */
 .compare-drawer{
   margin-top:18px; background:rgba(22,27,34,.95);
@@ -157,4 +167,97 @@ body{background:var(--bg-primary); color:var(--text-primary); font-family:Inter,
   .filter select[multiple]{width:100%}
   .date-input{width:100%}
   .download-bar{width:100%; justify-content:flex-start; flex-wrap:wrap}
+}
+/* ========== Responsive Layout Additions ========== */
+
+/* Utility: horizontal scroll when needed */
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.scroll-x::-webkit-scrollbar { height: 8px; }
+.scroll-x::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 8px; }
+
+/* Panel container scales with screen */
+.panel { padding: clamp(12px, 2.5vw, 24px); max-width: min(1400px, 96vw); }
+
+/* Header becomes a neat grid on medium screens */
+@media (max-width: 1200px) {
+  .panel-head.compact {
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 14px;
+  }
+  .filters-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .btn-pill { justify-self: start; }
+}
+
+/* Tablets */
+@media (max-width: 900px) {
+  .title-wrap h2 { font-size: 20px; }
+  .filters-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .filter select[multiple] { height: 56px; }      /* compact */
+  .filter select[multiple]:hover,
+  .filter select[multiple]:focus { height: 140px; } /* still usable */
+  .kpi-chips {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    gap: 10px;
+  }
+  .compare-table { font-size: 13px; }
+}
+
+/* Phones */
+@media (max-width: 600px) {
+  .title-wrap h2 { font-size: 18px; }
+  .filters-row {
+    grid-template-columns: 1fr;
+  }
+  .filter { min-width: unset; width: 100%; }
+  .date-input, .filter select[multiple], .btn-pill { width: 100%; }
+  .kpi-chips {
+    grid-auto-flow: column;
+    grid-auto-columns: 85%;
+    display: grid;
+    overflow-x: auto;
+    gap: 10px;
+    padding-bottom: 4px;
+  }
+  .kpi-chip { min-width: 260px; }
+  .compare-drawer { border-radius: 10px; }
+  .compare-head h3 { font-size: 14px; }
+  .compare-table th, .compare-table td { padding: 8px 10px; }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .title-wrap h2 { font-size: 16px; }
+  .kpi-chip { min-width: 240px; }
+}
+
+/* Touch targets & hover-safety */
+@media (hover: none) {
+  .btn-pill:hover { transform: none; box-shadow: none; }
+  .kpi-chip:hover { transform: none; }
+}
+
+/* Avoid double borders & keep single premium frame */
+.panel {
+  border: 1px solid rgba(0,255,213,.18);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--bg-secondary), var(--bg-tertiary));
+  box-shadow: 0 8px 28px rgba(0,0,0,.35);
+}
+.panel > .card-wrapper,
+.panel > .panel-inner,
+.panel > div:first-child:not(.panel-head) {
+  border: none !important;
+}
+
+/* Highcharts mobile typography */
+@media (max-width: 600px) {
+  .highcharts-axis-labels text { font-size: 11px !important; }
+  .highcharts-range-selector-buttons text { font-size: 11px !important; }
 }

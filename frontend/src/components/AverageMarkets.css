@@ -1,95 +1,50 @@
 .panel {
-  border: 1px solid rgba(0,255,179,0.18);
-  border-radius: 14px;
-  padding: 18px;
-  margin-bottom: 28px;
-  background: rgba(1, 22, 25, 0.35);
+  margin-top: 20px;
 }
 
-.panel-head {
+.market-kpi-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
+  gap: 14px;
+  margin-bottom: 20px;
 }
 
-.panel-head h2 {
-  color: var(--accent);
-  margin: 0;
-}
-
-.filters {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.filters select,
-.filters input {
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(0,255,179,0.22);
-  background: #0d1117;
-  color: #aef9e5;
-  min-width: 120px;
-}
-
-.clear-btn {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(0,255,179,0.25);
-  background: rgba(0,255,179,0.10);
-  color: #aef9e5;
-  cursor: pointer;
-}
-
-.chart-wrap {
-  height: 380px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.muted { color: #86e6d3; opacity: .8; }
-.error { color: #ff6b6b; }
-
-.table-card {
-  border: 1px solid rgba(0,255,179,0.18);
+.market-kpi {
+  flex: 1;
+  padding: 12px;
   border-radius: 12px;
-  margin-top: 18px;
+  background: rgba(0, 255, 179, 0.12);
+  border: 1px solid rgba(0, 255, 179, 0.3);
+  text-align: center;
+  color: #e8fff6;
 }
 
-.table-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(0,255,179,0.12);
+.market-kpi h4 {
+  margin: 0;
+  opacity: 0.8;
 }
 
-.table-head h3 { color: var(--accent); margin: 0; }
-
-.table-scroll { overflow-x: auto; }
-
-.avg-table {
-  width: 100%;
-  border-collapse: collapse;
-  color: #c8fff0;
+.market-kpi p {
+  font-size: 22px;
+  font-weight: bold;
+  margin: 8px 0 0 0;
 }
 
-.avg-table th, .avg-table td {
-  padding: 12px 14px;
-  border-bottom: 1px dashed rgba(0,255,179,0.12);
+.kpi-card {
+  background: rgba(0, 255, 179, 0.1);
+  border: 1px solid #00ffbf;
+  padding: 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  position: relative;
 }
 
-.avg-table tbody tr:hover {
-  background: rgba(0,255,179,0.06);
-}
-
-.avg-table .money {
-  text-align: right;
-  font-weight: 600;
-  color: var(--primary);
+.kpi-card button {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  border: none;
+  background: none;
+  font-size: 18px;
+  color: #ff5ea3;
+  cursor: pointer;
 }

@@ -7,6 +7,8 @@ import pandas as pd
 import re
 from typing import Optional, Dict, Any, List
 from db import charcoal_collection  # Mongo collection
+from typing import List
+from fastapi import Query
 
 PRODUCT = "Coconut Shell Charcoal"
 
@@ -216,40 +218,57 @@ async def market_kpis():
 
 # ✅ GLOBAL MARKET KPI SUMMARY (Min, Max, Overall Change %)
 
+# --- replace the existing /analytics/current-kpis with this (PDF-friendly) ---
+
+
 @app.get("/analytics/current-kpis")
 def current_kpis(countries: List[str] = Query(default=[])):
-    match = {"source_type": "excel"}
+    """
+    For each country (optionally filtered), compute:
+    - min, max over the full series
+    - current (last) price
+    - change_pct from first to current
+    - last_date (for display)
+    """
+    match = {"product": PRODUCT}
     if countries:
         match["country"] = {"$in": countries}
 
     pipeline = [
         {"$match": match},
-        {"$sort": {"date": 1}},
+        {"$unwind": "$prices"},
+        {"$sort": {"prices.date": 1}},
         {"$group": {
             "_id": "$country",
-            "min_price": {"$min": "$price"},
-            "max_price": {"$max": "$price"},
-            "current_price": {"$last": "$price"},
-            "first_price": {"$first": "$price"},
+            "min_price": {"$min": "$prices.price"},
+            "max_price": {"$max": "$prices.price"},
+            "first_price": {"$first": "$prices.price"},
+            "last_price": {"$last": "$prices.price"},
+            "last_date":  {"$last": "$prices.date"}
         }},
         {"$project": {
+            "_id": 0,
             "country": "$_id",
-            "min":  "$min_price",
-            "max":  "$max_price",
-            "current": "$current_price",
+            "min":  {"$round": ["$min_price", 2]},
+            "max":  {"$round": ["$max_price", 2]},
+            "current": {"$round": ["$last_price", 2]},
+            "last_date":  "$last_date",
             "change_pct": {
-                "$multiply": [
-                    {"$divide": [
-                        {"$subtract": ["$current_price", "$first_price"]},
-                        "$first_price"
-                    ]},
-                    100
+                "$cond": [
+                    {"$or": [{"$eq": ["$first_price", 0]}, {"$eq": ["$first_price", None]}]},
+                    None,
+                    {"$round": [
+                        {"$multiply": [
+                            {"$divide": [{"$subtract": ["$last_price", "$first_price"]}, "$first_price"]},
+                            100
+                        ]},
+                        2
+                    ]}
                 ]
             }
         }},
-        {"$sort": {"country": 1}},
+        {"$sort": {"country": 1}}
     ]
-
     return list(charcoal_collection.aggregate(pipeline))
 
 # ----------------------------------------------------------------------------

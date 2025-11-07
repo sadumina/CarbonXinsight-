@@ -1,42 +1,78 @@
-// ✅ src/components/AnalyticsChart.jsx
-import { useEffect, useMemo, useState } from "react";
+// ✅ TradingView-style Analytics + KPIs + Compare Drawer + Downloads
+import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import Highcharts from "highcharts/highstock";
 import HighchartsReact from "highcharts-react-official";
 import "./AnalyticsChart.css";
 
-const API = "http://localhost:8000";
+// ── Highcharts modules (robust init across ESM/CJS) ──────────────────────────
+import Exporting from "highcharts/modules/exporting";
+import ExportData from "highcharts/modules/export-data";
+import OfflineExporting from "highcharts/modules/offline-exporting";
+// import Accessibility from "highcharts/modules/accessibility";
+
+function initHC(mod) {
+  if (typeof mod === "function") mod(Highcharts);
+  else if (mod && typeof mod.default === "function") mod.default(Highcharts);
+}
+initHC(Exporting);
+initHC(ExportData);
+initHC(OfflineExporting);
+// initHC(Accessibility);
+
+const API = "http://localhost:8000"; // FastAPI backend
+
+// Tiny format helpers for the chips
+const fmtUsd = (v) => (v == null ? "—" : `$${Number(v).toFixed(2)}`);
+const fmtPct = (v) => (v == null ? "—" : `${Number(v).toFixed(2)}%`);
 
 export default function AnalyticsChart() {
+  const chartRef = useRef(null);
+
   const [countries, setCountries] = useState([]);
   const [selected, setSelected] = useState([]);
-  const [seriesData, setSeriesData] = useState([]);     // Highcharts format
-  const [rawSeries, setRawSeries] = useState({});       // { country: [{ts, price}, ...] }
-  const [kpis, setKpis] = useState([]);
+  const [seriesData, setSeriesData] = useState([]);   // Highcharts series
+  const [rawSeries, setRawSeries] = useState({});     // { country: [{ts, price}, ...] }
 
-  // comparison drawer states
-  const [startDate, setStartDate] = useState("");       // yyyy-mm-dd
-  const [compareAt, setCompareAt] = useState(null);     // timestamp (ms)
-  const [rows, setRows] = useState([]);                 // computed table rows
+  // KPI chips
+  const [kpis, setKpis] = useState([]);
+  const [globalSummary, setGlobalSummary] = useState(null); // market min/max/+change%
+
+  // Comparison drawer
+  const [startDate, setStartDate] = useState(""); // yyyy-mm-dd
+  const [compareAt, setCompareAt] = useState(null);
+  const [rows, setRows] = useState([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // ───────────────────────────────────────────────────────────
-  // Load dropdown + KPI
+  // Boot: load markets + global summary
   // ───────────────────────────────────────────────────────────
   useEffect(() => {
-    axios.get(`${API}/countries`).then((res) => {
-      const list = res.data || [];
+    (async () => {
+      const { data: list = [] } = await axios.get(`${API}/countries`);
       setCountries(list);
       setSelected(list.slice(0, 3));
-    });
-    axios.get(`${API}/analytics/current-kpis`).then((res) => setKpis(res.data || []));
+      axios.get(`${API}/analytics/market-kpis`)
+        .then((res) => setGlobalSummary(res.data || null))
+        .catch(() => setGlobalSummary(null));
+    })();
   }, []);
 
+  // Refresh KPI chips whenever selection changes
+  useEffect(() => {
+    if (!selected.length) return;
+    axios
+      .get(`${API}/analytics/current-kpis`, { params: { countries: selected } })
+      .then((res) => setKpis(res.data || []))
+      .catch(() => setKpis([]));
+  }, [selected]);
+
   // ───────────────────────────────────────────────────────────
-  // Fetch series (PDF backend: /series)
+  // Fetch time series from PDF DB
   // ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (!selected.length) return;
+
     axios.get(`${API}/series`, { params: { countries: selected } }).then((res) => {
       const grouped = {}; // country -> [{ts, price}]
       (res.data || []).forEach((p) => {
@@ -44,10 +80,11 @@ export default function AnalyticsChart() {
         if (!grouped[p.country]) grouped[p.country] = [];
         grouped[p.country].push({ ts, price: p.price });
       });
-      // sort points
+
+      // sort each array by timestamp
       Object.values(grouped).forEach((arr) => arr.sort((a, b) => a.ts - b.ts));
 
-      // Highcharts series
+      // Highcharts format
       const hc = Object.keys(grouped).map((c) => ({
         name: c,
         data: grouped[c].map((pt) => [pt.ts, pt.price]),
@@ -57,28 +94,29 @@ export default function AnalyticsChart() {
       setRawSeries(grouped);
       setSeriesData(hc);
 
-      // if user hasn't chosen a start date, default to earliest timestamp
+      // Default Start Date to earliest data point
       if (!startDate) {
-        const minTs = Math.min(
-          ...Object.values(grouped).flat().map((pt) => pt.ts)
-        );
-        setStartDate(new Date(minTs).toISOString().slice(0, 10));
+        const all = Object.values(grouped).flat();
+        if (all.length) {
+          const minTs = Math.min(...all.map((pt) => pt.ts));
+          setStartDate(new Date(minTs).toISOString().slice(0, 10));
+        }
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
 
   // ───────────────────────────────────────────────────────────
-  // Helpers
+  // Helpers for comparison logic
   // ───────────────────────────────────────────────────────────
   const nearest = (arr, ts) => {
-    // binary search for closest by ts; arr sorted
+    if (!arr.length) return null;
     let lo = 0, hi = arr.length - 1;
     while (lo < hi) {
       const mid = (lo + hi) >> 1;
       if (arr[mid].ts < ts) lo = mid + 1;
       else hi = mid;
     }
-    // lo is first >= ts; compare with previous to pick closer
     const a = arr[Math.max(0, lo - 1)];
     const b = arr[Math.min(arr.length - 1, lo)];
     return Math.abs((a?.ts ?? Infinity) - ts) <= Math.abs((b?.ts ?? Infinity) - ts) ? a : b;
@@ -96,38 +134,31 @@ export default function AnalyticsChart() {
     return { min, max, avg: sum / slice.length };
   };
 
-  // Build comparison rows when user clicks a point
+  // Build comparison rows when the user clicks a point
   const buildComparison = (clickedTs) => {
     if (!startDate) return;
     const startTs = new Date(startDate).getTime();
     const from = Math.min(startTs, clickedTs);
     const to = Math.max(startTs, clickedTs);
 
-    const data = Object.keys(rawSeries).map((country) => {
-      const arr = rawSeries[country] || [];
-      if (!arr.length) return null;
+    const data = Object.keys(rawSeries)
+      .map((country) => {
+        const arr = rawSeries[country] || [];
+        if (!arr.length) return null;
 
-      const startPt = nearest(arr, startTs);
-      const endPt = nearest(arr, clickedTs);
-      const { min, max, avg } = betweenStats(arr, from, to);
+        const startPt = nearest(arr, startTs);
+        const endPt = nearest(arr, clickedTs);
+        const { min, max, avg } = betweenStats(arr, from, to);
 
-      const start = startPt?.price ?? null;
-      const end = endPt?.price ?? null;
-      const delta = start != null && end != null ? end - start : null;
-      const pct =
-        start != null && end != null && start !== 0 ? ((end - start) / start) * 100 : null;
+        const start = startPt?.price ?? null;
+        const end = endPt?.price ?? null;
+        const delta = start != null && end != null ? end - start : null;
+        const pct =
+          start != null && end != null && start !== 0 ? ((end - start) / start) * 100 : null;
 
-      return {
-        country,
-        start,
-        end,
-        delta,
-        pct,
-        min,
-        max,
-        avg,
-      };
-    }).filter(Boolean);
+        return { country, start, end, delta, pct, min, max, avg };
+      })
+      .filter(Boolean);
 
     setRows(data);
     setCompareAt(clickedTs);
@@ -135,7 +166,7 @@ export default function AnalyticsChart() {
   };
 
   // ───────────────────────────────────────────────────────────
-  // Highcharts options (TradingView style)
+  // Highcharts (TradingView-like)
   // ───────────────────────────────────────────────────────────
   const highchartsOptions = useMemo(
     () => ({
@@ -154,7 +185,8 @@ export default function AnalyticsChart() {
           fill: "none",
           style: { color: "#00ffd5" },
           states: { select: { fill: "#00ffd5", style: { color: "#000" } } },
-      }},
+        },
+      },
       xAxis: { labels: { style: { color: "#aaa" } } },
       yAxis: {
         title: { text: "USD / MT", style: { color: "#00ffd5" } },
@@ -168,14 +200,33 @@ export default function AnalyticsChart() {
         borderColor: "#00ffd5",
         style: { color: "white" },
       },
+      exporting: {
+        enabled: true,
+        // You still get the default context menu on the chart
+        buttons: {
+          contextButton: {
+            menuItems: [
+              "viewFullscreen",
+              "separator",
+              "downloadPNG",
+              "downloadJPEG",
+              "downloadPDF",
+              "downloadSVG",
+              "separator",
+              "downloadCSV",
+              "downloadXLS",
+              "viewData",
+            ],
+          },
+        },
+      },
       plotOptions: {
         series: {
           marker: { enabled: false },
           point: {
             events: {
               click: function () {
-                // this.x is timestamp (ms)
-                buildComparison(this.x);
+                buildComparison(this.x); // this.x is timestamp
               },
             },
           },
@@ -186,29 +237,44 @@ export default function AnalyticsChart() {
     [seriesData, startDate, rawSeries]
   );
 
+  // ───────────────────────────────────────────────────────────
+  // UI actions
+  // ───────────────────────────────────────────────────────────
+  const resetFilters = () => {
+    const defaults = countries.slice(0, 3);
+    setSelected(defaults);
+    setStartDate("");
+    setDrawerOpen(false);
+  };
+
+  const downloadPNG = () => {
+    const chart = chartRef.current?.chart;
+    if (chart?.exportChartLocal) {
+      chart.exportChartLocal({ type: "image/png", filename: "carbonxinsight-chart" });
+    } else if (chart?.exportChart) {
+      chart.exportChart({ type: "image/png", filename: "carbonxinsight-chart" });
+    }
+  };
+
+  const downloadCSV = () => {
+    const chart = chartRef.current?.chart;
+    if (chart?.downloadCSV) chart.downloadCSV();
+  };
+
   return (
     <section className="panel">
-      <header className="panel-head">
-        <h2>📈 TradingView — Coconut Shell Charcoal Market</h2>
+      {/* Header / Filters */}
+      <header className="panel-head compact">
+        <div className="title-wrap">
+          <span className="title-badge">📈</span>
+          <h2>TradingView — Coconut Shell Charcoal Market</h2>
+        </div>
 
-        {/* Filters */}
-        <div className="filters">
-          <label className="filter-block">
-            <span>Start Date</span>
-            <input
-   type="date"
-   className="date-input"
-   value={startDate}
-   onChange={(e) => setStartDate(e.target.value)}
-/>
-
-          </label>
-
-          <label className="filter-block">
+        <div className="filters-row">
+          <label className="filter">
             <span>Markets</span>
             <select
               multiple
-              className="country-select"
               value={selected}
               onChange={(e) =>
                 setSelected(Array.from(e.target.selectedOptions, (o) => o.value))
@@ -221,42 +287,109 @@ export default function AnalyticsChart() {
               ))}
             </select>
           </label>
+
+          <label className="filter">
+            <span>Start Date</span>
+            <input
+              type="date"
+              className="date-input"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </label>
+
+          <button className="btn-pill" onClick={resetFilters}>
+            Reset
+          </button>
+
+          <div className="download-bar">
+            <button className="btn-ghost" onClick={downloadPNG}>Download PNG</button>
+            <button className="btn-ghost" onClick={downloadCSV}>Download CSV</button>
+          </div>
         </div>
       </header>
 
-      {/* KPI Summary Row */}
-      <div className="kpi-section">
-        {kpis.map((k, idx) => (
-          <div key={idx} className="kpi-card">
-            <h4>{k.country}</h4>
-            <div className="kpi-row-item"><span>Min</span><b>${k.min.toFixed(2)}</b></div>
-            <div className="kpi-row-item"><span>Max</span><b>${k.max.toFixed(2)}</b></div>
-            <div className="kpi-row-item"><span>Current</span><b>${k.current.toFixed(2)}</b></div>
-            <div className={`kpi-change ${k.change_pct >= 0 ? "positive" : "negative"}`}>
-              {k.change_pct >= 0 ? "▲" : "▼"} {k.change_pct.toFixed(2)}%
+      {/* KPI: Market Summary */}
+      {globalSummary && (
+        <div className="kpi-chips" style={{ marginTop: 0 }}>
+          <div className="kpi-chip">
+            <div className="chip-top">
+              <span
+                className={`dot ${
+                  (globalSummary.overall_change_pct ?? 0) >= 0 ? "up" : "down"
+                }`}
+              />
+              <span className="chip-country">Market Summary</span>
+              <span
+                className={`chip-delta ${
+                  (globalSummary.overall_change_pct ?? 0) >= 0 ? "pos" : "neg"
+                }`}
+              >
+                {(globalSummary.overall_change_pct ?? 0) >= 0 ? "▲" : "▼"}{" "}
+                {fmtPct(globalSummary.overall_change_pct)}
+              </span>
+            </div>
+            <div className="chip-row">
+              <span className="chip-label">Min</span>
+              <span className="chip-value">{fmtUsd(globalSummary.min_price)}</span>
+            </div>
+            <div className="chip-row">
+              <span className="chip-label">Max</span>
+              <span className="chip-value">{fmtUsd(globalSummary.max_price)}</span>
             </div>
           </div>
-        ))}
+        </div>
+      )}
+
+      {/* KPI: Country chips */}
+      <div className="kpi-chips">
+        {kpis.map((k) => {
+          const up = (k.change_pct ?? 0) >= 0;
+          return (
+            <div key={k.country} className="kpi-chip" title={k.country}>
+              <div className="chip-top">
+                <span className={`dot ${up ? "up" : "down"}`} />
+                <span className="chip-country">{k.country}</span>
+                <span className={`chip-delta ${up ? "pos" : "neg"}`}>
+                  {up ? "▲" : "▼"} {fmtPct(k.change_pct)}
+                </span>
+              </div>
+              <div className="chip-row">
+                <span className="chip-label">Curr</span>
+                <span className="chip-value">{fmtUsd(k.current)}</span>
+              </div>
+              <div className="chip-row subtle">
+                <span className="chip-label">Min</span>
+                <span className="chip-value">{fmtUsd(k.min)}</span>
+              </div>
+              <div className="chip-row subtle">
+                <span className="chip-label">Max</span>
+                <span className="chip-value">{fmtUsd(k.max)}</span>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* TradingView Graph */}
       <HighchartsReact
+        ref={chartRef}
         highcharts={Highcharts}
         constructorType="stockChart"
         options={highchartsOptions}
       />
 
-      {/* ─────────────────────────────
-          Comparison Drawer / Table
-         ───────────────────────────── */}
+      {/* Comparison Drawer / Table */}
       {drawerOpen && (
         <div className="compare-drawer">
           <div className="compare-head">
             <h3>
-              Comparison • From <b>{startDate}</b> to{" "}
-              <b>{new Date(compareAt).toISOString().slice(0, 10)}</b>
+              Comparison • From <b>{startDate || "—"}</b> to{" "}
+              <b>{compareAt ? new Date(compareAt).toISOString().slice(0, 10) : "—"}</b>
             </h3>
-            <button className="close" onClick={() => setDrawerOpen(false)}>×</button>
+            <button className="close" onClick={() => setDrawerOpen(false)}>
+              ×
+            </button>
           </div>
 
           <div className="table-wrap">
@@ -280,10 +413,14 @@ export default function AnalyticsChart() {
                     <td>{r.start != null ? `$${r.start.toFixed(2)}` : "—"}</td>
                     <td>{r.end != null ? `$${r.end.toFixed(2)}` : "—"}</td>
                     <td className={r.delta >= 0 ? "pos" : "neg"}>
-                      {r.delta != null ? `${r.delta >= 0 ? "+" : ""}$${Math.abs(r.delta).toFixed(2)}` : "—"}
+                      {r.delta != null
+                        ? `${r.delta >= 0 ? "+" : "-"}$${Math.abs(r.delta).toFixed(2)}`
+                        : "—"}
                     </td>
                     <td className={r.pct >= 0 ? "pos" : "neg"}>
-                      {r.pct != null ? `${r.pct >= 0 ? "+" : ""}${r.pct.toFixed(2)}%` : "—"}
+                      {r.pct != null
+                        ? `${r.pct >= 0 ? "+" : "-"}${Math.abs(r.pct).toFixed(2)}%`
+                        : "—"}
                     </td>
                     <td>{r.min != null ? `$${r.min.toFixed(2)}` : "—"}</td>
                     <td>{r.max != null ? `$${r.max.toFixed(2)}` : "—"}</td>

@@ -1,88 +1,161 @@
-/* Filters block */
-.filters {
-  display: flex;
-  align-items: flex-end;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-.filter-block { display: flex; flex-direction: column; gap: 6px; }
-.filter-block span { color: var(--text-secondary); font-size: 12px; }
+/* ═══════════════════════════════════════════════════════════
+   CarbonXInsight – TradingView Analytics Styles
+   Compact KPI chips + filters + comparison drawer + downloads
+   ═══════════════════════════════════════════════════════════ */
 
-.country-select {
-  width: 280px;
-  height: 120px;
-  border-radius: 12px;
-  padding: 10px;
-  border: 2px solid var(--neon-primary);
-  background: rgba(15, 20, 25, 0.95);
-  color: var(--text-primary);
-  box-shadow: 0 0 10px rgba(0, 255, 213, 0.25);
-  outline: none;
-}
-.country-select option { padding: 8px; background: #12161c; }
-.country-select option:checked { background: rgba(0,255,213,0.25); color: var(--neon-primary); }
+:root{
+  --bg-primary:#0d1117;
+  --bg-secondary:#11161d;
+  --bg-tertiary:#0b0f14;
 
-/* Comparison drawer */
-.compare-drawer {
-  margin-top: 18px;
-  background: rgba(22, 27, 34, 0.95);
-  border: 1px solid rgba(0,255,213,0.25);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.35);
-}
-.compare-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 18px;
-  background: linear-gradient(90deg, rgba(0,255,213,0.12), transparent);
-}
-.compare-head h3 { margin: 0; font-size: 16px; color: #eafbf7; }
-.compare-head .close {
-  background: transparent; border: none; color: #ccc;
-  font-size: 22px; cursor: pointer; width: 32px; height: 32px;
-  border-radius: 50%;
-}
-.compare-head .close:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  --text-primary:#e8eef2;
+  --text-secondary:#9aa4af;
+  --text-muted:#95a0ab;
 
-.table-wrap { overflow-x: auto; }
-.compare-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-.compare-table th, .compare-table td {
-  padding: 10px 12px; border-top: 1px solid rgba(255,255,255,0.06);
-}
-.compare-table thead th { text-align: left; color: var(--neon-primary); }
-.compare-table tbody tr:hover { background: rgba(255,255,255,0.03); }
-.compare-table .pos { color: #00ff99; font-weight: 600; }
-.compare-table .neg { color: #ff6b6b; font-weight: 600; }
-/*  ✅ Beautify Start Date input  */
-.date-input {
-  width: 135px;            /* <-- Smaller width */
-  padding: 6px 10px;
-  background: rgba(0,255,213,0.05);
-  border: 1px solid rgba(0,255,213,0.35);
-  border-radius: 8px;
-  color: #00ffd5;
-  font-size: 14px;
-  outline: none;
-  transition: 0.25s;
+  --neon:#00ffd5;
+  --neon-soft:rgba(0,255,213,.12);
+  --neon-border:rgba(0,255,213,.25);
+
+  --success:#3fb950;
+  --danger:#f85149;
+
+  --radius:12px;
+  --radius-lg:16px;
+
+  --shadow-1:0 6px 18px rgba(0,0,0,.25);
+  --shadow-2:0 12px 36px rgba(0,0,0,.4);
 }
 
-.date-input:hover {
-  background: rgba(0,255,213,0.12);
+*{box-sizing:border-box}
+body{background:var(--bg-primary); color:var(--text-primary); font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;}
+.panel{max-width:1400px; margin:0 auto; padding:24px 18px}
+
+/* ---------- Header ---------- */
+.panel-head.compact{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:16px; margin:8px 0 18px;
+}
+.title-wrap{display:flex; align-items:center; gap:10px}
+.title-wrap h2{margin:0; font-size:22px; font-weight:700; letter-spacing:.2px}
+.title-badge{
+  display:inline-grid; place-items:center; width:32px; height:32px;
+  border-radius:10px; background:var(--neon-soft);
+  border:1px solid var(--neon-border); color:var(--neon); font-size:16px;
 }
 
-.date-input:focus {
-  border-color: #00ffd5;
-  box-shadow: 0 0 8px rgba(0,255,213,0.35);
-}
+/* ---------- Filters ---------- */
+.filters-row{display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap}
+.filter{display:flex; flex-direction:column; gap:6px; min-width:210px}
+.filter>span{font-size:12px; letter-spacing:.3px; text-transform:uppercase; color:var(--text-secondary)}
 
-/* REMOVE default ugly calendar icon & white background */
-.date-input::-webkit-calendar-picker-indicator {
-  filter: invert(1);   /* neon colored icon */
-  cursor: pointer;
+.filter select[multiple]{
+  height:44px; min-width:260px; color:var(--text-primary);
+  background:linear-gradient(180deg,var(--bg-secondary),var(--bg-tertiary));
+  border:1px solid var(--neon-border); border-radius:10px; outline:none;
+  padding:8px 10px; box-shadow:inset 0 0 0 1px rgba(0,255,213,.08);
+  transition:box-shadow .2s,border-color .2s,height .2s;
+  scrollbar-width:thin; scrollbar-color:var(--neon) var(--bg-secondary);
+}
+.filter select[multiple]:focus{border-color:var(--neon); box-shadow:0 0 0 3px rgba(0,255,213,.12)}
+.filter select[multiple]:hover,
+.filter select[multiple]:focus{height:160px}
+.filter select option{padding:8px; background:#0f141b}
+.filter select option:checked{background:rgba(0,255,213,.22); color:var(--neon)}
+
+.date-input{
+  height:44px; min-width:180px;
+  background:var(--bg-secondary); color:var(--text-primary);
+  border:1px solid var(--neon-border); border-radius:10px; outline:none;
+  padding:0 12px; transition:box-shadow .2s,border-color .2s;
+}
+.date-input:focus{border-color:var(--neon); box-shadow:0 0 0 3px rgba(0,255,213,.12)}
+.date-input::-webkit-calendar-picker-indicator{filter:invert(1); cursor:pointer}
+
+/* Reset + Download buttons */
+.btn-pill{
+  height:44px; padding:0 16px; border-radius:999px; cursor:pointer;
+  border:1px solid var(--neon-border);
+  background:linear-gradient(180deg, rgba(0,255,213,.10), rgba(0,255,213,.05));
+  color:#bfffe8; font-weight:600; letter-spacing:.3px;
+  transition:transform .12s, box-shadow .2s, border-color .2s;
+}
+.btn-pill:hover{ transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,255,213,.12) }
+.btn-pill:active{ transform:translateY(0) }
+
+.download-bar{display:flex; gap:8px}
+.btn-ghost{
+  height:44px; padding:0 14px; border-radius:10px; cursor:pointer;
+  border:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  color:#e6eef5; font-weight:600; letter-spacing:.2px;
+  transition:transform .12s, box-shadow .2s, border-color .2s, background .2s;
+}
+.btn-ghost:hover{ transform:translateY(-1px); border-color:var(--neon-border); box-shadow:0 6px 18px rgba(0,0,0,.25) }
+
+/* ---------- KPI CHIPS (compact) ---------- */
+.kpi-chips{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px; margin:8px 0 16px;
+}
+.kpi-chip{
+  background:linear-gradient(180deg,var(--bg-secondary),var(--bg-tertiary));
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:12px; padding:12px 14px; box-shadow:var(--shadow-1);
+}
+.chip-top{display:flex; align-items:center; gap:8px; margin-bottom:8px}
+.dot{width:8px; height:8px; border-radius:50%; box-shadow:0 0 8px currentColor}
+.dot.up{background:var(--success); color:var(--success)}
+.dot.down{background:var(--danger); color:var(--danger)}
+.chip-country{font-weight:600; color:var(--text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.chip-delta{margin-left:auto; font-weight:700}
+.chip-delta.pos{color:var(--success)}
+.chip-delta.neg{color:var(--danger)}
+.chip-row{display:flex; justify-content:space-between; align-items:center; padding:4px 0}
+.chip-row.subtle .chip-label{color:var(--text-muted)}
+.chip-label{font-size:12px; color:var(--text-secondary)}
+.chip-value{font-weight:600}
+
+/* ---------- Comparison Drawer ---------- */
+.compare-drawer{
+  margin-top:18px; background:rgba(22,27,34,.95);
+  border:1px solid var(--neon-border); border-radius:12px;
+  overflow:hidden; box-shadow:var(--shadow-2);
+}
+.compare-head{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:14px 18px; background:linear-gradient(90deg, var(--neon-soft), transparent);
+}
+.compare-head h3{margin:0; font-size:16px; color:#eafbf7}
+.compare-head .close{
+  background:transparent; border:none; color:#cdd6df; font-size:22px;
+  width:32px; height:32px; border-radius:50%; cursor:pointer;
+}
+.compare-head .close:hover{background:rgba(255,255,255,.06); color:#fff}
+
+.table-wrap{overflow-x:auto}
+.compare-table{width:100%; border-collapse:collapse; font-size:14px}
+.compare-table th, .compare-table td{padding:10px 12px; border-top:1px solid rgba(255,255,255,.06)}
+.compare-table thead th{text-align:left; color:var(--neon)}
+.compare-table tbody tr:hover{background:rgba(255,255,255,.03)}
+.compare-table .pos{color:var(--success); font-weight:600}
+.compare-table .neg{color:var(--danger); font-weight:600}
+
+/* ---------- Highcharts Tweaks ---------- */
+.highcharts-background{fill:var(--bg-primary)}
+.highcharts-legend-item text{fill:var(--neon) !important; font-weight:600}
+.highcharts-title, .highcharts-subtitle{fill:var(--text-primary) !important}
+.highcharts-tooltip text{fill:#fff}
+.highcharts-range-selector-buttons text{fill:var(--neon)}
+.highcharts-range-selector-buttons .highcharts-button-box{stroke:none; fill:none}
+.highcharts-range-selector-buttons .highcharts-button-pressed .highcharts-button-box{fill:var(--neon); opacity:1}
+.highcharts-range-selector-buttons .highcharts-button-pressed text{fill:#000}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px){
+  .panel-head.compact{flex-direction:column; align-items:flex-start}
+  .filters-row{width:100%}
+  .filter{min-width:unset; width:100%}
+  .filter select[multiple]{width:100%}
+  .date-input{width:100%}
+  .download-bar{width:100%; justify-content:flex-start; flex-wrap:wrap}
 }

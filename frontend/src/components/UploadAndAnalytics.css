@@ -1,0 +1,59 @@
+.page{
+  padding:24px;
+  display:flex;
+  flex-direction:column;
+  gap:22px;
+}
+
+/* Panels */
+.panel{
+  background:linear-gradient(135deg,#0f141b 0%, rgba(20,26,34,.9) 100%);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:22px;
+}
+
+.panel-title{margin:0 0 6px 0;font-size:20px;color:#bfffe8}
+.panel-sub{margin:0 0 12px 0;color:var(--muted)}
+
+/* Dropzone */
+.drop{
+  border:2px dashed rgba(0,255,213,.35);
+  border-radius:14px;
+  padding:26px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(0,255,213,.02);
+  cursor:pointer; transition:.25s;
+}
+.drop:hover{background:rgba(0,255,213,.05)}
+.drop.dragging{background:rgba(0,255,213,.1); box-shadow:0 0 0 4px rgba(0,255,213,.08) inset}
+.drop-inner{text-align:center}
+.drop-icon{font-size:26px; margin-bottom:6px; color:var(--accent)}
+.drop-title{font-size:16px}
+.drop-hint{color:var(--muted); font-size:12px; margin-top:4px}
+
+/* Queue badges */
+.queue{margin-top:14px; display:grid; gap:8px}
+.queue-item{
+  background:#0d1117; border:1px dashed rgba(255,255,255,.06);
+  padding:10px 12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;
+}
+.q-name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:10px}
+.q-badge{font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.12)}
+.q-badge.ok{border-color:#3fb950; color:#3fb950}
+.q-badge.err{border-color:#f85149; color:#f85149}
+
+/* Actions */
+.actions{margin-top:12px; display:flex; gap:10px; justify-content:flex-end}
+.btn{
+  padding:10px 16px; border-radius:10px; cursor:pointer; font-weight:600; letter-spacing:.3px;
+  background:transparent; border:1px solid var(--line); color:var(--text);
+}
+.btn.primary{border-color:var(--accent); color:#001; background:var(--accent)}
+.btn.primary:hover{filter:brightness(1.05)}
+.btn.ghost:hover{background:rgba(255,255,255,.04)}
+
+/* Chart panel extra spacing on mobile */
+@media (max-width: 720px){
+  .panel{padding:18px}
+}

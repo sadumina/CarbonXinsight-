@@ -6,9 +6,8 @@ import camelot
 import pandas as pd
 import re
 from typing import Optional, Dict, Any, List
-from db import charcoal_collection  # Mongo collection
-from typing import List
-from fastapi import Query
+from db import charcoal_collection  # ✅ Mongo collection (correct name)
+from datetime import datetime       # ✅ Needed for fromDate/toDate filtering
 
 PRODUCT = "Coconut Shell Charcoal"
 
@@ -16,15 +15,15 @@ app = FastAPI(title="CarbonXInsight – PDF Analytics (CSC only)")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # change later to your frontend
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ---------------------
-# Helper
-# ---------------------
+# ----------------------
+# Helpers
+# ----------------------
 DATE_RX = re.compile(r"\d{1,2}/\d{1,2}/\d{2,4}")
 
 def clean_to_float(val):
@@ -38,7 +37,7 @@ def clean_to_float(val):
 
 
 # ----------------------------------------------------------------------------
-# ✅ Upload PDF → extract ONLY "Coconut Shell Charcoal"
+# ✅ Upload PDF → Extract ONLY "Coconut Shell Charcoal"
 # ----------------------------------------------------------------------------
 @app.post("/upload")
 async def upload_pdf(pdf: List[UploadFile] = File(...)):
@@ -57,7 +56,7 @@ async def upload_pdf(pdf: List[UploadFile] = File(...)):
             for tbl in tables:
                 df = tbl.df
 
-                # detect row with dates
+                # detect date header
                 date_row_idx = None
                 dates = []
                 for i, row in df.iterrows():
@@ -69,6 +68,7 @@ async def upload_pdf(pdf: List[UploadFile] = File(...)):
                 if not dates:
                     continue
 
+                # extract CSC rows
                 for _, row in df.iloc[date_row_idx + 1:].iterrows():
                     product = str(row[0]).strip()
                     country = str(row[1]).strip()
@@ -114,9 +114,8 @@ async def upload_pdf(pdf: List[UploadFile] = File(...)):
     }
 
 
-
 # ----------------------------------------------------------------------------
-# ✅ List countries for dropdown
+# ✅ List countries for dropdown (used by React)
 # ----------------------------------------------------------------------------
 @app.get("/countries")
 def list_countries():
@@ -124,26 +123,47 @@ def list_countries():
 
 
 # ----------------------------------------------------------------------------
-# ✅ Time-series endpoint — used by frontend line chart
+# ✅ Time-series endpoint — now supports date range + country filtering
 # ----------------------------------------------------------------------------
 @app.get("/series")
-def series(countries: List[str] = Query(default=[])):
-    match = {"product": PRODUCT}
+async def get_series(
+    product: str = PRODUCT,
+    countries: str | None = None,     # ✅ Multiple countries: India,Indonesia
+    fromDate: str | None = None,      # ✅ YYYY-MM-DD
+    toDate: str | None = None         # ✅ YYYY-MM-DD
+):
+    match_stage = {"product": product}
+
     if countries:
-        match["country"] = {"$in": countries}
+        match_stage["country"] = {"$in": countries.split(",")}
 
     pipeline = [
-        {"$match": match},
+        {"$match": match_stage},
         {"$unwind": "$prices"},
-        {"$project": {
-            "_id": 0,
-            "country": 1,
-            "date": "$prices.date",
-            "price": "$prices.price",
-        }},
-        {"$sort": {"country": 1, "date": 1}}
+        {"$sort": {"prices.date": 1}},
+        {
+            "$project": {
+                "_id": 0,
+                "country": "$country",
+                "date": "$prices.date",
+                "price": "$prices.price",
+                "source_pdf": 1,
+            }
+        }
     ]
-    return list(charcoal_collection.aggregate(pipeline))
+
+    # ✅ Backend Date Filter (From → To)
+    if fromDate or toDate:
+        date_filter = {}
+        if fromDate:
+            date_filter["$gte"] = datetime.fromisoformat(fromDate)
+        if toDate:
+            date_filter["$lte"] = datetime.fromisoformat(toDate)
+
+        pipeline.insert(1, {"$match": {"prices.date": date_filter}})
+
+    docs = list(charcoal_collection.aggregate(pipeline))
+    return docs
 
 
 # ----------------------------------------------------------------------------
@@ -177,59 +197,13 @@ def country_kpis(country: str):
     ]
     return list(charcoal_collection.aggregate(pipeline))
 
-# -------------------------------------------------------
-# ✅ Market KPI summary (Min / Max / Avg / MoM Change)
-# -------------------------------------------------------
-@app.get("/analytics/market-kpis")
-async def market_kpis():
-    pipeline = [
-        {"$match": {"product": PRODUCT}},   # only CSC
-        {"$unwind": "$prices"},
-        {"$sort": {"prices.date": 1}},
-        {"$group": {
-            "_id": "$country",
-            "min_price": {"$min": "$prices.price"},
-            "max_price": {"$max": "$prices.price"},
-            "avg_price": {"$avg": "$prices.price"},
-            "first_price": {"$first": "$prices.price"},
-            "last_price": {"$last": "$prices.price"},
-        }},
-        {"$project": {
-            "_id": 0,
-            "country": "$_id",
-            "min_price": 1,
-            "max_price": 1,
-            "avg_price": {"$round": ["$avg_price", 2]},
-            "change_pct": {
-                "$cond": [
-                    {"$eq": ["$first_price", 0]},
-                    None,
-                    {"$multiply": [
-                        {"$divide": [{"$subtract": ["$last_price", "$first_price"]}, "$first_price"]},
-                        100
-                    ]}
-                ]
-            },
-        }},
-        {"$sort": {"country": 1}}
-    ]
 
-    return list(charcoal_collection.aggregate(pipeline))
-
-# ✅ GLOBAL MARKET KPI SUMMARY (Min, Max, Overall Change %)
-
-# --- replace the existing /analytics/current-kpis with this (PDF-friendly) ---
-
-
+# ----------------------------------------------------------------------------
+# ✅ Global Market KPI Summary (Min / Max / Avg / MoM Change)
+# ----------------------------------------------------------------------------
 @app.get("/analytics/current-kpis")
 def current_kpis(countries: List[str] = Query(default=[])):
-    """
-    For each country (optionally filtered), compute:
-    - min, max over the full series
-    - current (last) price
-    - change_pct from first to current
-    - last_date (for display)
-    """
+
     match = {"product": PRODUCT}
     if countries:
         match["country"] = {"$in": countries}
@@ -252,7 +226,7 @@ def current_kpis(countries: List[str] = Query(default=[])):
             "min":  {"$round": ["$min_price", 2]},
             "max":  {"$round": ["$max_price", 2]},
             "current": {"$round": ["$last_price", 2]},
-            "last_date":  "$last_date",
+            "last_date": "$last_date",
             "change_pct": {
                 "$cond": [
                     {"$or": [{"$eq": ["$first_price", 0]}, {"$eq": ["$first_price", None]}]},
@@ -271,8 +245,9 @@ def current_kpis(countries: List[str] = Query(default=[])):
     ]
     return list(charcoal_collection.aggregate(pipeline))
 
+
 # ----------------------------------------------------------------------------
-# ✅ TEST + CLEAR
+# ✅ Test + Clear Data (DEV ONLY)
 # ----------------------------------------------------------------------------
 @app.get("/test-db")
 def test_db():
@@ -282,6 +257,7 @@ def test_db():
 def clear_data():
     deleted = charcoal_collection.delete_many({"product": PRODUCT})
     return {"deleted": deleted.deleted_count}
+
 
 @app.get("/")
 def root():

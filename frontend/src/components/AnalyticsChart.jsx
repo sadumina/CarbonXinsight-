@@ -1,4 +1,4 @@
-// ✅ TradingView-style Analytics + KPIs + Compare Drawer + Downloads
+// ✅ TradingView-style Analytics + KPIs + Compare Drawer + Backend Date Filtering
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import Highcharts from "highcharts/highstock";
@@ -6,12 +6,10 @@ import HighchartsReact from "highcharts-react-official";
 import "./AnalyticsChart.css";
 import HaycarbLogo from "../assets/haycarb-logo.png";
 
-
-// ── Highcharts modules (robust init across ESM/CJS) ──────────────────────────
+// Highcharts modules
 import Exporting from "highcharts/modules/exporting";
 import ExportData from "highcharts/modules/export-data";
 import OfflineExporting from "highcharts/modules/offline-exporting";
-// import Accessibility from "highcharts/modules/accessibility";
 
 function initHC(mod) {
   if (typeof mod === "function") mod(Highcharts);
@@ -20,11 +18,11 @@ function initHC(mod) {
 initHC(Exporting);
 initHC(ExportData);
 initHC(OfflineExporting);
-// initHC(Accessibility);
 
-const API = "http://localhost:8000"; // FastAPI backend
+// Backend
+const API = "http://localhost:8000";
 
-// Tiny format helpers for the chips
+// Helpers
 const fmtUsd = (v) => (v == null ? "—" : `$${Number(v).toFixed(2)}`);
 const fmtPct = (v) => (v == null ? "—" : `${Number(v).toFixed(2)}%`);
 
@@ -33,60 +31,65 @@ export default function AnalyticsChart() {
 
   const [countries, setCountries] = useState([]);
   const [selected, setSelected] = useState([]);
-  const [seriesData, setSeriesData] = useState([]);   // Highcharts series
-  const [rawSeries, setRawSeries] = useState({});     // { country: [{ts, price}, ...] }
 
-  // KPI chips
+  const [seriesData, setSeriesData] = useState([]);
+  const [rawSeries, setRawSeries] = useState({});
+
   const [kpis, setKpis] = useState([]);
-  const [globalSummary, setGlobalSummary] = useState(null); // market min/max/+change%
+  const [globalSummary, setGlobalSummary] = useState(null);
+
+  // ✅ NEW: backend date filtering values
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   // Comparison drawer
-  const [startDate, setStartDate] = useState(""); // yyyy-mm-dd
   const [compareAt, setCompareAt] = useState(null);
   const [rows, setRows] = useState([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // ───────────────────────────────────────────────────────────
-  // Boot: load markets + global summary
-  // ───────────────────────────────────────────────────────────
+  // Load markets and global summary once
   useEffect(() => {
     (async () => {
       const { data: list = [] } = await axios.get(`${API}/countries`);
       setCountries(list);
       setSelected(list.slice(0, 3));
-      axios.get(`${API}/analytics/market-kpis`)
-        .then((res) => setGlobalSummary(res.data || null))
-        .catch(() => setGlobalSummary(null));
+
+      axios.get(`${API}/analytics/market-kpis`).then((res) => {
+        setGlobalSummary(res.data || null);
+      });
     })();
   }, []);
 
-  // Refresh KPI chips whenever selection changes
+  // Refresh KPI chips
   useEffect(() => {
     if (!selected.length) return;
+
     axios
       .get(`${API}/analytics/current-kpis`, { params: { countries: selected } })
-      .then((res) => setKpis(res.data || []))
-      .catch(() => setKpis([]));
+      .then((res) => setKpis(res.data || []));
   }, [selected]);
 
-  // ───────────────────────────────────────────────────────────
-  // Fetch time series from PDF DB
-  // ───────────────────────────────────────────────────────────
+  // ✅ Load time series from backend (WITH DATE FILTER)
   useEffect(() => {
     if (!selected.length) return;
 
-    axios.get(`${API}/series`, { params: { countries: selected } }).then((res) => {
+    const url = new URL(`${API}/series`);
+    url.searchParams.set("countries", selected.join(","));
+
+    if (fromDate) url.searchParams.set("fromDate", fromDate);
+    if (toDate) url.searchParams.set("toDate", toDate);
+
+    axios.get(url.toString()).then((res) => {
       const grouped = {}; // country -> [{ts, price}]
+
       (res.data || []).forEach((p) => {
         const ts = new Date(p.date).getTime();
         if (!grouped[p.country]) grouped[p.country] = [];
         grouped[p.country].push({ ts, price: p.price });
       });
 
-      // sort each array by timestamp
       Object.values(grouped).forEach((arr) => arr.sort((a, b) => a.ts - b.ts));
 
-      // Highcharts format
       const hc = Object.keys(grouped).map((c) => ({
         name: c,
         data: grouped[c].map((pt) => [pt.ts, pt.price]),
@@ -95,25 +98,14 @@ export default function AnalyticsChart() {
 
       setRawSeries(grouped);
       setSeriesData(hc);
-
-      // Default Start Date to earliest data point
-      if (!startDate) {
-        const all = Object.values(grouped).flat();
-        if (all.length) {
-          const minTs = Math.min(...all.map((pt) => pt.ts));
-          setStartDate(new Date(minTs).toISOString().slice(0, 10));
-        }
-      }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
+  }, [selected, fromDate, toDate]);
 
-  // ───────────────────────────────────────────────────────────
-  // Helpers for comparison logic
-  // ───────────────────────────────────────────────────────────
+  // ───── Comparison Logic ───────────────────────────────
   const nearest = (arr, ts) => {
     if (!arr.length) return null;
-    let lo = 0, hi = arr.length - 1;
+    let lo = 0,
+      hi = arr.length - 1;
     while (lo < hi) {
       const mid = (lo + hi) >> 1;
       if (arr[mid].ts < ts) lo = mid + 1;
@@ -121,55 +113,61 @@ export default function AnalyticsChart() {
     }
     const a = arr[Math.max(0, lo - 1)];
     const b = arr[Math.min(arr.length - 1, lo)];
-    return Math.abs((a?.ts ?? Infinity) - ts) <= Math.abs((b?.ts ?? Infinity) - ts) ? a : b;
+    return Math.abs((a?.ts ?? Infinity) - ts) <= Math.abs((b?.ts ?? Infinity) - ts)
+      ? a
+      : b;
   };
 
   const betweenStats = (arr, tsStart, tsEnd) => {
     const slice = arr.filter((pt) => pt.ts >= tsStart && pt.ts <= tsEnd);
     if (!slice.length) return { min: null, max: null, avg: null };
-    let min = slice[0].price, max = slice[0].price, sum = 0;
+
+    let min = slice[0].price,
+      max = slice[0].price,
+      sum = 0;
+
     slice.forEach((pt) => {
       if (pt.price < min) min = pt.price;
       if (pt.price > max) max = pt.price;
       sum += pt.price;
     });
+
     return { min, max, avg: sum / slice.length };
   };
 
-  // Build comparison rows when the user clicks a point
   const buildComparison = (clickedTs) => {
-    if (!startDate) return;
-    const startTs = new Date(startDate).getTime();
-    const from = Math.min(startTs, clickedTs);
-    const to = Math.max(startTs, clickedTs);
+    const from = new Date(fromDate).getTime();
+    const to = clickedTs;
 
-    const data = Object.keys(rawSeries)
-      .map((country) => {
-        const arr = rawSeries[country] || [];
-        if (!arr.length) return null;
+    const data = Object.keys(rawSeries).map((country) => {
+      const arr = rawSeries[country] || [];
+      if (!arr.length) return null;
 
-        const startPt = nearest(arr, startTs);
-        const endPt = nearest(arr, clickedTs);
-        const { min, max, avg } = betweenStats(arr, from, to);
+      const startPt = nearest(arr, from);
+      const endPt = nearest(arr, to);
+      const { min, max, avg } = betweenStats(arr, from, to);
 
-        const start = startPt?.price ?? null;
-        const end = endPt?.price ?? null;
-        const delta = start != null && end != null ? end - start : null;
-        const pct =
-          start != null && end != null && start !== 0 ? ((end - start) / start) * 100 : null;
-
-        return { country, start, end, delta, pct, min, max, avg };
-      })
-      .filter(Boolean);
+      return {
+        country,
+        start: startPt?.price,
+        end: endPt?.price,
+        delta: endPt?.price - startPt?.price,
+        pct:
+          startPt?.price && endPt?.price
+            ? ((endPt.price - startPt.price) / startPt.price) * 100
+            : null,
+        min,
+        max,
+        avg,
+      };
+    });
 
     setRows(data);
     setCompareAt(clickedTs);
     setDrawerOpen(true);
   };
 
-  // ───────────────────────────────────────────────────────────
-  // Highcharts (TradingView-like)
-  // ───────────────────────────────────────────────────────────
+  // ───── HighCharts Config ──────────────────────────────
   const highchartsOptions = useMemo(
     () => ({
       chart: { backgroundColor: "#0d1117", height: 620 },
@@ -183,41 +181,30 @@ export default function AnalyticsChart() {
           { type: "ytd", text: "YTD" },
           { type: "all", text: "ALL" },
         ],
-        buttonTheme: {
-          fill: "none",
-          style: { color: "#00ffd5" },
-          states: { select: { fill: "#00ffd5", style: { color: "#000" } } },
-        },
       },
       xAxis: { labels: { style: { color: "#aaa" } } },
       yAxis: {
-        title: { text: "USD / MT", style: { color: "#00ffd5" } },
+        title: { text: "USD / MT", style: { color: "#6CD17A" } },
         labels: { style: { color: "#fff" } },
-        gridLineColor: "rgba(0,255,213,0.06)",
+        gridLineColor: "rgba(255,255,255,0.05)",
       },
-      legend: { enabled: true, itemStyle: { color: "#00ffd5", fontWeight: "bold" } },
+      legend: { enabled: true, itemStyle: { color: "#6CD17A" } },
       tooltip: {
         shared: true,
         backgroundColor: "#111",
-        borderColor: "#00ffd5",
+        borderColor: "#6CD17A",
         style: { color: "white" },
       },
       exporting: {
         enabled: true,
-        // You still get the default context menu on the chart
         buttons: {
           contextButton: {
             menuItems: [
               "viewFullscreen",
-              "separator",
               "downloadPNG",
               "downloadJPEG",
               "downloadPDF",
-              "downloadSVG",
-              "separator",
               "downloadCSV",
-              "downloadXLS",
-              "viewData",
             ],
           },
         },
@@ -228,7 +215,7 @@ export default function AnalyticsChart() {
           point: {
             events: {
               click: function () {
-                buildComparison(this.x); // this.x is timestamp
+                buildComparison(this.x);
               },
             },
           },
@@ -236,86 +223,88 @@ export default function AnalyticsChart() {
       },
       series: seriesData,
     }),
-    [seriesData, startDate, rawSeries]
+    [seriesData]
   );
 
-  // ───────────────────────────────────────────────────────────
-  // UI actions
-  // ───────────────────────────────────────────────────────────
+  // ───── Actions ──────────────────────────────
   const resetFilters = () => {
-    const defaults = countries.slice(0, 3);
-    setSelected(defaults);
-    setStartDate("");
+    setSelected(countries.slice(0, 3));
+    setFromDate("");
+    setToDate("");
     setDrawerOpen(false);
   };
 
-  const downloadPNG = () => {
-    const chart = chartRef.current?.chart;
-    if (chart?.exportChartLocal) {
-      chart.exportChartLocal({ type: "image/png", filename: "carbonxinsight-chart" });
-    } else if (chart?.exportChart) {
-      chart.exportChart({ type: "image/png", filename: "carbonxinsight-chart" });
-    }
-  };
+  const downloadPNG = () => chartRef.current?.chart?.exportChartLocal();
+  const downloadCSV = () => chartRef.current?.chart?.downloadCSV();
 
-  const downloadCSV = () => {
-    const chart = chartRef.current?.chart;
-    if (chart?.downloadCSV) chart.downloadCSV();
-  };
-
+  // ───── JSX ────────────────────────────────
   return (
     <section className="panel">
-      {/* Header / Filters */}
-    <header className="panel-head compact">
 
-  {/* ✅ Left side: Logo + Title */}
-  <div className="brand-left">
-    <img src={HaycarbLogo} alt="Haycarb Logo" className="brand-logo" />
+      {/* ---------------- Header / Filters ---------------- */}
+      <header className="panel-head compact">
 
-    <div className="title-wrap">
-      <h2>TradingView — Coconut Shell Charcoal Market</h2>
-    </div>
-  </div>
+        <div className="brand-left">
+          <img src={HaycarbLogo} alt="Haycarb Logo" className="brand-logo" />
+          <div className="title-wrap">
+            <h2>CarbonXInsight — Market Analytics</h2>
+            <div className="subtitle">Haycarb • Coconut Shell Charcoal</div>
+          </div>
+        </div>
 
-  {/* ✅ Right side: Filters + Reset + Download buttons */}
-  <div className="filters-row">
-    <label className="filter">
-      <span>Markets</span>
-      <select
-        multiple
-        value={selected}
-        onChange={(e) =>
-          setSelected(Array.from(e.target.selectedOptions, (o) => o.value))
-        }
-      >
-        {countries.map((c) => (
-          <option key={c} value={c}>{c}</option>
-        ))}
-      </select>
-    </label>
+        <div className="filters-row">
+          {/* Countries multiselect */}
+          <label className="filter">
+            <span>Markets</span>
+            <select
+              multiple
+              value={selected}
+              onChange={(e) =>
+                setSelected(Array.from(e.target.selectedOptions, (o) => o.value))
+              }
+            >
+              {countries.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </label>
 
-    <label className="filter">
-      <span>Start Date</span>
-      <input
-        type="date"
-        className="date-input"
-        value={startDate}
-        onChange={(e) => setStartDate(e.target.value)}
-      />
-    </label>
+          {/* ✅ NEW: date from */}
+          <label className="filter">
+            <span>From</span>
+            <input
+              type="date"
+              className="date-input"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+            />
+          </label>
 
-    <button className="btn-pill" onClick={resetFilters}>Reset</button>
+          {/* ✅ NEW: date to */}
+          <label className="filter">
+            <span>To</span>
+            <input
+              type="date"
+              className="date-input"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+            />
+          </label>
 
-    {/* ✅ Download buttons here */}
-    <div className="download-bar">
-      <button className="btn-ghost" onClick={downloadPNG}>PNG</button>
-      <button className="btn-ghost" onClick={downloadCSV}>CSV</button>
-    </div>
-  </div>
-</header>
+          <button className="btn-pill" onClick={resetFilters}>
+            Reset
+          </button>
 
+          <div className="download-bar">
+            <button className="btn-ghost" onClick={downloadPNG}>PNG</button>
+            <button className="btn-ghost" onClick={downloadCSV}>CSV</button>
+          </div>
+        </div>
+      </header>
 
-      {/* KPI: Market Summary */}
+      {/* Global Summary Chip */}
       {globalSummary && (
         <div className="kpi-chips" style={{ marginTop: 0 }}>
           <div className="kpi-chip">
@@ -347,12 +336,12 @@ export default function AnalyticsChart() {
         </div>
       )}
 
-      {/* KPI: Country chips */}
+      {/* Country KPI chips */}
       <div className="kpi-chips">
         {kpis.map((k) => {
           const up = (k.change_pct ?? 0) >= 0;
           return (
-            <div key={k.country} className="kpi-chip" title={k.country}>
+            <div key={k.country} className="kpi-chip">
               <div className="chip-top">
                 <span className={`dot ${up ? "up" : "down"}`} />
                 <span className="chip-country">{k.country}</span>
@@ -377,7 +366,7 @@ export default function AnalyticsChart() {
         })}
       </div>
 
-      {/* TradingView Graph */}
+      {/* Highcharts */}
       <HighchartsReact
         ref={chartRef}
         highcharts={Highcharts}
@@ -385,13 +374,17 @@ export default function AnalyticsChart() {
         options={highchartsOptions}
       />
 
-      {/* Comparison Drawer / Table */}
+      {/* Comparison Drawer */}
       {drawerOpen && (
         <div className="compare-drawer">
           <div className="compare-head">
             <h3>
-              Comparison • From <b>{startDate || "—"}</b> to{" "}
-              <b>{compareAt ? new Date(compareAt).toISOString().slice(0, 10) : "—"}</b>
+              Comparison • From <b>{fromDate}</b> to{" "}
+              <b>
+                {compareAt
+                  ? new Date(compareAt).toISOString().slice(0, 10)
+                  : "—"}
+              </b>
             </h3>
             <button className="close" onClick={() => setDrawerOpen(false)}>
               ×
@@ -416,21 +409,25 @@ export default function AnalyticsChart() {
                 {rows.map((r) => (
                   <tr key={r.country}>
                     <td>{r.country}</td>
-                    <td>{r.start != null ? `$${r.start.toFixed(2)}` : "—"}</td>
-                    <td>{r.end != null ? `$${r.end.toFixed(2)}` : "—"}</td>
+                    <td>{fmtUsd(r.start)}</td>
+                    <td>{fmtUsd(r.end)}</td>
                     <td className={r.delta >= 0 ? "pos" : "neg"}>
                       {r.delta != null
-                        ? `${r.delta >= 0 ? "+" : "-"}$${Math.abs(r.delta).toFixed(2)}`
+                        ? `${r.delta >= 0 ? "+" : "-"}$${Math.abs(r.delta).toFixed(
+                            2
+                          )}`
                         : "—"}
                     </td>
                     <td className={r.pct >= 0 ? "pos" : "neg"}>
                       {r.pct != null
-                        ? `${r.pct >= 0 ? "+" : "-"}${Math.abs(r.pct).toFixed(2)}%`
+                        ? `${r.pct >= 0 ? "+" : "-"}${Math.abs(r.pct).toFixed(
+                            2
+                          )}%`
                         : "—"}
                     </td>
-                    <td>{r.min != null ? `$${r.min.toFixed(2)}` : "—"}</td>
-                    <td>{r.max != null ? `$${r.max.toFixed(2)}` : "—"}</td>
-                    <td>{r.avg != null ? `$${r.avg.toFixed(2)}` : "—"}</td>
+                    <td>{fmtUsd(r.min)}</td>
+                    <td>{fmtUsd(r.max)}</td>
+                    <td>{fmtUsd(r.avg)}</td>
                   </tr>
                 ))}
               </tbody>

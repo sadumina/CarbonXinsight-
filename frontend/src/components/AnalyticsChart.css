@@ -99,7 +99,6 @@ body{background:var(--bg-primary); color:var(--text-primary); font-family:Inter,
 }
 .kpi-chip{
   background:linear-gradient(180deg,var(--bg-secondary),var(--bg-tertiary));
-  border:1px solid rgba(255,255,255,.06);
   border-radius:12px; padding:12px 14px; box-shadow:var(--shadow-1);
 }
 .chip-top{display:flex; align-items:center; gap:8px; margin-bottom:8px}

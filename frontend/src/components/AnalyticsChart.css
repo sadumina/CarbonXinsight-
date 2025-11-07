@@ -1,263 +1,302 @@
-/* ═══════════════════════════════════════════════════════════
-   CarbonXInsight – TradingView Analytics Styles
-   Compact KPI chips + filters + comparison drawer + downloads
-   ═══════════════════════════════════════════════════════════ */
+/* =========================
+   CarbonXInsight — Analytics.css
+   Brand tokens + Panels + Header + Filters + KPIs + Drawer + Chart tweaks
+   ========================= */
 
 :root{
-  --bg-primary:#0d1117;
-  --bg-secondary:#11161d;
-  --bg-tertiary:#0b0f14;
+  /* Page + Panels */
+  --page-bg:#EFEFEF;                  /* light grey page */
+  --panel:#0D1117;                    /* charcoal black */
+  --panel-2:#11161d;
+  --panel-3:#0b0f14;
 
-  --text-primary:#e8eef2;
-  --text-secondary:#9aa4af;
+  /* Text */
+  --text-primary:#E8EEF2;
+  --text-secondary:#9AA4AF;
   --text-muted:#95a0ab;
 
-  --neon:#00ffd5;
-  --neon-soft:rgba(0,255,213,.12);
-  --neon-border:rgba(0,255,213,.25);
+  /* Brand Greens */
+  --brand:#178A33;
+  --brand-soft:#6CD17A;
+  --brand-border:rgba(23,138,51,.32);
+  --brand-glow:rgba(23,138,51,.10);
 
-  --success:#3fb950;
-  --danger:#f85149;
+  /* Status */
+  --success:#2BAA4B;
+  --danger:#F85149;
 
+  /* Radii & Shadows */
   --radius:12px;
   --radius-lg:16px;
-
   --shadow-1:0 6px 18px rgba(0,0,0,.25);
-  --shadow-2:0 12px 36px rgba(0,0,0,.4);
+  --shadow-2:0 12px 36px rgba(0,0,0,.40);
+  --separator:rgba(255,255,255,.08);
 }
 
 *{box-sizing:border-box}
-body{background:var(--bg-primary); color:var(--text-primary); font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;}
-.panel{max-width:1400px; margin:0 auto; padding:24px 18px}
+html,body,#root{height:100%}
+body{
+  margin:0;
+  background:var(--page-bg);
+  color:var(--text-primary);
+  font-family:Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* ---------- Shell / Footer ---------- */
+.shell{min-height:100%; display:flex; flex-direction:column}
+.foot{
+  color:#475062; opacity:.95;
+  padding:40px 24px; text-align:center;
+}
+
+/* ---------- Upload section (light card on light bg) ---------- */
+.upload-wrap{ max-width:1600px; margin:0 auto; padding:24px }
+.upload-card{
+  background:#FFFFFF;
+  border:1px dashed var(--brand-border);
+  border-radius:16px;
+  padding:24px;
+  display:grid; gap:8px;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+}
+.upload-head{ display:flex; align-items:center; gap:12px }
+.upload-icon{
+  width:40px; height:40px; border-radius:12px;
+  background:var(--brand-glow);
+  display:grid; place-items:center; color:var(--brand);
+  border:1px solid var(--brand-border); font-size:20px;
+}
+.upload-cta{
+  margin-top:8px; display:inline-flex; align-items:center; gap:10px;
+  border:1px solid var(--brand-border);
+  border-radius:999px; padding:10px 16px; color:var(--brand);
+  cursor:pointer; background:transparent;
+}
+
+/* ---------- Analytics Panel (dark) ---------- */
+.panel{
+  max-width:3000px;
+  margin:24px auto;
+  padding:24px;
+  background:linear-gradient(180deg,var(--panel-2),var(--panel-3));
+  border:1px solid var(--brand-border);
+  border-radius:16px;
+  box-shadow:var(--shadow-1);
+}
 
 /* ---------- Header ---------- */
 .panel-head.compact{
   display:flex; align-items:center; justify-content:space-between;
-  gap:16px; margin:8px 0 18px;
+  gap:16px; margin:0 0 12px;
 }
-.title-wrap{display:flex; align-items:center; gap:10px}
-.title-wrap h2{margin:0; font-size:22px; font-weight:700; letter-spacing:.2px}
-.title-badge{
-  display:inline-grid; place-items:center; width:32px; height:32px;
-  border-radius:10px; background:var(--neon-soft);
-  border:1px solid var(--neon-border); color:var(--neon); font-size:16px;
-}
+.brand-left{ display:flex; align-items:center; gap:12px }
+.brand-logo{ height:28px; width:auto; object-fit:contain }
+.title-wrap h2{ margin:0; font-size:20px; font-weight:700; letter-spacing:.2px; color:#E8EEF2 }
+.subtitle{ margin-top:2px; font-size:12px; color:var(--brand-soft) }
 
 /* ---------- Filters ---------- */
-.filters-row{display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap}
-.filter{display:flex; flex-direction:column; gap:6px; min-width:210px}
-.filter>span{font-size:12px; letter-spacing:.3px; text-transform:uppercase; color:var(--text-secondary)}
+.filters-row{ display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap }
+.filter{ display:flex; flex-direction:column; gap:6px; min-width:210px }
+.filter>span{
+  font-size:12px; letter-spacing:.3px; text-transform:uppercase;
+  color:var(--text-secondary)
+}
 
 .filter select[multiple]{
-  height:44px; min-width:260px; color:var(--text-primary);
-  background:linear-gradient(180deg,var(--bg-secondary),var(--bg-tertiary));
-  border:1px solid var(--neon-border); border-radius:10px; outline:none;
-  padding:8px 10px; box-shadow:inset 0 0 0 1px rgba(0,255,213,.08);
+  height:44px; min-width:260px;
+  color:var(--text-primary);
+  background:linear-gradient(180deg,var(--panel-2),var(--panel-3));
+  border:1px solid var(--brand-border);
+  border-radius:10px; outline:none; padding:8px 10px;
+  box-shadow:inset 0 0 0 1px var(--brand-glow);
   transition:box-shadow .2s,border-color .2s,height .2s;
-  scrollbar-width:thin; scrollbar-color:var(--neon) var(--bg-secondary);
+  scrollbar-width:thin;
 }
-.filter select[multiple]:focus{border-color:var(--neon); box-shadow:0 0 0 3px rgba(0,255,213,.12)}
+.filter select[multiple]:focus{
+  border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-glow);
+}
 .filter select[multiple]:hover,
-.filter select[multiple]:focus{height:160px}
-.filter select option{padding:8px; background:#0f141b}
-.filter select option:checked{background:rgba(0,255,213,.22); color:var(--neon)}
+.filter select[multiple]:focus{ height:160px }
+.filter select option{ padding:8px; background:#0f141b }
+.filter select option:checked{ background:rgba(23,138,51,.22); color:var(--brand-soft) }
 
 .date-input{
   height:44px; min-width:180px;
-  background:var(--bg-secondary); color:var(--text-primary);
-  border:1px solid var(--neon-border); border-radius:10px; outline:none;
-  padding:0 12px; transition:box-shadow .2s,border-color .2s;
+  background:var(--panel-2); color:var(--text-primary);
+  border:1px solid var(--brand-border);
+  border-radius:10px; outline:none; padding:0 12px;
+  transition:box-shadow .2s,border-color .2s;
 }
-.date-input:focus{border-color:var(--neon); box-shadow:0 0 0 3px rgba(0,255,213,.12)}
-.date-input::-webkit-calendar-picker-indicator{filter:invert(1); cursor:pointer}
+.date-input:focus{ border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-glow) }
+.date-input::-webkit-calendar-picker-indicator{ filter:invert(1); cursor:pointer }
 
-/* Reset + Download buttons */
+/* Buttons */
 .btn-pill{
   height:44px; padding:0 16px; border-radius:999px; cursor:pointer;
-  border:1px solid var(--neon-border);
-  background:linear-gradient(180deg, rgba(0,255,213,.10), rgba(0,255,213,.05));
-  color:#bfffe8; font-weight:600; letter-spacing:.3px;
+  border:1px solid var(--brand-border);
+  background:linear-gradient(180deg,var(--brand-glow), rgba(255,255,255,.03));
+  color:var(--brand-soft); font-weight:600; letter-spacing:.3px;
   transition:transform .12s, box-shadow .2s, border-color .2s;
 }
-.btn-pill:hover{ transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,255,213,.12) }
-.btn-pill:active{ transform:translateY(0) }
+.btn-pill:hover{ transform:translateY(-1px); box-shadow:0 4px 16px var(--brand-glow) }
 
-.download-bar{display:flex; gap:8px}
+.download-bar{ display:flex; gap:8px }
 .btn-ghost{
   height:44px; padding:0 14px; border-radius:10px; cursor:pointer;
-  border:1px solid rgba(255,255,255,.12);
-  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-  color:#e6eef5; font-weight:600; letter-spacing:.2px;
-  transition:transform .12s, box-shadow .2s, border-color .2s, background .2s;
+  border:1px solid var(--brand-border);
+  background:transparent; color:var(--brand-soft); font-weight:600;
+  transition:background .2s, box-shadow .2s;
 }
-.btn-ghost:hover{ transform:translateY(-1px); border-color:var(--neon-border); box-shadow:0 6px 18px rgba(0,0,0,.25) }
+.btn-ghost:hover{ background:var(--brand-glow); box-shadow:0 4px 14px var(--brand-glow) }
 
-/* ---------- KPI CHIPS (compact) ---------- */
+/* ---------- KPI Chips ---------- */
 .kpi-chips{
   display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:12px; margin:8px 0 16px;
+  gap:12px; margin:12px 0 16px;
 }
 .kpi-chip{
-  background:linear-gradient(180deg,var(--bg-secondary),var(--bg-tertiary));
+  background:linear-gradient(180deg,var(--panel-2),var(--panel-3));
+  border:1px solid var(--separator);
   border-radius:12px; padding:12px 14px; box-shadow:var(--shadow-1);
 }
-.chip-top{display:flex; align-items:center; gap:8px; margin-bottom:8px}
-.dot{width:8px; height:8px; border-radius:50%; box-shadow:0 0 8px currentColor}
-.dot.up{background:var(--success); color:var(--success)}
-.dot.down{background:var(--danger); color:var(--danger)}
-.chip-country{font-weight:600; color:var(--text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.chip-delta{margin-left:auto; font-weight:700}
-.chip-delta.pos{color:var(--success)}
-.chip-delta.neg{color:var(--danger)}
-.chip-row{display:flex; justify-content:space-between; align-items:center; padding:4px 0}
-.chip-row.subtle .chip-label{color:var(--text-muted)}
-.chip-label{font-size:12px; color:var(--text-secondary)}
-.chip-value{font-weight:600}
+.chip-top{ display:flex; align-items:center; gap:8px; margin-bottom:8px }
+.dot{ width:8px; height:8px; border-radius:50%; box-shadow:0 0 8px currentColor }
+.dot.up{ background:var(--success); color:var(--success) }
+.dot.down{ background:var(--danger); color:var(--danger) }
+.chip-country{ font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.chip-delta{ margin-left:auto; font-weight:700 }
+.chip-delta.pos{ color:var(--success) }
+.chip-delta.neg{ color:var(--danger) }
+.chip-row{ display:flex; justify-content:space-between; align-items:center; padding:4px 0 }
+.chip-row.subtle .chip-label{ color:var(--text-muted) }
+.chip-label{ font-size:12px; color:var(--text-secondary) }
+.chip-value{ font-weight:600 }
 
-/* 🚨 FORCE remove inner border to avoid double border */
-.panel > div:first-child {
+/* ---------- Market Summary (collapsible) ---------- */
+.market-summary {
+  background: linear-gradient(180deg, var(--panel-2), var(--panel-3));
+  padding: 10px 14px;
+  /* ✅ Remove border completely, use only internal spacing */
   border: none !important;
   outline: none !important;
+  border-radius: 8px;
+  box-shadow: none !important;
+  margin-bottom: 8px;
 }
-/* Remove Highcharts auto border */
-.highcharts-container {
+
+.market-summary summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  padding: 4px 0;
+
+  /* ✅ Remove default Chrome/Browser summary border */
   border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* ✅ Remove the default dropdown arrow */
+.market-summary summary::-webkit-details-marker {
+  display: none !important;
+}
+
+/* ✅ Meta info */
+.market-summary .meta {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.market-summary .chev {
+  color: var(--brand-soft);
+  font-size: 18px;
+  margin-left: auto;
 }
 
 /* ---------- Comparison Drawer ---------- */
 .compare-drawer{
-  margin-top:18px; background:rgba(22,27,34,.95);
-  border:1px solid var(--neon-border); border-radius:12px;
+  margin-top:18px; background:rgba(13,17,23,.96);
+  border:1px solid var(--brand-border); border-radius:12px;
   overflow:hidden; box-shadow:var(--shadow-2);
 }
 .compare-head{
   display:flex; justify-content:space-between; align-items:center;
-  padding:14px 18px; background:linear-gradient(90deg, var(--neon-soft), transparent);
+  padding:14px 18px;
+  background:linear-gradient(90deg, var(--brand-glow), transparent);
 }
-.compare-head h3{margin:0; font-size:16px; color:#eafbf7}
+.compare-head h3{ margin:0; font-size:16px; color:#eafbf7 }
 .compare-head .close{
   background:transparent; border:none; color:#cdd6df; font-size:22px;
   width:32px; height:32px; border-radius:50%; cursor:pointer;
 }
-.compare-head .close:hover{background:rgba(255,255,255,.06); color:#fff}
+.table-wrap{ overflow-x:auto }
+.compare-table{ width:100%; border-collapse:collapse; font-size:14px }
+.compare-table th, .compare-table td{
+  padding:10px 12px; border-top:1px solid rgba(255,255,255,.06)
+}
+.compare-table thead th{ text-align:left; color:var(--brand-soft) }
+.compare-table tbody tr:hover{ background:rgba(255,255,255,.03) }
+.compare-table .pos{ color:var(--success); font-weight:600 }
+.compare-table .neg{ color:var(--danger); font-weight:600 }
 
-.table-wrap{overflow-x:auto}
-.compare-table{width:100%; border-collapse:collapse; font-size:14px}
-.compare-table th, .compare-table td{padding:10px 12px; border-top:1px solid rgba(255,255,255,.06)}
-.compare-table thead th{text-align:left; color:var(--neon)}
-.compare-table tbody tr:hover{background:rgba(255,255,255,.03)}
-.compare-table .pos{color:var(--success); font-weight:600}
-.compare-table .neg{color:var(--danger); font-weight:600}
-
-/* ---------- Highcharts Tweaks ---------- */
-.highcharts-background{fill:var(--bg-primary)}
-.highcharts-legend-item text{fill:var(--neon) !important; font-weight:600}
-.highcharts-title, .highcharts-subtitle{fill:var(--text-primary) !important}
-.highcharts-tooltip text{fill:#fff}
-.highcharts-range-selector-buttons text{fill:var(--neon)}
-.highcharts-range-selector-buttons .highcharts-button-box{stroke:none; fill:none}
-.highcharts-range-selector-buttons .highcharts-button-pressed .highcharts-button-box{fill:var(--neon); opacity:1}
-.highcharts-range-selector-buttons .highcharts-button-pressed text{fill:#000}
+/* ---------- Highcharts dark tweaks (TradingView vibe) ---------- */
+.highcharts-background{ fill:var(--panel) }
+.highcharts-title, .highcharts-subtitle{ fill:var(--text-primary) !important }
+.highcharts-tooltip text{ fill:#fff }
+.highcharts-grid-line{ stroke:rgba(255,255,255,.06) }
+.highcharts-axis-line{ stroke:rgba(255,255,255,.06) }
+.highcharts-axis-labels text{ fill:var(--text-secondary) }
+.highcharts-legend-item text{ fill:var(--text-primary) }
+.highcharts-range-selector-buttons text{ fill:var(--brand-soft) }
+.highcharts-range-selector-buttons .highcharts-button-box{ stroke:none; fill:none }
+.highcharts-range-selector-buttons .highcharts-button-pressed .highcharts-button-box{
+  fill:var(--brand-soft); opacity:1
+}
+.highcharts-range-selector-buttons .highcharts-button-pressed text{ fill:#0D1117 }
+.highcharts-navigator-mask-outside{ fill:transparent }
+.highcharts-navigator-mask-inside{ fill:rgba(23,138,51,0.2) }
+.highcharts-navigator-outline{ stroke:var(--brand-border) }
+.highcharts-scrollbar{ stroke:rgba(255,255,255,.15) }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 900px){
-  .panel-head.compact{flex-direction:column; align-items:flex-start}
-  .filters-row{width:100%}
-  .filter{min-width:unset; width:100%}
-  .filter select[multiple]{width:100%}
-  .date-input{width:100%}
-  .download-bar{width:100%; justify-content:flex-start; flex-wrap:wrap}
-}
-/* ========== Responsive Layout Additions ========== */
-
-/* Utility: horizontal scroll when needed */
-.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.scroll-x::-webkit-scrollbar { height: 8px; }
-.scroll-x::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 8px; }
-
-/* Panel container scales with screen */
-.panel { padding: clamp(12px, 2.5vw, 24px); max-width: min(1400px, 96vw); }
-
-/* Header becomes a neat grid on medium screens */
-@media (max-width: 1200px) {
-  .panel-head.compact {
-    display: grid;
-    grid-template-columns: 1fr;
-    row-gap: 14px;
-  }
-  .filters-row {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-  }
-  .btn-pill { justify-self: start; }
+  .panel{ padding:18px }
+  .filters-row{ gap:10px }
+  .filter{ min-width:160px }
+  .kpi-chips{ grid-template-columns:1fr }
+  .compare-head{ padding:12px 14px }
 }
 
-/* Tablets */
-@media (max-width: 900px) {
-  .title-wrap h2 { font-size: 20px; }
-  .filters-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .filter select[multiple] { height: 56px; }      /* compact */
-  .filter select[multiple]:hover,
-  .filter select[multiple]:focus { height: 140px; } /* still usable */
-  .kpi-chips {
-    grid-template-columns: repeat(2, minmax(220px, 1fr));
-    gap: 10px;
-  }
-  .compare-table { font-size: 13px; }
+@media (max-width: 600px){
+  .panel{ padding:16px }
+  .title-wrap h2{ font-size:18px }
+  .subtitle{ font-size:11px }
+  .brand-logo{ height:24px }
+  .filters-row{ flex-direction:row; gap:8px }
+  .filter select[multiple]{ min-width:220px }
+  .btn-pill, .btn-ghost{ height:40px }
+  .upload-wrap{ padding:16px }
+  .upload-card{ padding:18px }
 }
-
-/* Phones */
-@media (max-width: 600px) {
-  .title-wrap h2 { font-size: 18px; }
-  .filters-row {
-    grid-template-columns: 1fr;
-  }
-  .filter { min-width: unset; width: 100%; }
-  .date-input, .filter select[multiple], .btn-pill { width: 100%; }
-  .kpi-chips {
-    grid-auto-flow: column;
-    grid-auto-columns: 85%;
-    display: grid;
-    overflow-x: auto;
-    gap: 10px;
-    padding-bottom: 4px;
-  }
-  .kpi-chip { min-width: 260px; }
-  .compare-drawer { border-radius: 10px; }
-  .compare-head h3 { font-size: 14px; }
-  .compare-table th, .compare-table td { padding: 8px 10px; }
-}
-
-/* Very small phones */
-@media (max-width: 380px) {
-  .title-wrap h2 { font-size: 16px; }
-  .kpi-chip { min-width: 240px; }
-}
-
-/* Touch targets & hover-safety */
-@media (hover: none) {
-  .btn-pill:hover { transform: none; box-shadow: none; }
-  .kpi-chip:hover { transform: none; }
-}
-
-/* Avoid double borders & keep single premium frame */
-.panel {
-  border: 1px solid rgba(0,255,213,.18);
-  border-radius: 16px;
-  background: linear-gradient(180deg, var(--bg-secondary), var(--bg-tertiary));
-  box-shadow: 0 8px 28px rgba(0,0,0,.35);
-}
-.panel > .card-wrapper,
-.panel > .panel-inner,
-.panel > div:first-child:not(.panel-head) {
+/* Fix double-border issue */
+/* Remove extra border from outer panel (Upload wrapper) */
+.chart-panel.panel {
   border: none !important;
+  padding: 0 !important;            /* keep spacing consistent */
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
-/* Highcharts mobile typography */
-@media (max-width: 600px) {
-  .highcharts-axis-labels text { font-size: 11px !important; }
-  .highcharts-range-selector-buttons text { font-size: 11px !important; }
+/* Make inner ANALYTICS panel the only real panel */
+.chart-panel .panel {
+  border: 1px solid var(--brand-border) !important;
+  padding: 24px !important;
+  background: linear-gradient(180deg, var(--panel-2), var(--panel-3)) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-1) !important;
 }

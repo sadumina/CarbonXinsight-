@@ -4,6 +4,8 @@ import axios from "axios";
 import Highcharts from "highcharts/highstock";
 import HighchartsReact from "highcharts-react-official";
 import "./AnalyticsChart.css";
+import HaycarbLogo from "../assets/haycarb-logo.png";
+
 
 // ── Highcharts modules (robust init across ESM/CJS) ──────────────────────────
 import Exporting from "highcharts/modules/exporting";
@@ -264,50 +266,54 @@ export default function AnalyticsChart() {
   return (
     <section className="panel">
       {/* Header / Filters */}
-      <header className="panel-head compact">
-        <div className="title-wrap">
-          <span className="title-badge">📈</span>
-          <h2>TradingView — Coconut Shell Charcoal Market</h2>
-        </div>
+    <header className="panel-head compact">
 
-        <div className="filters-row">
-          <label className="filter">
-            <span>Markets</span>
-            <select
-              multiple
-              value={selected}
-              onChange={(e) =>
-                setSelected(Array.from(e.target.selectedOptions, (o) => o.value))
-              }
-            >
-              {countries.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </label>
+  {/* ✅ Left side: Logo + Title */}
+  <div className="brand-left">
+    <img src={HaycarbLogo} alt="Haycarb Logo" className="brand-logo" />
 
-          <label className="filter">
-            <span>Start Date</span>
-            <input
-              type="date"
-              className="date-input"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-          </label>
+    <div className="title-wrap">
+      <h2>TradingView — Coconut Shell Charcoal Market</h2>
+    </div>
+  </div>
 
-          <button className="btn-pill" onClick={resetFilters}>
-            Reset
-          </button>
+  {/* ✅ Right side: Filters + Reset + Download buttons */}
+  <div className="filters-row">
+    <label className="filter">
+      <span>Markets</span>
+      <select
+        multiple
+        value={selected}
+        onChange={(e) =>
+          setSelected(Array.from(e.target.selectedOptions, (o) => o.value))
+        }
+      >
+        {countries.map((c) => (
+          <option key={c} value={c}>{c}</option>
+        ))}
+      </select>
+    </label>
 
-          <div className="download-bar">
-            <button className="btn-ghost" onClick={downloadPNG}>Download PNG</button>
-            <button className="btn-ghost" onClick={downloadCSV}>Download CSV</button>
-          </div>
-        </div>
-      </header>
+    <label className="filter">
+      <span>Start Date</span>
+      <input
+        type="date"
+        className="date-input"
+        value={startDate}
+        onChange={(e) => setStartDate(e.target.value)}
+      />
+    </label>
+
+    <button className="btn-pill" onClick={resetFilters}>Reset</button>
+
+    {/* ✅ Download buttons here */}
+    <div className="download-bar">
+      <button className="btn-ghost" onClick={downloadPNG}>PNG</button>
+      <button className="btn-ghost" onClick={downloadCSV}>CSV</button>
+    </div>
+  </div>
+</header>
+
 
       {/* KPI: Market Summary */}
       {globalSummary && (

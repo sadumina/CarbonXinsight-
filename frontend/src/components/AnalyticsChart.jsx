@@ -283,8 +283,8 @@ export default function AnalyticsChart() {
               <b>{compareAt ? new Date(compareAt).toISOString().slice(0, 10) : "—"}</b>
             </h3>
             <div className="drawer-actions">
-              <button className="btn-ghost" onClick={exportComparisonExcel}>📊 Excel</button>
-              <button className="btn-ghost" onClick={exportComparisonPDF}>📄 PDF</button>
+              <button className="btn-ghost" onClick={exportComparisonExcel}>Excel</button>
+              <button className="btn-ghost" onClick={exportComparisonPDF}>PDF</button>
               <button className="close" onClick={() => setDrawerOpen(false)}>×</button>
             </div>
           </div>

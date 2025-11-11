@@ -1,33 +1,35 @@
 // src/components/Sidebar.jsx
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
+import Logo from "../assets/haycarb-logo.png"; // optional
 
 export default function Sidebar() {
   return (
-    <nav className="side">
-      <div className="side-brand">CarbonXInsight</div>
+    <div className="sidebar">
+      <div className="sidebar-header">
+        <img src={Logo} alt="logo" className="sidebar-logo" />
+        <span className="app-name">CarbonXInsight</span>
+      </div>
 
-      <ul className="side-nav">
-        <li>
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) => "side-link" + (isActive ? " active" : "")}
-          >
-            📊 Dashboard
-          </NavLink>
-        </li>
-        <li>
-          <NavLink
-            to="/upload"
-            className={({ isActive }) => "side-link" + (isActive ? " active" : "")}
-          >
-            ⬆ Data Upload
-          </NavLink>
-        </li>
-        <li>
-          <span className="side-link disabled">⚙ Settings (soon)</span>
-        </li>
-      </ul>
-    </nav>
+      {/* NOTE: no <ul>/<li>; just links */}
+      <nav className="sidebar-menu">
+        <NavLink
+          to="/dashboard"
+          end
+          className={({ isActive }) => `sidebar-item ${isActive ? "active" : ""}`}
+        >
+          📊 Dashboard
+        </NavLink>
+
+        <NavLink
+          to="/upload"
+          className={({ isActive }) => `sidebar-item ${isActive ? "active" : ""}`}
+        >
+          ⬆ Data Upload
+        </NavLink>
+
+        <div className="sidebar-item disabled">⚙ Settings (soon)</div>
+      </nav>
+    </div>
   );
 }

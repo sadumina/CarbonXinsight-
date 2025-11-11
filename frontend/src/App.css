@@ -1,22 +1,35 @@
-:root{
-  --bg: #0b0e13;
-  --panel: #0f141b;
-  --accent: #00ffd5;
-  --text: #e7ecef;
-  --muted:#8b949e;
-  --line: rgba(0,255,213,.15);
+/* ---- App Layout ---- */
+.app-shell {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  background: #0a0f14;
+  overflow: hidden;
 }
 
-*{box-sizing:border-box}
-html,body,#root{height:100%}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
-
-.shell{min-height:100%;display:flex;flex-direction:column}
-.topbar{
-  position:sticky; top:0; z-index:20;
-  background:rgba(11,14,19,.85); backdrop-filter:saturate(140%) blur(6px);
-  border-bottom:1px solid var(--line);
-  padding:18px 24px;
+/* ---- Sidebar ---- */
+.app-sidebar {
+  width: 240px;
+  background: linear-gradient(180deg, #061017, #020407);
+  border-right: 1px solid rgba(0, 255, 170, 0.15);
+  padding: 22px 16px;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.35);
 }
-.topbar h1{margin:0;font-size:26px;color:var(--accent);letter-spacing:.2px}
-.foot{opacity:.6;padding:40px 24px;text-align:center}
+
+/* ---- Main content ---- */
+.app-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 36px;
+  color: white;
+  background: #0b1116;
+}
+
+/* Smooth scrolling */
+.app-main::-webkit-scrollbar {
+  width: 6px;
+}
+.app-main::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 170, 0.25);
+  border-radius: 50px;
+}

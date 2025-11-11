@@ -3,6 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import DataUploadPage from "./pages/DataUploadPage";
 import Sidebar from "./components/Sidebar"; // small nav
+// in App.jsx
+import "./App.css";
+
 
 export default function App() {
   return (

@@ -248,14 +248,25 @@ const betweenStats = (arr, startPt, endPt) => {
 
           {/* ✅ Date Pickers */}
           <label className="filter">
-            <span>From</span>
-            <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
-          </label>
+  <span>From</span>
+  <input
+    type="date"
+    className="date-input"
+    value={fromDate}
+    onChange={(e) => setFromDate(e.target.value)}
+  />
+</label>
 
-          <label className="filter">
-            <span>To</span>
-            <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
-          </label>
+<label className="filter">
+  <span>To</span>
+  <input
+    type="date"
+    className="date-input"
+    value={toDate}
+    onChange={(e) => setToDate(e.target.value)}
+  />
+</label>
+
 
         </div>
       </header>

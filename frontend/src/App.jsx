@@ -1,15 +1,26 @@
-// src/App.jsx
-import UploadAndAnalytics from "./components/UploadAndAnalytics";
+// ✅ src/App.jsx
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import DashboardLayout from "./components/DashboardLayout";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import DataUploadPage from "./pages/DataUploadPage";
 import "./App.css";
 
 export default function App() {
   return (
-    <main className="shell">
-      <header className="topbar">
-        <h1>CarbonXInsight Dashboard</h1>
-      </header>
-      <UploadAndAnalytics />
-      <footer className="foot">© {new Date().getFullYear()} CarbonXInsight</footer>
-    </main>
+    <BrowserRouter>
+      <Routes>
+
+        {/* Wrap all pages inside sidebar layout */}
+        <Route element={<DashboardLayout />}>
+
+          {/* Default page → Dashboard */}
+          <Route path="/" element={<AnalyticsPage />} />
+
+          {/* Upload Page */}
+          <Route path="/upload" element={<DataUploadPage />} />
+        </Route>
+
+      </Routes>
+    </BrowserRouter>
   );
 }

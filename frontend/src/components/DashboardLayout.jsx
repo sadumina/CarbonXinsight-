@@ -1,14 +1,17 @@
+// ✅ src/components/DashboardLayout.jsx
 import Sidebar from "./Sidebar";
-import "./DashboardLayout.css";
+import "../theme.css";
+import { Outlet } from "react-router-dom";
 
-export default function DashboardLayout({ children }) {
+export default function DashboardLayout() {
   return (
-    <div className="layout-container">
+    <div className="layout">
       <Sidebar />
 
-      <main className="layout-content">
-        {children}
-      </main>
+      <div className="content">
+        {/* Route content here */}
+        <Outlet />
+      </div>
     </div>
   );
 }

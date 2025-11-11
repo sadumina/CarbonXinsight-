@@ -1,23 +1,22 @@
-import "./Sidebar.css";
+// src/components/Sidebar.jsx
 import { NavLink } from "react-router-dom";
+import "./Sidebar.css";
 
 export default function Sidebar() {
   return (
     <aside className="sidebar">
-      <div className="sidebar-logo">CarbonXInsight</div>
+      <h2>CarbonXInsight</h2>
 
-      <nav className="sidebar-nav">
-        <NavLink to="/" end className="nav-item">
+      <nav>
+        <NavLink to="/" className="menu-item">
           📊 Dashboard
         </NavLink>
 
-        <NavLink to="/upload" className="nav-item">
-          ⬆️ Data Upload
+        <NavLink to="/upload" className="menu-item">
+          📁 Data Upload
         </NavLink>
 
-        <NavLink to="/settings" className="nav-item disabled">
-          ⚙️ Settings (coming soon)
-        </NavLink>
+        <div className="menu-item disabled">⚙ Settings (coming soon)</div>
       </nav>
     </aside>
   );

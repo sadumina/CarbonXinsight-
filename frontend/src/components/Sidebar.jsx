@@ -4,20 +4,30 @@ import "./Sidebar.css";
 
 export default function Sidebar() {
   return (
-    <aside className="sidebar">
-      <h2>CarbonXInsight</h2>
+    <nav className="side">
+      <div className="side-brand">CarbonXInsight</div>
 
-      <nav>
-        <NavLink to="/" className="menu-item">
-          📊 Dashboard
-        </NavLink>
-
-        <NavLink to="/upload" className="menu-item">
-          📁 Data Upload
-        </NavLink>
-
-        <div className="menu-item disabled">⚙ Settings (coming soon)</div>
-      </nav>
-    </aside>
+      <ul className="side-nav">
+        <li>
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) => "side-link" + (isActive ? " active" : "")}
+          >
+            📊 Dashboard
+          </NavLink>
+        </li>
+        <li>
+          <NavLink
+            to="/upload"
+            className={({ isActive }) => "side-link" + (isActive ? " active" : "")}
+          >
+            ⬆ Data Upload
+          </NavLink>
+        </li>
+        <li>
+          <span className="side-link disabled">⚙ Settings (soon)</span>
+        </li>
+      </ul>
+    </nav>
   );
 }

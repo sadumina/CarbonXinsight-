@@ -189,14 +189,15 @@ def list_countries():
 @app.get("/series")
 async def get_series(
     product: str = PRODUCT,
-    countries: str | None = None,
+    countries: List[str] | None = Query(None),
     fromDate: str | None = None,
     toDate: str | None = None,
 ):
     match_stage = {"product": product}
 
     if countries:
-        match_stage["country"] = {"$in": countries.split(",")}
+       match_stage["country"] = {"$in": countries}
+
 
     pipeline = [
         {"$match": match_stage},

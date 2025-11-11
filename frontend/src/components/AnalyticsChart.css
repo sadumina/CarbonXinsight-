@@ -217,6 +217,32 @@ body{
   font-size: 18px;
   margin-left: auto;
 }
+.pill-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: #1a2226;
+  cursor: pointer;
+  border: 1px solid #2a343a;
+  transition: 0.2s;
+  font-size: 13px;
+}
+
+.pill:hover {
+  border-color: #6cd17a;
+}
+
+.pill-active {
+  background: #6cd17a;
+  color: #0a0d0f;
+  border-color: #6cd17a;
+}
+
 
 /* ---------- Comparison Drawer ---------- */
 .compare-drawer{

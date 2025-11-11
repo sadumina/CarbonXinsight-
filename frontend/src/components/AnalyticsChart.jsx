@@ -1,4 +1,6 @@
-// ✅ CarbonXInsight — Market Dashboard (Pill Markets + PDF/Excel Export + Date Filtering + Forecast Toggle)
+// ✅ CarbonXInsight — Market Dashboard
+// (Pill Markets + Date Filtering + Forecast Toggle + Insights + PDF/Excel export)
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import Highcharts from "highcharts/highstock";
@@ -28,6 +30,33 @@ const API = "http://localhost:8000";
 const fmtUsd = (v) => (v == null ? "—" : `$${Number(v).toFixed(2)}`);
 const fmtPct = (v) => (v == null ? "—" : `${Number(v).toFixed(2)}%`);
 
+// ---------- INSIGHTS HELPERS ----------
+const pctChange = (start, end) =>
+  start != null && end != null && start !== 0 ? ((end - start) / start) * 100 : null;
+
+const stddev = (arr) => {
+  if (!arr.length) return null;
+  const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+  const variance = arr.reduce((a, b) => a + (b - mean) ** 2, 0) / arr.length;
+  return Math.sqrt(variance);
+};
+
+// pick nearest point to timestamp; fallback first/last safely
+const nearestPoint = (arr, ts, fallback) => {
+  if (!arr || !arr.length) return null;
+  if (!ts) return fallback === "first" ? arr[0] : arr[arr.length - 1];
+  let lo = 0,
+    hi = arr.length - 1;
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (arr[mid].ts < ts) lo = mid + 1;
+    else hi = mid;
+  }
+  const a = arr[Math.max(0, lo - 1)];
+  const b = arr[Math.min(arr.length - 1, lo)];
+  return Math.abs((a?.ts ?? Infinity) - ts) <= Math.abs((b?.ts ?? Infinity) - ts) ? a : b;
+};
+
 export default function AnalyticsChart() {
   const chartRef = useRef(null);
 
@@ -45,6 +74,9 @@ export default function AnalyticsChart() {
   // 🔮 Forecast toggle
   const [showForecast, setShowForecast] = useState(true);
   const FUTURE_POINTS = 6; // weeks forward (change to 12 for 12 weeks, etc.)
+
+  // 🧠 Insights state
+  const [insights, setInsights] = useState(null);
 
   // ✅ Load Countries
   useEffect(() => {
@@ -210,14 +242,118 @@ export default function AnalyticsChart() {
     setDrawerOpen(true);
   };
 
+  // ---------- BUILD INSIGHTS WHEN DATA / FILTERS CHANGE ----------
+  useEffect(() => {
+    if (!rawSeries || !Object.keys(rawSeries).length || !selected.length) {
+      setInsights(null);
+      return;
+    }
+
+    const fromTs = fromDate ? new Date(fromDate).getTime() : null;
+    const toTs = toDate ? new Date(toDate).getTime() : null;
+
+    const perCountry = [];
+    let globalMax = { country: null, price: -Infinity, date: null };
+    let globalMin = { country: null, price: Infinity, date: null };
+
+    selected.forEach((country) => {
+      const arr = rawSeries[country];
+      if (!arr || !arr.length) return;
+
+      // filter to range for volatility & local extremes
+      const inRange = arr.filter(
+        (pt) => (fromTs ? pt.ts >= fromTs : true) && (toTs ? pt.ts <= toTs : true)
+      );
+
+      const startPt = fromTs ? nearestPoint(arr, fromTs, "first") : arr[0];
+      const endPt = toTs ? nearestPoint(arr, toTs, "last") : arr[arr.length - 1];
+      if (!startPt || !endPt) return;
+
+      const changeAbs = endPt.price - startPt.price;
+      const changePct = pctChange(startPt.price, endPt.price);
+      const vol = inRange.length ? stddev(inRange.map((p) => p.price)) : null;
+
+      const localMax = inRange.length
+        ? inRange.reduce((m, p) => (p.price > m.price ? p : m), inRange[0])
+        : null;
+      const localMin = inRange.length
+        ? inRange.reduce((m, p) => (p.price < m.price ? p : m), inRange[0])
+        : null;
+
+      if (localMax && localMax.price > globalMax.price) {
+        globalMax = { country, price: localMax.price, date: localMax.ts };
+      }
+      if (localMin && localMin.price < globalMin.price) {
+        globalMin = { country, price: localMin.price, date: localMin.ts };
+      }
+
+      perCountry.push({
+        country,
+        startDate: new Date(startPt.ts).toISOString().slice(0, 10),
+        endDate: new Date(endPt.ts).toISOString().slice(0, 10),
+        start: startPt.price,
+        end: endPt.price,
+        changeAbs,
+        changePct,
+        volatility: vol,
+      });
+    });
+
+    if (!perCountry.length) {
+      setInsights(null);
+      return;
+    }
+
+    const movers = perCountry
+      .filter((x) => x.changePct != null)
+      .sort((a, b) => (b.changePct ?? -Infinity) - (a.changePct ?? -Infinity));
+
+    const best = movers[0];
+    const worst = movers[movers.length - 1];
+
+    setInsights({
+      window: {
+        from: fromDate || perCountry[0]?.startDate,
+        to: toDate || perCountry[0]?.endDate,
+      },
+      best,
+      worst,
+      globalMax,
+      globalMin,
+      table: perCountry,
+    });
+  }, [rawSeries, selected, fromDate, toDate]);
+
   // ---------- EXPORT PDF ----------
   const exportComparisonPDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(14);
     doc.text("CarbonXInsight — Market Comparison Report", 14, 15);
+
+    // ✨ Include a short insights summary at the top if available
+    if (insights) {
+      doc.setFontSize(11);
+      doc.text(
+        `Window: ${insights.window.from} → ${insights.window.to}`,
+        14,
+        22
+      );
+    }
+
     autoTable(doc, {
-      startY: 25,
-      head: [["Country", "Start Date", "End Date", "Change", "Change Percentage", "Min", "Max", "Avg"]],
+      startY: 28,
+      head: [
+        [
+          "Country",
+          "Start Date",
+          "End Date",
+          "Change",
+          "Change Percentage",
+          "Min",
+          "Max",
+          "Avg",
+        ],
+      ],
       body: rows.map((r) => [
         r.country,
         r.startDate,
@@ -277,10 +413,11 @@ export default function AnalyticsChart() {
       <header className="panel-head compact">
         <div className="brand-left">
           <img src={HaycarbLogo} className="brand-logo" alt="Haycarb Logo" />
-          <div>
-            <h2>CarbonXInsight — Market Analytics</h2>
-            <div className="subtitle">Haycarb • Coconut Shell Charcoal</div>
-          </div>
+        </div>
+
+        <div className="title-wrap">
+          <h2>CarbonXInsight — Market Analytics</h2>
+          <div className="subtitle">Haycarb • Coconut Shell Charcoal</div>
         </div>
 
         <div className="filters-row">
@@ -332,6 +469,77 @@ export default function AnalyticsChart() {
         </div>
       </header>
 
+      {/* ⭐ INSIGHTS CARD */}
+      {insights && (
+        <div
+          className="insights-card"
+          style={{
+            background: "#0f131a",
+            border: "1px solid rgba(108,209,122,0.2)",
+            borderRadius: 12,
+            padding: "14px 16px",
+            margin: "12px 0",
+            display: "grid",
+            gridTemplateColumns: "repeat(4, minmax(0,1fr))",
+            gap: "12px",
+          }}
+        >
+          <div>
+            <div style={{ color: "#9AA4AF", fontSize: 12 }}>Window</div>
+            <div style={{ fontWeight: 600 }}>
+              {insights.window.from} → {insights.window.to}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ color: "#9AA4AF", fontSize: 12 }}>Top Riser</div>
+            {insights.best ? (
+              <div style={{ fontWeight: 600 }}>
+                {insights.best.country} · {insights.best.changePct?.toFixed(2)}%
+                <span style={{ color: "#6CD17A" }}> ↑</span>
+              </div>
+            ) : (
+              <div>—</div>
+            )}
+          </div>
+
+          <div>
+            <div style={{ color: "#9AA4AF", fontSize: 12 }}>Top Faller</div>
+            {insights.worst ? (
+              <div style={{ fontWeight: 600 }}>
+                {insights.worst.country} · {insights.worst.changePct?.toFixed(2)}%
+                <span style={{ color: "#ff7b7b" }}> ↓</span>
+              </div>
+            ) : (
+              <div>—</div>
+            )}
+          </div>
+
+          <div>
+            <div style={{ color: "#9AA4AF", fontSize: 12 }}>Extremes (Range)</div>
+            <div style={{ fontSize: 13 }}>
+              <span style={{ color: "#6CD17A" }}>Max</span>{" "}
+              {insights.globalMax.country
+                ? `${insights.globalMax.country} ${fmtUsd(insights.globalMax.price)} on ${new Date(
+                    insights.globalMax.date
+                  )
+                    .toISOString()
+                    .slice(0, 10)}`
+                : "—"}
+              <br />
+              <span style={{ color: "#ff7b7b" }}>Min</span>{" "}
+              {insights.globalMin.country
+                ? `${insights.globalMin.country} ${fmtUsd(insights.globalMin.price)} on ${new Date(
+                    insights.globalMin.date
+                  )
+                    .toISOString()
+                    .slice(0, 10)}`
+                : "—"}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* CHART */}
       <HighchartsReact
         ref={chartRef}
@@ -349,9 +557,15 @@ export default function AnalyticsChart() {
               <b>{compareAt ? new Date(compareAt).toISOString().slice(0, 10) : "—"}</b>
             </h3>
             <div className="drawer-actions">
-              <button className="btn-ghost" onClick={exportComparisonExcel}>📊 Excel</button>
-              <button className="btn-ghost" onClick={exportComparisonPDF}>📄 PDF</button>
-              <button className="close" onClick={() => setDrawerOpen(false)}>×</button>
+              <button className="btn-ghost" onClick={exportComparisonExcel}>
+                📊 Excel
+              </button>
+              <button className="btn-ghost" onClick={exportComparisonPDF}>
+                📄 PDF
+              </button>
+              <button className="close" onClick={() => setDrawerOpen(false)}>
+                ×
+              </button>
             </div>
           </div>
 
@@ -374,7 +588,9 @@ export default function AnalyticsChart() {
                   <td>{r.country}</td>
                   <td>{r.startDate ?? "—"}</td>
                   <td>{r.endDate ?? "—"}</td>
-                  <td className={r.delta >= 0 ? "pos" : "neg"}>{r.delta ?? "—"}</td>
+                  <td className={r.delta >= 0 ? "pos" : "neg"}>
+                    {r.delta != null ? r.delta.toFixed(2) : "—"}
+                  </td>
                   <td className={r.pct >= 0 ? "pos" : "neg"}>{fmtPct(r.pct)}</td>
                   <td>{fmtUsd(r.min)}</td>
                   <td>{fmtUsd(r.max)}</td>

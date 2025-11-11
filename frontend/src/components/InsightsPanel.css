@@ -1,0 +1,18 @@
+.insights {
+  background:#0f1620;
+  border:1px dashed rgba(108,209,122,.24);
+  border-radius:14px;
+  padding:12px 14px;
+  margin-bottom:12px;
+}
+.insights-head {
+  color:#e7ecef; font-weight:600; display:flex; align-items:center; gap:8px;
+  margin-bottom:6px;
+}
+.insights-head .dot {
+  width:8px; height:8px; border-radius:50%; background:#6cd17a; display:inline-block;
+  box-shadow:0 0 10px rgba(108,209,122,.7);
+}
+.insights-head .period { color:#9aa4af; font-weight:500; margin-left:6px; }
+.insights-list { margin:0; padding-left:16px; color:#cbd5df; line-height:1.45; }
+.insights-list li { margin:3px 0; }

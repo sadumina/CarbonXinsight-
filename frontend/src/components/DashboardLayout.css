@@ -1,0 +1,10 @@
+.layout-container {
+  display: flex;
+}
+
+.layout-content {
+  margin-left: 240px; /* same as sidebar width */
+  padding: 32px;
+  width: calc(100% - 240px);
+  min-height: 100vh;
+}

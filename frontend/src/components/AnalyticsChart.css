@@ -1,394 +1,262 @@
 /* =========================
    CarbonXInsight — Analytics.css
-   Brand tokens + Panels + Header + Filters + KPIs + Drawer + Chart tweaks
+   High-Contrast + Centered Layout
    ========================= */
 
 :root{
-  /* Page + Panels */
-  --page-bg:#EFEFEF;                  /* light grey page */
-  --panel:#0D1117;                    /* charcoal black */
-  --panel-2:#11161d;
-  --panel-3:#0b0f14;
+  --page-bg:#0b1514;
+  --panel:#12171d;
+  --panel-2:#1a2128;
+  --panel-3:#10161c;
 
-  /* Text */
-  --text-primary:#E8EEF2;
-  --text-secondary:#9AA4AF;
-  --text-muted:#95a0ab;
+  --text-primary:#f4f7fa;
+  --text-secondary:#b9c3cc;
+  --text-muted:#a7b4bf;
 
-  /* Brand Greens */
   --brand:#178A33;
   --brand-soft:#6CD17A;
   --brand-border:rgba(23,138,51,.32);
-  --brand-glow:rgba(23,138,51,.10);
+  --brand-glow:rgba(23,138,51,.20);
 
-  /* Status */
   --success:#2BAA4B;
   --danger:#F85149;
 
-  /* Radii & Shadows */
   --radius:12px;
   --radius-lg:16px;
   --shadow-1:0 6px 18px rgba(0,0,0,.25);
   --shadow-2:0 12px 36px rgba(0,0,0,.40);
-  --separator:rgba(255,255,255,.08);
+  --separator:rgba(255,255,255,.10);
 }
 
-*{box-sizing:border-box}
-html,body,#root{height:100%}
+*{ box-sizing:border-box }
+html,body,#root{ height:100% }
 body{
   margin:0;
   background:var(--page-bg);
   color:var(--text-primary);
-  font-family:Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
+  font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
 }
 
-/* ---------- Shell / Footer ---------- */
-.shell{min-height:100%; display:flex; flex-direction:column}
-.foot{
-  color:#475062; opacity:.95;
-  padding:40px 24px; text-align:center;
-}
-
-/* ---------- Upload section (light card on light bg) ---------- */
-.upload-wrap{ max-width:1600px; margin:0 auto; padding:24px }
-.upload-card{
-  background:#FFFFFF;
-  border:1px dashed var(--brand-border);
-  border-radius:16px;
-  padding:24px;
-  display:grid; gap:8px;
-  box-shadow:0 6px 18px rgba(0,0,0,.06);
-}
-.upload-head{ display:flex; align-items:center; gap:12px }
-.upload-icon{
-  width:40px; height:40px; border-radius:12px;
-  background:var(--brand-glow);
-  display:grid; place-items:center; color:var(--brand);
-  border:1px solid var(--brand-border); font-size:20px;
-}
-.upload-cta{
-  margin-top:8px; display:inline-flex; align-items:center; gap:10px;
-  border:1px solid var(--brand-border);
-  border-radius:999px; padding:10px 16px; color:var(--brand);
-  cursor:pointer; background:transparent;
-}
-
-/* ---------- Analytics Panel (dark) ---------- */
+/* ---------- Panel ---------- */
 .panel{
-  max-width:3000px;
+  max-width:1280px;
   margin:24px auto;
-  padding:24px;
+  padding:24px 28px 26px;
   background:linear-gradient(180deg,var(--panel-2),var(--panel-3));
   border:1px solid var(--brand-border);
-  border-radius:16px;
+  border-radius:18px;
   box-shadow:var(--shadow-1);
 }
 
 /* ---------- Header ---------- */
 .panel-head.compact{
-  display:flex; align-items:center; justify-content:space-between;
-  gap:16px; margin:0 0 12px;
-}
-.brand-left{ display:flex; align-items:center; gap:12px }
-.brand-logo{ height:28px; width:auto; object-fit:contain }
-.title-wrap h2{ margin:0; font-size:20px; font-weight:700; letter-spacing:.2px; color:#E8EEF2 }
-.subtitle{ margin-top:2px; font-size:12px; color:var(--brand-soft) }
-
-/* ---------- Filters ---------- */
-.filters-row{ display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap }
-.filter{ display:flex; flex-direction:column; gap:6px; min-width:210px }
-.filter>span{
-  font-size:12px; letter-spacing:.3px; text-transform:uppercase;
-  color:var(--text-secondary)
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
 }
 
-.filter select[multiple]{
-  height:44px; min-width:260px;
-  color:var(--text-primary);
-  background:linear-gradient(180deg,var(--panel-2),var(--panel-3));
+.brand-left{ display:flex; align-items:center; gap:8px }
+.brand-logo{ height:30px }
+
+.title-wrap.center{
+  flex:1;
+  text-align:center;
+}
+.title-wrap.center h2{
+  margin:0;
+  font-size:22px;
+  font-weight:700;
+  color:#ffffff;
+}
+.subtitle{
+  margin-top:4px;
+  font-size:13px;
+  font-weight:600;
+  color:#9de7a9;
+}
+
+/* ---------- Refresh Button ---------- */
+.refresh-btn{
+  width:36px;
+  height:36px;
+  border-radius:10px;
   border:1px solid var(--brand-border);
-  border-radius:10px; outline:none; padding:8px 10px;
-  box-shadow:inset 0 0 0 1px var(--brand-glow);
-  transition:box-shadow .2s,border-color .2s,height .2s;
-  scrollbar-width:thin;
+  background:transparent;
+  color:var(--brand-soft);
+  font-size:18px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  transition:0.25s;
 }
-.filter select[multiple]:focus{
-  border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-glow);
+.refresh-btn:hover{
+  background:var(--brand-glow);
+  border-color:var(--brand-soft);
+  color:#0a0d0f;
+  box-shadow:0 0 12px var(--brand-glow);
 }
-.filter select[multiple]:hover,
-.filter select[multiple]:focus{ height:160px }
-.filter select option{ padding:8px; background:#0f141b }
-.filter select option:checked{ background:rgba(23,138,51,.22); color:var(--brand-soft) }
+.refresh-btn:active{ transform:scale(.92) }
 
-/* Date input container styling */
-.date-input {
-  background-color: #0d1117;
-  border: 2px solid #1f6feb;
-  border-radius: 8px;
-  padding: 8px 12px;
-  color: #e5e7eb;
-  font-size: 14px;
-  width: 140px;
-  transition: 0.25s ease-in-out;
-  outline: none;
-}
-
-.date-input:hover {
-  border-color: #58a6ff;
+/* ---------- Filters (Centered Block) ---------- */
+.filters-row{
+  margin-top:18px;
+  margin-bottom:10px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  align-items:center;
 }
 
-.date-input:focus {
-  border-color: #6CD17A; /* ✅ Haycarb neon green */
-  box-shadow: 0px 0px 6px #6cd17a80;
+.pill-container{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:center;
 }
 
-/* Remove default calendar icon styling */
-.date-input::-webkit-calendar-picker-indicator {
-  filter: invert(90%) sepia(50%) saturate(200%) hue-rotate(90deg);
-  cursor: pointer;
+.date-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  justify-content:center;
 }
 
-/* Calendar dropdown dark mode (Chrome/Edge/Brave) */
-::-webkit-datetime-edit,
-::-webkit-datetime-edit-fields-wrapper,
-::-webkit-datetime-edit-text,
-::-webkit-datetime-edit-month-field,
-::-webkit-datetime-edit-day-field,
-::-webkit-datetime-edit-year-field {
-  background-color: transparent;
-  color: #e5e7eb;
+.filter{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.filter span{
+  font-size:12px;
+  letter-spacing:.3px;
+  text-transform:uppercase;
+  color:var(--text-secondary);
 }
 
-::-webkit-calendar-picker-indicator:hover {
-  filter: brightness(150%);
+/* Date input */
+.date-input{
+  background-color:#1b242c;
+  border:2px solid #6cd17a;
+  border-radius:10px;
+  padding:8px 12px;
+  color:#fff;
+  font-size:15px;
+  width:160px;
+  transition:0.25s;
+}
+.date-input:hover{ border-color:#00eaff }
+.date-input:focus{
+  border-color:#00eaff;
+  box-shadow:0 0 8px rgba(0,234,255,.6);
 }
 
-
-/* Buttons */
-.btn-pill{
-  height:44px; padding:0 16px; border-radius:999px; cursor:pointer;
-  border:1px solid var(--brand-border);
-  background:linear-gradient(180deg,var(--brand-glow), rgba(255,255,255,.03));
-  color:var(--brand-soft); font-weight:600; letter-spacing:.3px;
-  transition:transform .12s, box-shadow .2s, border-color .2s;
+/* ---------- Market Pills ---------- */
+.pill{
+  padding:8px 18px;
+  border-radius:20px;
+  background:#1e252b;
+  font-size:14px;
+  cursor:pointer;
+  border:1px solid #313a41;
+  color:#d8e0e8;
+  transition:0.25s;
 }
-.btn-pill:hover{ transform:translateY(-1px); box-shadow:0 4px 16px var(--brand-glow) }
-
-.download-bar{ display:flex; gap:8px }
-.btn-ghost{
-  height:44px; padding:0 14px; border-radius:10px; cursor:pointer;
-  border:1px solid var(--brand-border);
-  background:transparent; color:var(--brand-soft); font-weight:600;
-  transition:background .2s, box-shadow .2s;
+.pill:hover{ border-color:#6cd17a }
+.pill-active{
+  background:#6cd17a;
+  color:#0a0d0f;
+  border-color:#6cd17a;
+  font-weight:700;
+  box-shadow:0 0 10px rgba(108,209,122,.6);
 }
-.btn-ghost:hover{ background:var(--brand-glow); box-shadow:0 4px 14px var(--brand-glow) }
-
-/* ---------- KPI Chips ---------- */
-.kpi-chips{
-  display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:12px; margin:12px 0 16px;
-}
-.kpi-chip{
-  background:linear-gradient(180deg,var(--panel-2),var(--panel-3));
-  border:1px solid var(--separator);
-  border-radius:12px; padding:12px 14px; box-shadow:var(--shadow-1);
-}
-.chip-top{ display:flex; align-items:center; gap:8px; margin-bottom:8px }
-.dot{ width:8px; height:8px; border-radius:50%; box-shadow:0 0 8px currentColor }
-.dot.up{ background:var(--success); color:var(--success) }
-.dot.down{ background:var(--danger); color:var(--danger) }
-.chip-country{ font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-.chip-delta{ margin-left:auto; font-weight:700 }
-.chip-delta.pos{ color:var(--success) }
-.chip-delta.neg{ color:var(--danger) }
-.chip-row{ display:flex; justify-content:space-between; align-items:center; padding:4px 0 }
-.chip-row.subtle .chip-label{ color:var(--text-muted) }
-.chip-label{ font-size:12px; color:var(--text-secondary) }
-.chip-value{ font-weight:600 }
-
-/* ---------- Market Summary (collapsible) ---------- */
-.market-summary {
-  background: linear-gradient(180deg, var(--panel-2), var(--panel-3));
-  padding: 10px 14px;
-  /* ✅ Remove border completely, use only internal spacing */
-  border: none !important;
-  outline: none !important;
-  border-radius: 8px;
-  box-shadow: none !important;
-  margin-bottom: 8px;
-}
-
-.market-summary summary {
-  list-style: none;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  cursor: pointer;
-  padding: 4px 0;
-
-  /* ✅ Remove default Chrome/Browser summary border */
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-/* ✅ Remove the default dropdown arrow */
-.market-summary summary::-webkit-details-marker {
-  display: none !important;
-}
-
-/* ✅ Meta info */
-.market-summary .meta {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
-
-.market-summary .chev {
-  color: var(--brand-soft);
-  font-size: 18px;
-  margin-left: auto;
-}
-.pill-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.pill {
-  padding: 6px 14px;
-  border-radius: 20px;
-  background: #1a2226;
-  cursor: pointer;
-  border: 1px solid #2a343a;
-  transition: 0.2s;
-  font-size: 13px;
-}
-
-.pill:hover {
-  border-color: #6cd17a;
-}
-
-.pill-active {
-  background: #6cd17a;
-  color: #0a0d0f;
-  border-color: #6cd17a;
-}
-
 
 /* ---------- Comparison Drawer ---------- */
 .compare-drawer{
-  margin-top:18px; background:rgba(13,17,23,.96);
-  border:1px solid var(--brand-border); border-radius:12px;
-  overflow:hidden; box-shadow:var(--shadow-2);
+  margin-top:18px;
+  background:#162027f0;
+  border:1px solid var(--brand-border);
+  border-radius:12px;
+  box-shadow:var(--shadow-2);
 }
 .compare-head{
-  display:flex; justify-content:space-between; align-items:center;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
   padding:14px 18px;
-  background:linear-gradient(90deg, var(--brand-glow), transparent);
+  background:linear-gradient(90deg,var(--brand-glow),transparent);
 }
-.compare-head h3{ margin:0; font-size:16px; color:#eafbf7 }
+.compare-head h3{
+  margin:0;
+  color:#eafbf7;
+  font-size:18px;
+}
 .compare-head .close{
-  background:transparent; border:none; color:#cdd6df; font-size:22px;
-  width:32px; height:32px; border-radius:50%; cursor:pointer;
+  border:none;
+  background:none;
+  color:#cdd6df;
+  font-size:24px;
+  cursor:pointer;
 }
-.table-wrap{ overflow-x:auto }
-.compare-table{ width:100%; border-collapse:collapse; font-size:14px }
+
+.compare-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:15px;
+}
 .compare-table th, .compare-table td{
-  padding:10px 12px; border-top:1px solid rgba(255,255,255,.06)
+  padding:10px 12px;
+  border-top:1px solid rgba(255,255,255,.12);
 }
-.compare-table thead th{ text-align:left; color:var(--brand-soft) }
-.compare-table tbody tr:hover{ background:rgba(255,255,255,.03) }
-.compare-table .pos{ color:var(--success); font-weight:600 }
-.compare-table .neg{ color:var(--danger); font-weight:600 }
+.compare-table th{ color:var(--brand-soft) }
 
-/* ---------- Highcharts dark tweaks (TradingView vibe) ---------- */
-.highcharts-background{ fill:var(--panel) }
-.highcharts-title, .highcharts-subtitle{ fill:var(--text-primary) !important }
-.highcharts-tooltip text{ fill:#fff }
-.highcharts-grid-line{ stroke:rgba(255,255,255,.06) }
-.highcharts-axis-line{ stroke:rgba(255,255,255,.06) }
-.highcharts-axis-labels text{ fill:var(--text-secondary) }
-.highcharts-legend-item text{ fill:var(--text-primary) }
-.highcharts-range-selector-buttons text{ fill:var(--brand-soft) }
-.highcharts-range-selector-buttons .highcharts-button-box{ stroke:none; fill:none }
-.highcharts-range-selector-buttons .highcharts-button-pressed .highcharts-button-box{
-  fill:var(--brand-soft); opacity:1
+/* ---------- Highcharts Enhancements ---------- */
+.highcharts-background{ fill:var(--panel) !important }
+.highcharts-title, .highcharts-subtitle{ fill:#fff !important }
+
+.highcharts-axis-labels text{
+  fill:#d6dde4 !important;
+  font-size:14px !important;
+  font-weight:500;
 }
-.highcharts-range-selector-buttons .highcharts-button-pressed text{ fill:#0D1117 }
-.highcharts-navigator-mask-outside{ fill:transparent }
-.highcharts-navigator-mask-inside{ fill:rgba(23,138,51,0.2) }
-.highcharts-navigator-outline{ stroke:var(--brand-border) }
-.highcharts-scrollbar{ stroke:rgba(255,255,255,.15) }
-
-/* ✅ Checkbox Markets Selector */
-.market-checkbox-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.highcharts-grid-line{ stroke:rgba(255,255,255,.22) !important }
+.highcharts-series path{ stroke-width:3.2px !important }
+.highcharts-tooltip text{
+  fill:#ffffff !important;
+  font-size:15px !important;
+  font-weight:600;
+}
+.highcharts-legend-item text{
+  fill:#f4f7fa !important;
+  font-size:14px !important;
 }
 
-.checkbox-scroll {
-  max-height: 120px;
-  overflow-y: auto;
-  background: var(--panel-2);
-  border: 1px solid var(--brand-border);
-  border-radius: 10px;
-  padding: 6px 12px;
-  min-width: 260px;
+/* Buttons for drawer */
+.btn-ghost{
+  height:40px;
+  padding:0 14px;
+  border-radius:10px;
+  cursor:pointer;
+  border:1px solid var(--brand-border);
+  background:transparent;
+  color:#cdfade;
+  font-weight:600;
 }
-
-.check-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 0;
-  cursor: pointer;
-  color: var(--text-primary);
-}
-
-.check-item input[type="checkbox"] {
-  accent-color: var(--brand);
-  width: 16px;
-  height: 16px;
+.btn-ghost:hover{
+  background:#203226;
+  box-shadow:0 4px 14px var(--brand-glow);
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 900px){
+@media (max-width: 768px){
   .panel{ padding:18px }
+  .title-wrap.center h2{ font-size:20px }
   .filters-row{ gap:10px }
-  .filter{ min-width:160px }
-  .kpi-chips{ grid-template-columns:1fr }
-  .compare-head{ padding:12px 14px }
 }
 
-@media (max-width: 600px){
-  .panel{ padding:16px }
-  .title-wrap h2{ font-size:18px }
-  .subtitle{ font-size:11px }
+@media (max-width: 480px){
+  .panel{ padding:14px }
   .brand-logo{ height:24px }
-  .filters-row{ flex-direction:row; gap:8px }
-  .filter select[multiple]{ min-width:220px }
-  .btn-pill, .btn-ghost{ height:40px }
-  .upload-wrap{ padding:16px }
-  .upload-card{ padding:18px }
-}
-/* Fix double-border issue */
-/* Remove extra border from outer panel (Upload wrapper) */
-.chart-panel.panel {
-  border: none !important;
-  padding: 0 !important;            /* keep spacing consistent */
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-/* Make inner ANALYTICS panel the only real panel */
-.chart-panel .panel {
-  border: 1px solid var(--brand-border) !important;
-  padding: 24px !important;
-  background: linear-gradient(180deg, var(--panel-2), var(--panel-3)) !important;
-  border-radius: 16px !important;
-  box-shadow: var(--shadow-1) !important;
+  .date-input{ width:140px; font-size:14px }
 }

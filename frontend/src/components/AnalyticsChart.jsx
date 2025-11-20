@@ -1,4 +1,4 @@
-// ✅ CarbonXInsight — Market Dashboard (v1: Forecast disabled)
+// ✅ CarbonXInsight — Market Dashboard (v1 Enhanced: Centered Layout + Refresh + Export Headers)
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import Highcharts from "highcharts/highstock";
@@ -42,19 +42,23 @@ export default function AnalyticsChart() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
-  // 🚫 Forecast feature is disabled for v1 (kept here as a flag for v2)
   const FORECAST_ENABLED = false;
+
+  // Simple full refresh (kept for now; can be changed to soft refresh later)
+  const handleRefresh = () => {
+    window.location.reload();
+  };
 
   // Load countries
   useEffect(() => {
     (async () => {
       const { data: list = [] } = await axios.get(`${API}/countries`);
       setCountries(list);
-      setSelected(list.slice(0, 3)); // pick first 3 by default
+      setSelected([]);
     })();
   }, []);
 
-  // Fetch time-series for selected countries and date range
+  // Fetch time-series
   useEffect(() => {
     if (!selected.length) return;
 
@@ -71,7 +75,9 @@ export default function AnalyticsChart() {
         grouped[p.country].push({ ts, price: p.price });
       });
 
-      Object.values(grouped).forEach((arr) => arr.sort((a, b) => a.ts - b.ts));
+      Object.values(grouped).forEach((arr) =>
+        arr.sort((a, b) => a.ts - b.ts)
+      );
 
       const mainSeries = Object.keys(grouped).map((country) => ({
         id: `series-${country}`,
@@ -85,10 +91,11 @@ export default function AnalyticsChart() {
     });
   }, [selected, fromDate, toDate]);
 
-  // Toggle pills
   const toggleCountry = (c) => {
     setSelected(
-      selected.includes(c) ? selected.filter((x) => x !== c) : [...selected, c]
+      selected.includes(c)
+        ? selected.filter((x) => x !== c)
+        : [...selected, c]
     );
   };
 
@@ -104,13 +111,20 @@ export default function AnalyticsChart() {
     }
     const a = arr[Math.max(0, lo - 1)];
     const b = arr[Math.min(arr.length - 1, lo)];
-    return Math.abs((a?.ts ?? Infinity) - ts) <= Math.abs((b?.ts ?? Infinity) - ts) ? a : b;
+    return Math.abs((a?.ts ?? Infinity) - ts) <=
+      Math.abs((b?.ts ?? Infinity) - ts)
+      ? a
+      : b;
   };
 
   const betweenStats = (arr, startPt, endPt) => {
-    if (!startPt || !endPt) return { min: null, max: null, avg: null };
-    const slice = arr.filter((pt) => pt.ts >= startPt.ts && pt.ts <= endPt.ts);
-    if (!slice.length) return { min: null, max: null, avg: null };
+    if (!startPt || !endPt)
+      return { min: null, max: null, avg: null };
+    const slice = arr.filter(
+      (pt) => pt.ts >= startPt.ts && pt.ts <= endPt.ts
+    );
+    if (!slice.length)
+      return { min: null, max: null, avg: null };
     let min = slice[0].price,
       max = slice[0].price,
       sum = 0;
@@ -128,23 +142,25 @@ export default function AnalyticsChart() {
     const data = Object.keys(rawSeries)
       .map((country) => {
         const arr = rawSeries[country];
-        if (!arr || !arr.length) return null;
+        if (!arr?.length) return null;
 
         const start = fromTs ? nearest(arr, fromTs) : arr[0];
         const end = nearest(arr, clickedTs);
         if (!start || !end) return null;
 
-        const { min, max, avg } = betweenStats(arr, start, end);
+        const stats = betweenStats(arr, start, end);
 
         return {
           country,
           startDate: new Date(start.ts).toISOString().slice(0, 10),
           endDate: new Date(end.ts).toISOString().slice(0, 10),
           delta: end.price - start.price,
-          pct: start.price ? ((end.price - start.price) / start.price) * 100 : null,
-          min,
-          max,
-          avg,
+          pct:
+            start.price &&
+            ((end.price - start.price) / start.price) * 100,
+          min: stats.min,
+          max: stats.max,
+          avg: stats.avg,
         };
       })
       .filter(Boolean);
@@ -155,38 +171,92 @@ export default function AnalyticsChart() {
   };
 
   // ===== Chart options =====
-  const chartOptions = useMemo(
-    () => ({
-      chart: { backgroundColor: "#0d1117", height: 520 },
+  const chartOptions = useMemo(() => {
+    const selectedMarketNames = selected.length
+      ? selected.join(", ")
+      : "No markets selected";
+    const dateRangeText = `${fromDate || "Start"} → ${
+      toDate || "Latest"
+    }`;
+
+    return {
+      chart: {
+        backgroundColor: "#1a2128",
+        height: 520,
+      },
       title: { text: "" },
+      subtitle: { text: "" },
+
+      exporting: {
+        enabled: true,
+        filename: `CarbonXInsight_${dateRangeText.replace(
+          /[^0-9A-Za-z]/g,
+          "_"
+        )}`,
+        chartOptions: {
+          title: {
+            text: "Coconut Shell Charcoal Pricing",
+            style: { fontSize: "18px", fontWeight: "bold" },
+          },
+          subtitle: {
+            text: `${selectedMarketNames} • ${dateRangeText}`,
+            style: { fontSize: "13px", color: "#333" },
+          },
+        },
+      },
+
       legend: { enabled: true },
-      tooltip: { shared: true, backgroundColor: "#111" },
+      tooltip: { shared: true, backgroundColor: "#1b242c" },
       rangeSelector: { selected: 4, inputEnabled: false },
+      navigator: { enabled: false },
+      scrollbar: { enabled: false },
+
       plotOptions: {
         series: {
           marker: { enabled: false },
-          point: { events: { click: function () { buildComparison(this.x); } } },
+          point: {
+            events: {
+              click: function () {
+                buildComparison(this.x);
+              },
+            },
+          },
         },
       },
-      series: seriesData,
-    }),
-    [seriesData]
-  );
 
-  // ===== Exports =====
+      series: seriesData,
+    };
+  }, [seriesData, selected, fromDate, toDate]);
+
+  // ===== Export comparison =====
   const exportComparisonPDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(14);
-    doc.text("CarbonXInsight — Market Comparison Report", 14, 15);
+    doc.text(
+      "CarbonXInsight — Market Comparison Report",
+      14,
+      15
+    );
     autoTable(doc, {
       startY: 25,
-      head: [["Country", "Start Date", "End Date", "Change", "Change Percentage", "Min", "Max", "Avg"]],
+      head: [
+        [
+          "Country",
+          "Start Date",
+          "End Date",
+          "Change",
+          "Change %",
+          "Min",
+          "Max",
+          "Avg",
+        ],
+      ],
       body: rows.map((r) => [
         r.country,
         r.startDate,
         r.endDate,
-        r.delta != null ? r.delta.toFixed(2) : "—",
-        r.pct != null ? `${r.pct.toFixed(2)}%` : "—",
+        r.delta?.toFixed(2) || "—",
+        r.pct ? `${r.pct.toFixed(2)}%` : "—",
         fmtUsd(r.min),
         fmtUsd(r.max),
         fmtUsd(r.avg),
@@ -210,7 +280,10 @@ export default function AnalyticsChart() {
     const ws = XLSX.utils.json_to_sheet(sheetData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Comparison");
-    XLSX.writeFile(wb, "CarbonXInsight_Comparison.xlsx");
+    XLSX.writeFile(
+      wb,
+      "CarbonXInsight_Comparison.xlsx"
+    );
   };
 
   return (
@@ -218,53 +291,73 @@ export default function AnalyticsChart() {
       {/* HEADER */}
       <header className="panel-head compact">
         <div className="brand-left">
-          <img src={HaycarbLogo} className="brand-logo" alt="Haycarb Logo" />
-        </div>
-        <div className="title-wrap">
-          <h2>CarbonXInsight — Market Analytics</h2>
-          <div className="subtitle">Haycarb • Coconut Shell Charcoal</div>
+          <img
+            src={HaycarbLogo}
+            className="brand-logo"
+            alt="Haycarb Logo"
+          />
         </div>
 
-        <div className="filters-row">
-          {/* Market pills */}
-          <div className="pill-container">
-            {countries.map((c) => (
-              <span
-                key={c}
-                className={`pill ${selected.includes(c) ? "pill-active" : ""}`}
-                onClick={() => toggleCountry(c)}
-              >
-                {c}
-              </span>
-            ))}
+        <div className="title-wrap center">
+          <h2>Coconut Shell Charcoal Pricing</h2>
+          <div className="subtitle">
+            Haycarb • Coconut Shell Charcoal
           </div>
+        </div>
 
-          {/* Date range */}
+        <button
+          className="refresh-btn"
+          onClick={handleRefresh}
+          title="Refresh Dashboard"
+        >
+          ⟳
+        </button>
+      </header>
+
+      {/* FILTERS – separate block under title for clean layout */}
+      <div className="filters-row">
+        <div className="pill-container">
+          {countries.map((c) => (
+            <span
+              key={c}
+              className={`pill ${
+                selected.includes(c)
+                  ? "pill-active"
+                  : ""
+              }`}
+              onClick={() => toggleCountry(c)}
+            >
+              {c}
+            </span>
+          ))}
+        </div>
+
+        <div className="date-row">
           <label className="filter">
             <span>From</span>
             <input
               type="date"
               className="date-input"
               value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
+              onChange={(e) =>
+                setFromDate(e.target.value)
+              }
             />
           </label>
+
           <label className="filter">
             <span>To</span>
             <input
               type="date"
               className="date-input"
               value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
+              onChange={(e) =>
+                setToDate(e.target.value)
+              }
             />
           </label>
-
-          {/* 🚫 Forecast control removed for v1 */}
-          {FORECAST_ENABLED ? (
-            <label className="filter"><span>Forecast</span><input type="checkbox" disabled /></label>
-          ) : null}
         </div>
-      </header>
+      </div>
 
       {/* CHART */}
       <HighchartsReact
@@ -280,12 +373,36 @@ export default function AnalyticsChart() {
           <div className="compare-head">
             <h3>
               From <b>{fromDate || "start"}</b> →{" "}
-              <b>{compareAt ? new Date(compareAt).toISOString().slice(0, 10) : "—"}</b>
+              <b>
+                {compareAt
+                  ? new Date(
+                      compareAt
+                    )
+                      .toISOString()
+                      .slice(0, 10)
+                  : "—"}
+              </b>
             </h3>
+
             <div className="drawer-actions">
-              <button className="btn-ghost" onClick={exportComparisonExcel}>Excel</button>
-              <button className="btn-ghost" onClick={exportComparisonPDF}>PDF</button>
-              <button className="close" onClick={() => setDrawerOpen(false)}>×</button>
+              <button
+                className="btn-ghost"
+                onClick={exportComparisonExcel}
+              >
+                Excel
+              </button>
+              <button
+                className="btn-ghost"
+                onClick={exportComparisonPDF}
+              >
+                PDF
+              </button>
+              <button
+                className="close"
+                onClick={() => setDrawerOpen(false)}
+              >
+                ×
+              </button>
             </div>
           </div>
 
@@ -295,8 +412,8 @@ export default function AnalyticsChart() {
                 <th>Country</th>
                 <th>Start Date</th>
                 <th>End Date</th>
-                <th>Δ (Price Change)</th>
-                <th>Δ% (Change)</th>
+                <th>Δ</th>
+                <th>Δ%</th>
                 <th>Min</th>
                 <th>Max</th>
                 <th>Avg</th>
@@ -306,12 +423,22 @@ export default function AnalyticsChart() {
               {rows.map((r) => (
                 <tr key={r.country}>
                   <td>{r.country}</td>
-                  <td>{r.startDate ?? "—"}</td>
-                  <td>{r.endDate ?? "—"}</td>
-                  <td className={r.delta >= 0 ? "pos" : "neg"}>
-                    {r.delta != null ? r.delta.toFixed(2) : "—"}
+                  <td>{r.startDate}</td>
+                  <td>{r.endDate}</td>
+                  <td
+                    className={
+                      r.delta >= 0 ? "pos" : "neg"
+                    }
+                  >
+                    {r.delta?.toFixed(2) || "—"}
                   </td>
-                  <td className={r.pct >= 0 ? "pos" : "neg"}>{fmtPct(r.pct)}</td>
+                  <td
+                    className={
+                      r.pct >= 0 ? "pos" : "neg"
+                    }
+                  >
+                    {fmtPct(r.pct)}
+                  </td>
                   <td>{fmtUsd(r.min)}</td>
                   <td>{fmtUsd(r.max)}</td>
                   <td>{fmtUsd(r.avg)}</td>

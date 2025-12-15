@@ -1,4 +1,4 @@
-// ✅ CarbonXInsight — Market Dashboard (FINAL with Calculation Popup)
+// ✅ CarbonXInsight — Market Dashboard (FINAL with Calendar + Comparison + Calculation Popup)
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
@@ -30,11 +30,17 @@ const fmtDate = (ts) => new Date(ts).toISOString().slice(0, 10);
 export default function AnalyticsChart() {
   const chartRef = useRef(null);
 
+  // data
   const [countries, setCountries] = useState([]);
   const [selected, setSelected] = useState([]);
   const [seriesData, setSeriesData] = useState([]);
   const [rawSeries, setRawSeries] = useState({});
 
+  // calendar
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
+  // comparison
   const [rows, setRows] = useState([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [compareAt, setCompareAt] = useState(null);
@@ -86,7 +92,7 @@ export default function AnalyticsChart() {
   }, [selected]);
 
   // ======================================================
-  // Force ALL range
+  // Force ALL range initially
   // ======================================================
   useEffect(() => {
     if (!chartRef.current || !seriesData.length) return;
@@ -94,7 +100,24 @@ export default function AnalyticsChart() {
   }, [seriesData]);
 
   // ======================================================
-  // Comparison helpers
+  // Apply calendar range
+  // ======================================================
+  const applyCalendarRange = () => {
+    if (!chartRef.current || !fromDate || !toDate) return;
+
+    const min = new Date(fromDate).getTime();
+    const max = new Date(toDate).getTime();
+
+    if (min > max) {
+      alert("From date must be before To date");
+      return;
+    }
+
+    chartRef.current.chart.xAxis[0].setExtremes(min, max);
+  };
+
+  // ======================================================
+  // Helpers
   // ======================================================
   const nearest = (arr, ts) => {
     let lo = 0,
@@ -107,29 +130,40 @@ export default function AnalyticsChart() {
     return arr[Math.max(0, lo - 1)];
   };
 
+  // ======================================================
+  // Build comparison (RESPECT CALENDAR)
+  // ======================================================
   const buildComparison = (clickedTs) => {
-    const data = Object.keys(rawSeries).map((country) => {
-      const arr = rawSeries[country];
-      const start = arr[0];
-      const end = nearest(arr, clickedTs);
+    const minTs = fromDate ? new Date(fromDate).getTime() : null;
 
-      const slice = arr.filter(
-        (p) => p.ts >= start.ts && p.ts <= end.ts
-      );
-      const prices = slice.map((p) => p.price);
-      const avg =
-        prices.reduce((a, b) => a + b, 0) / prices.length;
+    const data = Object.keys(rawSeries)
+      .map((country) => {
+        const arr = rawSeries[country];
+        if (!arr?.length) return null;
 
-      return {
-        country,
-        start,
-        end,
-        delta: end.price - start.price,
-        pct:
-          ((end.price - start.price) / start.price) * 100,
-        avg,
-      };
-    });
+        const start = minTs ? nearest(arr, minTs) : arr[0];
+        const end = nearest(arr, clickedTs);
+        if (!start || !end) return null;
+
+        const slice = arr.filter(
+          (p) => p.ts >= start.ts && p.ts <= end.ts
+        );
+        const avg =
+          slice.reduce((s, p) => s + p.price, 0) /
+          slice.length;
+
+        return {
+          country,
+          start,
+          end,
+          delta: end.price - start.price,
+          pct:
+            ((end.price - start.price) / start.price) *
+            100,
+          avg,
+        };
+      })
+      .filter(Boolean);
 
     setRows(data);
     setCompareAt(clickedTs);
@@ -148,19 +182,18 @@ export default function AnalyticsChart() {
       },
 
       tooltip: {
-  shared: true,
-  useHTML: true,
-  backgroundColor: "#0f1720",
-  borderColor: "rgba(23,138,51,0.6)",
-  borderRadius: 10,
-  style: {
-    color: "#f4f7fa",
-    fontSize: "13px",
-    fontWeight: "600",
-  },
-  enabled: !drawerOpen,
-},
-
+        shared: true,
+        useHTML: true,
+        backgroundColor: "#0f1720",
+        borderColor: "rgba(23,138,51,0.6)",
+        borderRadius: 10,
+        style: {
+          color: "#f4f7fa",
+          fontSize: "13px",
+          fontWeight: "600",
+        },
+        enabled: !drawerOpen,
+      },
 
       xAxis: {
         crosshair: !drawerOpen,
@@ -169,17 +202,12 @@ export default function AnalyticsChart() {
       legend: { enabled: true },
 
       rangeSelector: {
-  selected: 5,
-  inputEnabled: false, // ✅ REQUIRED
-  inputBoxBorderColor: "transparent",
-  inputStyle: {
-    color: "transparent",
-  },
-  labelStyle: {
-    color: "transparent",
-  },
-},
-
+        selected: 5,
+        inputEnabled: false,
+        inputBoxBorderColor: "transparent",
+        inputStyle: { color: "transparent" },
+        labelStyle: { color: "transparent" },
+      },
 
       navigator: { enabled: false },
       scrollbar: { enabled: false },
@@ -200,7 +228,7 @@ export default function AnalyticsChart() {
 
       series: seriesData,
     }),
-    [seriesData, drawerOpen]
+    [seriesData, drawerOpen, fromDate, toDate]
   );
 
   // ======================================================
@@ -208,6 +236,7 @@ export default function AnalyticsChart() {
   // ======================================================
   return (
     <section className={`panel ${drawerOpen ? "drawer-open" : ""}`}>
+      {/* Header */}
       <header className="dashboard-header">
         <img src={HaycarbLogo} className="header-logo" alt="Haycarb" />
         <div>
@@ -220,6 +249,38 @@ export default function AnalyticsChart() {
         </div>
       </header>
 
+      {/* Calendar */}
+      <div className="date-row">
+        <div className="filter">
+          <span>From</span>
+          <input
+            type="date"
+            className="date-input"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+          />
+        </div>
+
+        <div className="filter">
+          <span>To</span>
+          <input
+            type="date"
+            className="date-input"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+          />
+        </div>
+
+        <button
+          className="btn-ghost"
+          onClick={applyCalendarRange}
+          disabled={!fromDate || !toDate}
+        >
+          Apply
+        </button>
+      </div>
+
+      {/* Chart */}
       <div className="chart-card">
         <HighchartsReact
           ref={chartRef}
@@ -229,13 +290,13 @@ export default function AnalyticsChart() {
         />
       </div>
 
-      {/* ================= COMPARISON ================= */}
+      {/* Comparison */}
       {drawerOpen && (
         <div className="compare-drawer">
           <div className="compare-head">
             <div className="compare-title">Market Comparison</div>
             <div className="compare-subtitle">
-              Time period: {fmtDate(compareAt)}
+              Up to {fmtDate(compareAt)}
             </div>
           </div>
 
@@ -253,7 +314,6 @@ export default function AnalyticsChart() {
                 <tr key={r.country}>
                   <td>{r.country}</td>
 
-                  {/* Δ */}
                   <td className="calc-cell">
                     <span className="calc-value">
                       {r.delta.toFixed(2)}
@@ -263,13 +323,11 @@ export default function AnalyticsChart() {
                       onClick={() =>
                         setEquation({
                           title: "Change (Δ)",
-                          formula: "Δ = End Price − Start Price",
+                          formula: "Δ = End − Start",
                           steps: [
-                            `End Price = ${r.end.price}`,
-                            `Start Price = ${r.start.price}`,
-                            `Δ = ${r.end.price} − ${r.start.price} = ${r.delta.toFixed(
-                              2
-                            )}`,
+                            `End = ${r.end.price}`,
+                            `Start = ${r.start.price}`,
+                            `Δ = ${r.delta.toFixed(2)}`,
                           ],
                         })
                       }
@@ -278,7 +336,6 @@ export default function AnalyticsChart() {
                     </span>
                   </td>
 
-                  {/* Δ% */}
                   <td className="calc-cell">
                     <span className="calc-value">
                       {fmtPct(r.pct)}
@@ -291,9 +348,8 @@ export default function AnalyticsChart() {
                           formula:
                             "(End − Start) / Start × 100",
                           steps: [
-                            `End Price = ${r.end.price}`,
-                            `Start Price = ${r.start.price}`,
-                            `Δ% = (${r.end.price} − ${r.start.price}) / ${r.start.price} × 100`,
+                            `End = ${r.end.price}`,
+                            `Start = ${r.start.price}`,
                             `Δ% = ${r.pct.toFixed(2)}%`,
                           ],
                         })
@@ -303,7 +359,6 @@ export default function AnalyticsChart() {
                     </span>
                   </td>
 
-                  {/* Avg */}
                   <td>{r.avg.toFixed(2)}</td>
                 </tr>
               ))}
@@ -312,7 +367,7 @@ export default function AnalyticsChart() {
         </div>
       )}
 
-      {/* ================= CALCULATION POPUP ================= */}
+      {/* Calculation Popup */}
       {equation && (
         <div className="equation-modal">
           <div className="equation-box">

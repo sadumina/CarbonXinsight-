@@ -360,6 +360,95 @@ body {
 }
 
 /* =========================
+   DATE RANGE (CALENDAR)
+========================= */
+
+.date-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  margin: 18px 0 14px;
+  flex-wrap: wrap;
+}
+
+/* Date field wrapper */
+.date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.date-field label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #9fb2c8;
+}
+
+/* Date input */
+.date-input {
+  height: 42px;
+  min-width: 160px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: #0f1720;
+  border: 1px solid rgba(23, 138, 51, 0.55);
+  color: #f4f7fa;
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+/* Hover & focus */
+.date-input:hover {
+  border-color: #6cd17a;
+}
+
+.date-input:focus {
+  border-color: #00ff9d;
+  box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.18);
+}
+
+/* Calendar icon (Chrome / Edge) */
+.date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+/* Apply button */
+.date-apply-btn {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(23, 138, 51, 0.55);
+  background: linear-gradient(180deg, #1c2b22, #15201a);
+  color: #d9ffe9;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.date-apply-btn:hover {
+  background: linear-gradient(180deg, #27a857, #1e8f46);
+  color: #06110a;
+  box-shadow: 0 6px 16px rgba(0, 255, 157, 0.35);
+}
+
+.date-apply-btn:active {
+  transform: scale(0.97);
+}
+
+/* Disabled state */
+.date-apply-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =========================
    RESPONSIVE
 ========================= */
 @media (max-width: 768px) {

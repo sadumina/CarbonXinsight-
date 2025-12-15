@@ -1,4 +1,4 @@
-// ✅ CarbonXInsight — Market Dashboard (FINAL with Calendar + Comparison + Calculation Popup)
+// ✅ CarbonXInsight — Market Dashboard (FINAL)
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
@@ -23,7 +23,6 @@ initHC(OfflineExporting);
 const API = "http://localhost:8000";
 
 // ---------- helpers ----------
-const fmtUsd = (v) => (v == null ? "—" : `$${Number(v).toFixed(2)}`);
 const fmtPct = (v) => (v == null ? "—" : `${Number(v).toFixed(2)}%`);
 const fmtDate = (ts) => new Date(ts).toISOString().slice(0, 10);
 
@@ -92,7 +91,7 @@ export default function AnalyticsChart() {
   }, [selected]);
 
   // ======================================================
-  // Force ALL range initially
+  // Reset zoom initially
   // ======================================================
   useEffect(() => {
     if (!chartRef.current || !seriesData.length) return;
@@ -117,6 +116,20 @@ export default function AnalyticsChart() {
   };
 
   // ======================================================
+  // Reset view after comparison
+  // ======================================================
+  const handleRefreshView = () => {
+    setDrawerOpen(false);
+    setRows([]);
+    setCompareAt(null);
+    setEquation(null);
+
+    if (chartRef.current) {
+      chartRef.current.chart.xAxis[0].setExtremes(null, null);
+    }
+  };
+
+  // ======================================================
   // Helpers
   // ======================================================
   const nearest = (arr, ts) => {
@@ -131,7 +144,7 @@ export default function AnalyticsChart() {
   };
 
   // ======================================================
-  // Build comparison (RESPECT CALENDAR)
+  // Build comparison (respects calendar)
   // ======================================================
   const buildComparison = (clickedTs) => {
     const minTs = fromDate ? new Date(fromDate).getTime() : null;
@@ -251,8 +264,8 @@ export default function AnalyticsChart() {
 
       {/* Calendar */}
       <div className="date-row">
-        <div className="filter">
-          <span>From</span>
+        <div className="date-field">
+          <label>From</label>
           <input
             type="date"
             className="date-input"
@@ -261,8 +274,8 @@ export default function AnalyticsChart() {
           />
         </div>
 
-        <div className="filter">
-          <span>To</span>
+        <div className="date-field">
+          <label>To</label>
           <input
             type="date"
             className="date-input"
@@ -272,7 +285,7 @@ export default function AnalyticsChart() {
         </div>
 
         <button
-          className="btn-ghost"
+          className="date-apply-btn"
           onClick={applyCalendarRange}
           disabled={!fromDate || !toDate}
         >
@@ -294,10 +307,19 @@ export default function AnalyticsChart() {
       {drawerOpen && (
         <div className="compare-drawer">
           <div className="compare-head">
-            <div className="compare-title">Market Comparison</div>
-            <div className="compare-subtitle">
-              Up to {fmtDate(compareAt)}
+            <div>
+              <div className="compare-title">Market Comparison</div>
+              <div className="compare-subtitle">
+                Up to {fmtDate(compareAt)}
+              </div>
             </div>
+
+            <button
+              className="compare-refresh-btn"
+              onClick={handleRefreshView}
+            >
+              ⟳ Refresh
+            </button>
           </div>
 
           <table className="compare-table">

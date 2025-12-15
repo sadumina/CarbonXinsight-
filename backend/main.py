@@ -5,51 +5,75 @@ from datetime import datetime
 import camelot
 import pandas as pd
 import re
+
 from db import charcoal_collection
 
-# ─────────────────────────────────────────────
+# =========================================================
+# CONSTANTS
+# =========================================================
 PRODUCT = "Coconut Shell Charcoal"
-DATE_RX = re.compile(r"\d{1,2}/\d{1,2}/\d{2,4}")
-COUNTRY_RX = re.compile(r"^([^(]+)")
-MARKET_RX = re.compile(r"\((.+)\)")
 
-# ─────────────────────────────────────────────
+DATE_RX = re.compile(r"\d{1,2}/\d{1,2}/\d{2,4}")
+COUNTRY_RX = re.compile(r"^([^(]+)")      # before "("
+MARKET_RX = re.compile(r"\((.+)\)")       # inside "()"
+
+
+# =========================================================
+# APP INIT
+# =========================================================
 app = FastAPI(title="CarbonXInsight — Market Analytics")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],   # tighten in prod
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ─────────────────────────────────────────────
+
+# =========================================================
+# HELPERS
+# =========================================================
 def clean_to_float(val):
-    val = re.sub(r"[^\d.]", "", str(val))
+    val = re.sub(r"[^\d.]", "", str(val)).strip()
     try:
         return float(val)
-    except:
+    except Exception:
         return None
 
 
 def split_country_and_market(raw: str):
+    """
+    Examples:
+      India (Domestic, Tamil Nadu)
+      Sri Lanka (FOB)
+      Indonesia
+    """
     if not raw:
         return None, None
 
     raw = " ".join(str(raw).split()).strip()
-    country = COUNTRY_RX.match(raw).group(1).strip()
+
+    country_match = COUNTRY_RX.match(raw)
+    country = country_match.group(1).strip() if country_match else raw
+
     market_match = MARKET_RX.search(raw)
     market = market_match.group(1).strip() if market_match else None
+
     return country, market
 
 
-# ─────────────────────────────────────────────
+# =========================================================
+# PDF UPLOAD
+# =========================================================
 @app.post("/upload")
 async def upload_pdf(pdf: List[UploadFile] = File(...)):
     docs = []
 
     for file in pdf:
         path = f"./{file.filename}"
+
         with open(path, "wb") as f:
             f.write(file.file.read())
 
@@ -57,31 +81,42 @@ async def upload_pdf(pdf: List[UploadFile] = File(...)):
 
         for tbl in tables:
             df = tbl.df
-            date_row = None
+
+            date_row_idx = None
             dates = []
 
             for i, row in df.iterrows():
                 hits = [c for c in row if DATE_RX.search(str(c))]
                 if len(hits) >= 2:
-                    date_row = i
+                    date_row_idx = i
                     dates = [pd.to_datetime(d, dayfirst=True) for d in hits]
                     break
 
             if not dates:
                 continue
 
-            for _, row in df.iloc[date_row + 1 :].iterrows():
-                product = str(row[0]).lower()
+            for _, row in df.iloc[date_row_idx + 1 :].iterrows():
+                product = str(row[0]).strip().lower()
+                raw_country = str(row[1]).strip()
+
+                if product == "" or product.startswith("source"):
+                    break
+
                 if "coconut shell charcoal" not in product:
                     continue
 
-                country, market = split_country_and_market(row[1])
+                country, market = split_country_and_market(raw_country)
 
                 prices = []
-                for i, raw in enumerate(row[2 : 2 + len(dates)]):
-                    price = clean_to_float(raw)
-                    if price:
-                        prices.append({"date": dates[i], "price": price})
+                for idx, raw_price in enumerate(row.to_list()[2 : 2 + len(dates)]):
+                    price = clean_to_float(raw_price)
+                    if price is not None:
+                        prices.append(
+                            {
+                                "date": dates[idx],
+                                "price": price,
+                            }
+                        )
 
                 if prices:
                     docs.append(
@@ -97,43 +132,88 @@ async def upload_pdf(pdf: List[UploadFile] = File(...)):
     if docs:
         charcoal_collection.insert_many(docs)
 
-    return {"inserted": len(docs)}
+    return {
+        "message": "PDF upload completed",
+        "rows_inserted": len(docs),
+    }
 
 
-# ─────────────────────────────────────────────
+# =========================================================
+# EXCEL UPLOAD
+# =========================================================
 @app.post("/upload-excel")
 async def upload_excel(file: UploadFile = File(...)):
+    if not file.filename.endswith((".xlsx", ".xls")):
+        raise HTTPException(status_code=400, detail="Upload Excel only")
+
     df = pd.read_excel(file.file, sheet_name="Data")
 
+    required = {"Country", "Product", "Date", "Price"}
+    if not required.issubset(df.columns):
+        raise HTTPException(status_code=400, detail="Invalid Excel format")
+
     docs = []
-    for _, r in df.iterrows():
-        country, market = split_country_and_market(r["Country"])
+
+    for _, row in df.iterrows():
+        country, market = split_country_and_market(row["Country"])
+
         docs.append(
             {
                 "product": PRODUCT,
                 "country": country,
                 "market": market,
-                "prices": [{"date": pd.to_datetime(r["Date"]), "price": float(r["Price"])}],
+                "prices": [
+                    {
+                        "date": pd.to_datetime(row["Date"]),
+                        "price": float(row["Price"]),
+                    }
+                ],
                 "source_excel": file.filename,
             }
         )
 
-    charcoal_collection.insert_many(docs)
-    return {"rows": len(docs)}
+    if docs:
+        charcoal_collection.insert_many(docs)
+
+    return {
+        "message": "Excel upload successful",
+        "rows_inserted": len(docs),
+    }
 
 
-# ─────────────────────────────────────────────
+# =========================================================
+# ✅ COUNTRIES (FIXES YOUR 404)
+# =========================================================
+@app.get("/countries")
+def list_countries():
+    """
+    Used by dashboard & filters
+    """
+    countries = charcoal_collection.distinct(
+        "country",
+        {"product": PRODUCT}
+    )
+    return sorted(countries)
+
+
+# =========================================================
+# TIME SERIES (DASHBOARD CHARTS)
+# =========================================================
 @app.get("/series")
 def get_series(
     countries: Optional[List[str]] = Query(None),
     fromDate: Optional[str] = None,
     toDate: Optional[str] = None,
 ):
-    match = {"product": PRODUCT}
-    if countries:
-        match["country"] = {"$in": countries}
+    match_stage = {"product": PRODUCT}
 
-    pipeline = [{"$match": match}, {"$unwind": "$prices"}]
+    if countries:
+        match_stage["country"] = {"$in": countries}
+
+    pipeline = [
+        {"$match": match_stage},
+        {"$unwind": "$prices"},
+    ]
 
     if fromDate or toDate:
         date_filter = {}
@@ -141,28 +221,32 @@ def get_series(
             date_filter["$gte"] = datetime.fromisoformat(fromDate)
         if toDate:
             date_filter["$lte"] = datetime.fromisoformat(toDate)
+
         pipeline.append({"$match": {"prices.date": date_filter}})
 
-    pipeline.append(
-        {
-            "$project": {
-                "_id": 0,
-                "country": 1,
-                "market": 1,
-                "date": "$prices.date",
-                "price": "$prices.price",
-            }
-        }
+    pipeline.extend(
+        [
+            {"$sort": {"prices.date": 1}},
+            {
+                "$project": {
+                    "_id": 0,
+                    "country": "$country",
+                    "market": "$market",
+                    "date": "$prices.date",
+                    "price": "$prices.price",
+                }
+            },
+        ]
     )
 
     return list(charcoal_collection.aggregate(pipeline))
 
 
-# ─────────────────────────────────────────────
-# ✅ NEW — MONTHLY VIEW API
-# ─────────────────────────────────────────────
+# =========================================================
+# ✅ VIEW DATA — MONTH BY MONTH
+# =========================================================
 @app.get("/data/monthly")
-def view_monthly_data(year: int, month: int):
+def get_monthly_data(year: int, month: int):
     start = datetime(year, month, 1)
     end = datetime(year + 1, 1, 1) if month == 12 else datetime(year, month + 1, 1)
 
@@ -177,13 +261,16 @@ def view_monthly_data(year: int, month: int):
                 "market": 1,
                 "date": "$prices.date",
                 "price": "$prices.price",
-                "source": {"$ifNull": ["$source_pdf", "$source_excel"]},
+                "source": {
+                    "$ifNull": ["$source_pdf", "$source_excel"]
+                },
             }
         },
         {"$sort": {"date": 1}},
     ]
 
     records = list(charcoal_collection.aggregate(pipeline))
+
     if not records:
         return {"records": [], "summary": None}
 
@@ -200,6 +287,9 @@ def view_monthly_data(year: int, month: int):
     }
 
 
+# =========================================================
+# HEALTH / ROOT
+# =========================================================
 @app.get("/")
 def root():
-    return {"status": "CarbonXInsight running"}
+    return {"status": "CarbonXInsight backend running"}

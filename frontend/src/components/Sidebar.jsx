@@ -1,7 +1,6 @@
-// src/components/Sidebar.jsx
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
-import Logo from "../assets/haycarb-logo.png"; // optional
+import Logo from "../assets/haycarb-logo.png";
 
 export default function Sidebar() {
   return (
@@ -11,7 +10,6 @@ export default function Sidebar() {
         <span className="app-name">CarbonXInsight</span>
       </div>
 
-      {/* NOTE: no <ul>/<li>; just links */}
       <nav className="sidebar-menu">
         <NavLink
           to="/dashboard"
@@ -19,6 +17,13 @@ export default function Sidebar() {
           className={({ isActive }) => `sidebar-item ${isActive ? "active" : ""}`}
         >
           📊 Dashboard
+        </NavLink>
+
+        <NavLink
+          to="/view-data"
+          className={({ isActive }) => `sidebar-item ${isActive ? "active" : ""}`}
+        >
+          📅 View Data
         </NavLink>
 
         <NavLink

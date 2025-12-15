@@ -1,262 +1,384 @@
+/* =====================================================
+   CarbonXInsight — AnalyticsChart.css
+   Clean • Unified • Enterprise-ready
+===================================================== */
+
 /* =========================
-   CarbonXInsight — Analytics.css
-   High-Contrast + Centered Layout
-   ========================= */
+   DESIGN TOKENS
+========================= */
+:root {
+  --page-bg: #0b1514;
 
-:root{
-  --page-bg:#0b1514;
-  --panel:#12171d;
-  --panel-2:#1a2128;
-  --panel-3:#10161c;
+  --panel: #12171d;
+  --panel-2: #1a2128;
+  --panel-3: #10161c;
 
-  --text-primary:#f4f7fa;
-  --text-secondary:#b9c3cc;
-  --text-muted:#a7b4bf;
+  --text-primary: #f4f7fa;
+  --text-secondary: #b9c3cc;
+  --text-muted: #a7b4bf;
 
-  --brand:#178A33;
-  --brand-soft:#6CD17A;
-  --brand-border:rgba(23,138,51,.32);
-  --brand-glow:rgba(23,138,51,.20);
+  --brand: #178a33;
+  --brand-soft: #6cd17a;
+  --brand-border: rgba(23, 138, 51, 0.32);
+  --brand-glow: rgba(23, 138, 51, 0.2);
 
-  --success:#2BAA4B;
-  --danger:#F85149;
+  --success: #2baa4b;
+  --danger: #f85149;
 
-  --radius:12px;
-  --radius-lg:16px;
-  --shadow-1:0 6px 18px rgba(0,0,0,.25);
-  --shadow-2:0 12px 36px rgba(0,0,0,.40);
-  --separator:rgba(255,255,255,.10);
-}
+  --radius: 12px;
+  --radius-lg: 16px;
 
-*{ box-sizing:border-box }
-html,body,#root{ height:100% }
-body{
-  margin:0;
-  background:var(--page-bg);
-  color:var(--text-primary);
-  font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  --shadow-1: 0 6px 18px rgba(0, 0, 0, 0.25);
+  --shadow-2: 0 12px 36px rgba(0, 0, 0, 0.4);
+
+  --separator: rgba(255, 255, 255, 0.1);
 }
 
-/* ---------- Panel ---------- */
-.panel{
-  max-width:1280px;
-  margin:24px auto;
-  padding:24px 28px 26px;
-  background:linear-gradient(180deg,var(--panel-2),var(--panel-3));
-  border:1px solid var(--brand-border);
-  border-radius:18px;
-  box-shadow:var(--shadow-1);
+/* =========================
+   GLOBAL
+========================= */
+* {
+  box-sizing: border-box;
 }
 
-/* ---------- Header ---------- */
-.panel-head.compact{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
+html,
+body,
+#root {
+  height: 100%;
 }
 
-.brand-left{ display:flex; align-items:center; gap:8px }
-.brand-logo{ height:30px }
-
-.title-wrap.center{
-  flex:1;
-  text-align:center;
-}
-.title-wrap.center h2{
-  margin:0;
-  font-size:22px;
-  font-weight:700;
-  color:#ffffff;
-}
-.subtitle{
-  margin-top:4px;
-  font-size:13px;
-  font-weight:600;
-  color:#9de7a9;
+body {
+  margin: 0;
+  background: var(--page-bg);
+  color: var(--text-primary);
+  font-family: Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial,
+    sans-serif;
 }
 
-/* ---------- Refresh Button ---------- */
-.refresh-btn{
-  width:36px;
-  height:36px;
-  border-radius:10px;
-  border:1px solid var(--brand-border);
-  background:transparent;
-  color:var(--brand-soft);
-  font-size:18px;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  transition:0.25s;
-}
-.refresh-btn:hover{
-  background:var(--brand-glow);
-  border-color:var(--brand-soft);
-  color:#0a0d0f;
-  box-shadow:0 0 12px var(--brand-glow);
-}
-.refresh-btn:active{ transform:scale(.92) }
-
-/* ---------- Filters (Centered Block) ---------- */
-.filters-row{
-  margin-top:18px;
-  margin-bottom:10px;
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-  align-items:center;
+/* =========================
+   PANEL
+========================= */
+.panel {
+  max-width: 1280px;
+  margin: 24px auto;
+  padding: 24px 28px 26px;
+  background: linear-gradient(
+    180deg,
+    var(--panel-2),
+    var(--panel-3)
+  );
+  border: 1px solid var(--brand-border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-1);
+  transition: filter 0.25s ease;
 }
 
-.pill-container{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  justify-content:center;
+.panel.drawer-open {
+  filter: saturate(0.9) brightness(0.92);
 }
 
-.date-row{
-  display:flex;
-  flex-wrap:wrap;
-  gap:12px;
-  justify-content:center;
+/* =========================
+   HEADER
+========================= */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background: linear-gradient(180deg, #0e141b, #0b1117);
+  border-radius: 14px;
+  border-bottom: 1px solid var(--separator);
+  margin-bottom: 18px;
 }
 
-.filter{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-}
-.filter span{
-  font-size:12px;
-  letter-spacing:.3px;
-  text-transform:uppercase;
-  color:var(--text-secondary);
+.header-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
 }
 
-/* Date input */
-.date-input{
-  background-color:#1b242c;
-  border:2px solid #6cd17a;
-  border-radius:10px;
-  padding:8px 12px;
-  color:#fff;
-  font-size:15px;
-  width:160px;
-  transition:0.25s;
-}
-.date-input:hover{ border-color:#00eaff }
-.date-input:focus{
-  border-color:#00eaff;
-  box-shadow:0 0 8px rgba(0,234,255,.6);
+.header-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
 }
 
-/* ---------- Market Pills ---------- */
-.pill{
-  padding:8px 18px;
-  border-radius:20px;
-  background:#1e252b;
-  font-size:14px;
-  cursor:pointer;
-  border:1px solid #313a41;
-  color:#d8e0e8;
-  transition:0.25s;
-}
-.pill:hover{ border-color:#6cd17a }
-.pill-active{
-  background:#6cd17a;
-  color:#0a0d0f;
-  border-color:#6cd17a;
-  font-weight:700;
-  box-shadow:0 0 10px rgba(108,209,122,.6);
+.header-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 
-/* ---------- Comparison Drawer ---------- */
-.compare-drawer{
-  margin-top:18px;
-  background:#162027f0;
-  border:1px solid var(--brand-border);
-  border-radius:12px;
-  box-shadow:var(--shadow-2);
-}
-.compare-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:14px 18px;
-  background:linear-gradient(90deg,var(--brand-glow),transparent);
-}
-.compare-head h3{
-  margin:0;
-  color:#eafbf7;
-  font-size:18px;
-}
-.compare-head .close{
-  border:none;
-  background:none;
-  color:#cdd6df;
-  font-size:24px;
-  cursor:pointer;
+/* =========================
+   FILTERS & PILLS
+========================= */
+.filters-row {
+  margin-top: 18px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
 }
 
-.compare-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:15px;
-}
-.compare-table th, .compare-table td{
-  padding:10px 12px;
-  border-top:1px solid rgba(255,255,255,.12);
-}
-.compare-table th{ color:var(--brand-soft) }
-
-/* ---------- Highcharts Enhancements ---------- */
-.highcharts-background{ fill:var(--panel) !important }
-.highcharts-title, .highcharts-subtitle{ fill:#fff !important }
-
-.highcharts-axis-labels text{
-  fill:#d6dde4 !important;
-  font-size:14px !important;
-  font-weight:500;
-}
-.highcharts-grid-line{ stroke:rgba(255,255,255,.22) !important }
-.highcharts-series path{ stroke-width:3.2px !important }
-.highcharts-tooltip text{
-  fill:#ffffff !important;
-  font-size:15px !important;
-  font-weight:600;
-}
-.highcharts-legend-item text{
-  fill:#f4f7fa !important;
-  font-size:14px !important;
+.pill-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
 }
 
-/* Buttons for drawer */
-.btn-ghost{
-  height:40px;
-  padding:0 14px;
-  border-radius:10px;
-  cursor:pointer;
-  border:1px solid var(--brand-border);
-  background:transparent;
-  color:#cdfade;
-  font-weight:600;
-}
-.btn-ghost:hover{
-  background:#203226;
-  box-shadow:0 4px 14px var(--brand-glow);
+.pill {
+  padding: 8px 18px;
+  border-radius: 20px;
+  background: #1e252b;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid #313a41;
+  color: #d8e0e8;
+  transition: 0.25s;
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 768px){
-  .panel{ padding:18px }
-  .title-wrap.center h2{ font-size:20px }
-  .filters-row{ gap:10px }
+.pill:hover {
+  border-color: var(--brand-soft);
 }
 
-@media (max-width: 480px){
-  .panel{ padding:14px }
-  .brand-logo{ height:24px }
-  .date-input{ width:140px; font-size:14px }
+.pill-active {
+  background: var(--brand-soft);
+  color: #0a0d0f;
+  border-color: var(--brand-soft);
+  font-weight: 700;
+  box-shadow: 0 0 10px var(--brand-glow);
+}
+
+/* =========================
+   CHART CARD
+========================= */
+.chart-card {
+  background: linear-gradient(180deg, #121922, #0d131a);
+  border-radius: var(--radius-lg);
+  padding: 16px 16px 12px;
+  box-shadow: var(--shadow-2);
+}
+
+/* =========================
+   HIGHCHARTS OVERRIDES
+========================= */
+.highcharts-background {
+  fill: var(--panel) !important;
+}
+
+.highcharts-grid-line {
+  stroke: rgba(255, 255, 255, 0.08) !important;
+}
+
+.highcharts-axis-labels text {
+  fill: #d6dde4 !important;
+  font-size: 13px !important;
+  font-weight: 500;
+}
+
+.highcharts-series path {
+  stroke-width: 3.2px !important;
+}
+
+.highcharts-tooltip text {
+  fill: #ffffff !important;
+  font-size: 14px !important;
+  font-weight: 600;
+}
+
+.highcharts-legend-item text {
+  fill: var(--text-primary) !important;
+  font-size: 13px !important;
+}
+
+/* Range selector */
+.highcharts-range-selector-buttons text {
+  fill: #cbd5e1 !important;
+  font-size: 11px !important;
+}
+
+.highcharts-range-selector-buttons .highcharts-button-box {
+  fill: #0f1720 !important;
+  stroke: var(--separator) !important;
+}
+
+.highcharts-range-selector-buttons
+  .highcharts-button-pressed
+  .highcharts-button-box {
+  fill: var(--brand-soft) !important;
+  stroke: none !important;
+}
+
+/* =========================
+   COMPARISON DRAWER
+========================= */
+.compare-drawer {
+  margin-top: 22px;
+  background: linear-gradient(180deg, #0f1720, #0b1218);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius);
+  padding: 18px 20px 22px;
+  box-shadow: var(--shadow-2);
+}
+
+.compare-head {
+  margin-bottom: 14px;
+}
+
+.compare-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.compare-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* =========================
+   COMPARISON TABLE
+========================= */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.compare-table th {
+  text-align: left;
+  padding: 10px 12px;
+  color: var(--brand-soft);
+  font-weight: 600;
+  border-bottom: 1px solid var(--separator);
+}
+
+.compare-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.compare-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* =========================
+   CALCULATION CELLS
+========================= */
+.calc-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calc-value {
+  font-weight: 600;
+}
+
+.calc-icon {
+  font-size: 12px;
+  color: var(--brand-soft);
+  cursor: pointer;
+  border: 1px solid var(--brand-border);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calc-icon:hover {
+  background: var(--brand-glow);
+}
+
+/* =========================
+   CALCULATION POPUP
+========================= */
+.equation-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.equation-box {
+  width: 420px;
+  background: #0f1720;
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  border: 1px solid var(--brand-border);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+.equation-box h4 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.equation-formula {
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.equation-steps {
+  padding-left: 18px;
+  margin-bottom: 16px;
+}
+
+.equation-steps li {
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--separator);
+  color: var(--text-primary);
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 768px) {
+  .panel {
+    padding: 18px;
+  }
+
+  .header-title {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .panel {
+    padding: 14px;
+  }
+
+  .header-logo {
+    width: 44px;
+    height: 44px;
+  }
 }

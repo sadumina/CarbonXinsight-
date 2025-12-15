@@ -1,4 +1,4 @@
-// ✅ CarbonXInsight — Market Dashboard (FINAL, STABLE)
+// ✅ CarbonXInsight — Market Dashboard (FINAL with Calculation Popup)
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
@@ -6,11 +6,6 @@ import Highcharts from "highcharts/highstock";
 import HighchartsReact from "highcharts-react-official";
 import "./AnalyticsChart.css";
 import HaycarbLogo from "../assets/haycarb-logo.png";
-
-// Export tools
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
 
 // Highcharts modules
 import Exporting from "highcharts/modules/exporting";
@@ -27,8 +22,10 @@ initHC(OfflineExporting);
 
 const API = "http://localhost:8000";
 
+// ---------- helpers ----------
 const fmtUsd = (v) => (v == null ? "—" : `$${Number(v).toFixed(2)}`);
 const fmtPct = (v) => (v == null ? "—" : `${Number(v).toFixed(2)}%`);
+const fmtDate = (ts) => new Date(ts).toISOString().slice(0, 10);
 
 export default function AnalyticsChart() {
   const chartRef = useRef(null);
@@ -37,34 +34,33 @@ export default function AnalyticsChart() {
   const [selected, setSelected] = useState([]);
   const [seriesData, setSeriesData] = useState([]);
   const [rawSeries, setRawSeries] = useState({});
+
   const [rows, setRows] = useState([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [compareAt, setCompareAt] = useState(null);
 
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  // calculation popup
+  const [equation, setEquation] = useState(null);
 
-  // --------------------------------------------------
-  // Load countries → DEFAULT SELECT ALL
-  // --------------------------------------------------
+  // ======================================================
+  // Load countries (DEFAULT: ALL)
+  // ======================================================
   useEffect(() => {
     (async () => {
       const { data = [] } = await axios.get(`${API}/countries`);
       setCountries(data);
-      setSelected(data); // ✅ ALL SELECTED BY DEFAULT
+      setSelected(data);
     })();
   }, []);
 
-  // --------------------------------------------------
-  // Fetch time series
-  // --------------------------------------------------
+  // ======================================================
+  // Fetch series data
+  // ======================================================
   useEffect(() => {
     if (!selected.length) return;
 
     const url = new URL(`${API}/series`);
     selected.forEach((c) => url.searchParams.append("countries", c));
-    if (fromDate) url.searchParams.set("fromDate", fromDate);
-    if (toDate) url.searchParams.set("toDate", toDate);
 
     axios.get(url.toString()).then((res) => {
       const grouped = {};
@@ -79,41 +75,28 @@ export default function AnalyticsChart() {
       );
 
       const series = Object.keys(grouped).map((country) => ({
-        id: `series-${country}`,
+        id: country,
         name: country,
         data: grouped[country].map((pt) => [pt.ts, pt.price]),
-        tooltip: { valueDecimals: 2 },
       }));
 
       setRawSeries(grouped);
       setSeriesData(series);
     });
-  }, [selected, fromDate, toDate]);
+  }, [selected]);
 
-  // --------------------------------------------------
-  // Force FULL RANGE (same as clicking "All")
-  // --------------------------------------------------
+  // ======================================================
+  // Force ALL range
+  // ======================================================
   useEffect(() => {
-    if (!chartRef.current || seriesData.length === 0) return;
+    if (!chartRef.current || !seriesData.length) return;
     chartRef.current.chart.xAxis[0].setExtremes(null, null);
   }, [seriesData]);
 
-  // --------------------------------------------------
-  // Country toggle
-  // --------------------------------------------------
-  const toggleCountry = (c) => {
-    setSelected(
-      selected.includes(c)
-        ? selected.filter((x) => x !== c)
-        : [...selected, c]
-    );
-  };
-
-  // --------------------------------------------------
+  // ======================================================
   // Comparison helpers
-  // --------------------------------------------------
+  // ======================================================
   const nearest = (arr, ts) => {
-    if (!arr.length) return null;
     let lo = 0,
       hi = arr.length - 1;
     while (lo < hi) {
@@ -121,62 +104,41 @@ export default function AnalyticsChart() {
       if (arr[mid].ts < ts) lo = mid + 1;
       else hi = mid;
     }
-    const a = arr[Math.max(0, lo - 1)];
-    const b = arr[Math.min(arr.length - 1, lo)];
-    return Math.abs((a?.ts ?? Infinity) - ts) <=
-      Math.abs((b?.ts ?? Infinity) - ts)
-      ? a
-      : b;
-  };
-
-  const betweenStats = (arr, start, end) => {
-    const slice = arr.filter(
-      (p) => p.ts >= start.ts && p.ts <= end.ts
-    );
-    if (!slice.length) return {};
-    const prices = slice.map((p) => p.price);
-    return {
-      min: Math.min(...prices),
-      max: Math.max(...prices),
-      avg: prices.reduce((a, b) => a + b, 0) / prices.length,
-    };
+    return arr[Math.max(0, lo - 1)];
   };
 
   const buildComparison = (clickedTs) => {
-    const fromTs = fromDate ? new Date(fromDate).getTime() : null;
+    const data = Object.keys(rawSeries).map((country) => {
+      const arr = rawSeries[country];
+      const start = arr[0];
+      const end = nearest(arr, clickedTs);
 
-    const data = Object.keys(rawSeries)
-      .map((country) => {
-        const arr = rawSeries[country];
-        if (!arr?.length) return null;
+      const slice = arr.filter(
+        (p) => p.ts >= start.ts && p.ts <= end.ts
+      );
+      const prices = slice.map((p) => p.price);
+      const avg =
+        prices.reduce((a, b) => a + b, 0) / prices.length;
 
-        const start = fromTs ? nearest(arr, fromTs) : arr[0];
-        const end = nearest(arr, clickedTs);
-        if (!start || !end) return null;
-
-        const stats = betweenStats(arr, start, end);
-
-        return {
-          country,
-          startDate: new Date(start.ts).toISOString().slice(0, 10),
-          endDate: new Date(end.ts).toISOString().slice(0, 10),
-          delta: end.price - start.price,
-          pct: start.price
-            ? ((end.price - start.price) / start.price) * 100
-            : null,
-          ...stats,
-        };
-      })
-      .filter(Boolean);
+      return {
+        country,
+        start,
+        end,
+        delta: end.price - start.price,
+        pct:
+          ((end.price - start.price) / start.price) * 100,
+        avg,
+      };
+    });
 
     setRows(data);
     setCompareAt(clickedTs);
     setDrawerOpen(true);
   };
 
-  // --------------------------------------------------
+  // ======================================================
   // Chart options
-  // --------------------------------------------------
+  // ======================================================
   const chartOptions = useMemo(
     () => ({
       chart: {
@@ -184,22 +146,47 @@ export default function AnalyticsChart() {
         height: 520,
         zoomType: "x",
       },
-      title: { text: "" },
-      subtitle: { text: "" },
+
+      tooltip: {
+  shared: true,
+  useHTML: true,
+  backgroundColor: "#0f1720",
+  borderColor: "rgba(23,138,51,0.6)",
+  borderRadius: 10,
+  style: {
+    color: "#f4f7fa",
+    fontSize: "13px",
+    fontWeight: "600",
+  },
+  enabled: !drawerOpen,
+},
+
+
+      xAxis: {
+        crosshair: !drawerOpen,
+      },
 
       legend: { enabled: true },
-      tooltip: { shared: true, backgroundColor: "#1b242c" },
 
       rangeSelector: {
-        selected: 5, // ✅ DEFAULT = ALL
-        inputEnabled: false,
-      },
+  selected: 5,
+  inputEnabled: false, // ✅ REQUIRED
+  inputBoxBorderColor: "transparent",
+  inputStyle: {
+    color: "transparent",
+  },
+  labelStyle: {
+    color: "transparent",
+  },
+},
+
 
       navigator: { enabled: false },
       scrollbar: { enabled: false },
 
       plotOptions: {
         series: {
+          cursor: "pointer",
           marker: { enabled: false },
           point: {
             events: {
@@ -213,86 +200,51 @@ export default function AnalyticsChart() {
 
       series: seriesData,
     }),
-    [seriesData]
+    [seriesData, drawerOpen]
   );
 
-  // --------------------------------------------------
+  // ======================================================
   // Render
-  // --------------------------------------------------
+  // ======================================================
   return (
-    <section className="panel">
-      <header className="panel-head compact">
-        <img
-          src={HaycarbLogo}
-          className="brand-logo"
-          alt="Haycarb Logo"
-        />
-
-        <div className="title-wrap center">
-          <h2>Coconut Shell Charcoal Pricing</h2>
-          <div className="subtitle">
-            Haycarb • Coconut Shell Charcoal
-          </div>
+    <section className={`panel ${drawerOpen ? "drawer-open" : ""}`}>
+      <header className="dashboard-header">
+        <img src={HaycarbLogo} className="header-logo" alt="Haycarb" />
+        <div>
+          <h1 className="header-title">
+            Coconut Shell Charcoal Pricing
+          </h1>
+          <p className="header-subtitle">
+            Haycarb • Coconut Shell Charcoal Market Analytics
+          </p>
         </div>
       </header>
 
-      {/* Country pills */}
-      <div className="filters-row">
-        <div className="pill-container">
-          {countries.map((c) => (
-            <span
-              key={c}
-              className={`pill ${
-                selected.includes(c) ? "pill-active" : ""
-              }`}
-              onClick={() => toggleCountry(c)}
-            >
-              {c}
-            </span>
-          ))}
-        </div>
+      <div className="chart-card">
+        <HighchartsReact
+          ref={chartRef}
+          highcharts={Highcharts}
+          constructorType="stockChart"
+          options={chartOptions}
+        />
       </div>
 
-      {/* Chart */}
-      <HighchartsReact
-        ref={chartRef}
-        highcharts={Highcharts}
-        constructorType="stockChart"
-        options={chartOptions}
-      />
-
-      {/* Comparison Drawer (unchanged, already styled in CSS) */}
+      {/* ================= COMPARISON ================= */}
       {drawerOpen && (
         <div className="compare-drawer">
           <div className="compare-head">
-            <h3>
-              Comparison until{" "}
-              <b>
-                {compareAt
-                  ? new Date(compareAt)
-                      .toISOString()
-                      .slice(0, 10)
-                  : "—"}
-              </b>
-            </h3>
-            <button
-              className="close"
-              onClick={() => setDrawerOpen(false)}
-            >
-              ×
-            </button>
+            <div className="compare-title">Market Comparison</div>
+            <div className="compare-subtitle">
+              Time period: {fmtDate(compareAt)}
+            </div>
           </div>
 
           <table className="compare-table">
             <thead>
               <tr>
                 <th>Country</th>
-                <th>Start</th>
-                <th>End</th>
                 <th>Δ</th>
                 <th>Δ%</th>
-                <th>Min</th>
-                <th>Max</th>
                 <th>Avg</th>
               </tr>
             </thead>
@@ -300,21 +252,86 @@ export default function AnalyticsChart() {
               {rows.map((r) => (
                 <tr key={r.country}>
                   <td>{r.country}</td>
-                  <td>{r.startDate}</td>
-                  <td>{r.endDate}</td>
-                  <td className={r.delta >= 0 ? "pos" : "neg"}>
-                    {r.delta?.toFixed(2) ?? "—"}
+
+                  {/* Δ */}
+                  <td className="calc-cell">
+                    <span className="calc-value">
+                      {r.delta.toFixed(2)}
+                    </span>
+                    <span
+                      className="calc-icon"
+                      onClick={() =>
+                        setEquation({
+                          title: "Change (Δ)",
+                          formula: "Δ = End Price − Start Price",
+                          steps: [
+                            `End Price = ${r.end.price}`,
+                            `Start Price = ${r.start.price}`,
+                            `Δ = ${r.end.price} − ${r.start.price} = ${r.delta.toFixed(
+                              2
+                            )}`,
+                          ],
+                        })
+                      }
+                    >
+                      ⓘ
+                    </span>
                   </td>
-                  <td className={r.pct >= 0 ? "pos" : "neg"}>
-                    {fmtPct(r.pct)}
+
+                  {/* Δ% */}
+                  <td className="calc-cell">
+                    <span className="calc-value">
+                      {fmtPct(r.pct)}
+                    </span>
+                    <span
+                      className="calc-icon"
+                      onClick={() =>
+                        setEquation({
+                          title: "Percentage Change (Δ%)",
+                          formula:
+                            "(End − Start) / Start × 100",
+                          steps: [
+                            `End Price = ${r.end.price}`,
+                            `Start Price = ${r.start.price}`,
+                            `Δ% = (${r.end.price} − ${r.start.price}) / ${r.start.price} × 100`,
+                            `Δ% = ${r.pct.toFixed(2)}%`,
+                          ],
+                        })
+                      }
+                    >
+                      ⓘ
+                    </span>
                   </td>
-                  <td>{fmtUsd(r.min)}</td>
-                  <td>{fmtUsd(r.max)}</td>
-                  <td>{fmtUsd(r.avg)}</td>
+
+                  {/* Avg */}
+                  <td>{r.avg.toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* ================= CALCULATION POPUP ================= */}
+      {equation && (
+        <div className="equation-modal">
+          <div className="equation-box">
+            <h4>{equation.title}</h4>
+            <div className="equation-formula">
+              {equation.formula}
+            </div>
+            <ul className="equation-steps">
+              {equation.steps.map((s, i) => (
+                <li key={i}>{s}</li>
+              ))}
+            </ul>
+            <button
+              className="btn-ghost"
+              onClick={() => setEquation(null)}
+            >
+              Close
+            </button>
+          </div>
         </div>
       )}
     </section>

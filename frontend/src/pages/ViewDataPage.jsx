@@ -3,18 +3,49 @@ import axios from "axios";
 
 const API = "http://localhost:8000";
 
+/* Month constants */
+const MONTHS = [
+  { value: 1, label: "January" },
+  { value: 2, label: "February" },
+  { value: 3, label: "March" },
+  { value: 4, label: "April" },
+  { value: 5, label: "May" },
+  { value: 6, label: "June" },
+  { value: 7, label: "July" },
+  { value: 8, label: "August" },
+  { value: 9, label: "September" },
+  { value: 10, label: "October" },
+  { value: 11, label: "November" },
+  { value: 12, label: "December" },
+];
+
 export default function ViewDataPage() {
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
+  const now = new Date();
+
+  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth() + 1);
   const [rows, setRows] = useState([]);
   const [summary, setSummary] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const monthLabel = MONTHS.find((m) => m.value === month)?.label;
 
   const loadData = async () => {
-    const res = await axios.get(`${API}/data/monthly`, {
-      params: { year, month },
-    });
-    setRows(res.data.records);
-    setSummary(res.data.summary);
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API}/data/monthly`, {
+        params: { year, month },
+      });
+
+      setRows(res.data.records);
+      setSummary(res.data.summary);
+    } catch (err) {
+      console.error("Failed to load data", err);
+      setRows([]);
+      setSummary(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -35,7 +66,7 @@ export default function ViewDataPage() {
           color: "#ffffff",
         }}
       >
-        📅 Monthly Uploaded Data
+        📅 Monthly Uploaded Data — {monthLabel} {year}
       </h2>
 
       {/* Filters */}
@@ -47,40 +78,46 @@ export default function ViewDataPage() {
           marginBottom: 22,
         }}
       >
+        {/* Year */}
         <input
           type="number"
           value={year}
           onChange={(e) => setYear(+e.target.value)}
-          placeholder="Year"
           style={{
             background: "#0d1117",
             border: "1px solid rgba(0,255,157,0.35)",
             color: "#d5e0e8",
             padding: "8px 10px",
             borderRadius: 8,
-            width: 110,
+            width: 120,
           }}
         />
 
-        <input
-          type="number"
-          min="1"
-          max="12"
+        {/* Month (NAME selector) */}
+        <select
           value={month}
-          onChange={(e) => setMonth(+e.target.value)}
-          placeholder="Month"
+          onChange={(e) => setMonth(Number(e.target.value))}
           style={{
             background: "#0d1117",
             border: "1px solid rgba(0,255,157,0.35)",
             color: "#d5e0e8",
             padding: "8px 10px",
             borderRadius: 8,
-            width: 110,
+            width: 170,
+            cursor: "pointer",
           }}
-        />
+        >
+          {MONTHS.map((m) => (
+            <option key={m.value} value={m.value}>
+              {m.label}
+            </option>
+          ))}
+        </select>
 
+        {/* Button */}
         <button
           onClick={loadData}
+          disabled={loading}
           style={{
             background: "linear-gradient(135deg, #00ff9d, #00d084)",
             color: "#001a12",
@@ -89,9 +126,10 @@ export default function ViewDataPage() {
             padding: "9px 18px",
             borderRadius: 10,
             cursor: "pointer",
+            opacity: loading ? 0.7 : 1,
           }}
         >
-          View Data
+          {loading ? "Loading..." : "View Data"}
         </button>
       </div>
 

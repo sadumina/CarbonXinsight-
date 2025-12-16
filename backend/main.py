@@ -285,6 +285,43 @@ def get_monthly_data(year: int, month: int):
             "max_price": max(prices),
         },
     }
+# =========================================================
+# ✅ COMPARISON SUMMARY — MIN / AVG / MAX (BY COUNTRY + MARKET)
+# =========================================================
+@app.get("/compare/summary")
+def compare_summary(fromDate: str, toDate: str):
+    start = datetime.fromisoformat(fromDate)
+    end = datetime.fromisoformat(toDate)
+
+    pipeline = [
+        {"$match": {"product": PRODUCT}},
+        {"$unwind": "$prices"},
+        {"$match": {"prices.date": {"$gte": start, "$lte": end}}},
+        {
+            "$group": {
+                "_id": {
+                    "country": "$country",
+                    "market": "$market",
+                },
+                "min_price": {"$min": "$prices.price"},
+                "avg_price": {"$avg": "$prices.price"},
+                "max_price": {"$max": "$prices.price"},
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "country": "$_id.country",
+                "market": "$_id.market",
+                "min": {"$round": ["$min_price", 2]},
+                "avg": {"$round": ["$avg_price", 2]},
+                "max": {"$round": ["$max_price", 2]},
+            }
+        },
+        {"$sort": {"country": 1, "market": 1}},
+    ]
+
+    return list(charcoal_collection.aggregate(pipeline))
 
 
 # =========================================================

@@ -333,7 +333,6 @@ export default function AnalyticsChart() {
             <thead>
               <tr>
                 <th>Country</th>
-                <th>Market</th>
                 <th>Min</th>
                 <th>Avg</th>
                 <th>Max</th>
@@ -351,7 +350,6 @@ export default function AnalyticsChart() {
                 return (
                   <tr key={`${a.country}-${a.market}`}>
                     <td>{a.country}</td>
-                    <td>{a.market || "-"}</td>
                     <td>{a.min}</td>
                     <td>{a.avg}</td>
                     <td>{a.max}</td>

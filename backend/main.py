@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 from datetime import datetime
-import camelot
+# import camelot
 import pandas as pd
 import re
 
@@ -301,7 +301,7 @@ def compare_summary(fromDate: str, toDate: str):
             "$group": {
                 "_id": {
                     "country": "$country",
-                    "market": "$market",
+                    
                 },
                 "min_price": {"$min": "$prices.price"},
                 "avg_price": {"$avg": "$prices.price"},

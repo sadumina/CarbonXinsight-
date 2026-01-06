@@ -471,3 +471,51 @@ body {
     height: 44px;
   }
 }
+/* =========================
+   KPI CARDS
+========================= */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 16px 0 18px;
+}
+
+.kpi-card {
+  background: linear-gradient(180deg, #0f1720, #0b1218);
+  border: 1px solid var(--brand-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-1);
+}
+
+.kpi-country {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brand-soft);
+  margin-bottom: 8px;
+}
+
+.kpi-values {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.kpi-item {
+  text-align: center;
+}
+
+.kpi-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.kpi-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 2px;
+}

@@ -64,6 +64,13 @@ export default function AnalyticsChart() {
   // ==========================
   // LOAD COUNTRIES
   // ==========================
+
+  // ==========================
+// CALCULATION EXPLANATION (NEW)
+// ==========================
+const [showCalc, setShowCalc] = useState(false);
+const [calcType, setCalcType] = useState(null);
+
   useEffect(() => {
     (async () => {
       const { data = [] } = await axios.get(`${API}/countries`);

@@ -180,46 +180,6 @@ def upload_pdf(pdf: List[UploadFile] = File(...)):
 # =========================================================
 # EXCEL UPLOAD
 # =========================================================
-@app.post("/upload-excel")
-async def upload_excel(file: UploadFile = File(...)):
-    if not file.filename.lower().endswith((".xlsx", ".xls")):
-        raise HTTPException(status_code=400, detail="Upload Excel only")
-
-    try:
-        df = pd.read_excel(file.file, sheet_name="Data")
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    required = {"Country", "Product", "Date", "Price"}
-    if not required.issubset(df.columns):
-        raise HTTPException(status_code=400, detail="Invalid Excel format")
-
-    docs = []
-
-    for _, row in df.iterrows():
-        try:
-            country, market = split_country_and_market(row["Country"])
-            docs.append({
-                "product": PRODUCT,
-                "country": country,
-                "market": market,
-                "prices": [{
-                    "date": pd.to_datetime(row["Date"]).to_pydatetime(),
-                    "price": float(row["Price"])
-                }],
-                "source_excel": file.filename,
-                "uploaded_at": datetime.utcnow()
-            })
-        except Exception:
-            continue
-
-    if docs:
-        charcoal_collection.insert_many(docs)
-
-    return {
-        "message": "Excel upload successful",
-        "rows_inserted": len(docs)
-    }
 
 
 # =========================================================
@@ -427,6 +387,86 @@ def compare_summary(fromDate: str, toDate: str):
 
     return list(charcoal_collection.aggregate(pipeline))
 
+# =========================================================
+# 🔥 DELETE ALL EXISTING DATA
+# =========================================================
+@app.delete("/data/clear")
+def clear_all_data():
+    result = charcoal_collection.delete_many({})
+    return {
+        "message": "All existing charcoal pricing data deleted",
+        "deleted_count": result.deleted_count
+    }
+
+# =========================================================
+# EXCEL UPLOAD (REPLACE EXISTING DATA)
+# =========================================================
+@app.post("/upload-excel")
+async def upload_excel(file: UploadFile = File(...)):
+    if not file.filename.lower().endswith((".xlsx", ".xls")):
+        raise HTTPException(status_code=400, detail="Only Excel files are allowed")
+
+    try:
+        # Read Excel (wide format)
+        df = pd.read_excel(file.file)
+        df.columns = df.columns.str.strip()
+        print("DEBUG columns:", df.columns.tolist())
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Excel read failed: {e}")
+
+    # Validate structure
+    if "Date" not in df.columns:
+        raise HTTPException(status_code=400, detail="Excel must contain 'Date' column")
+
+    # Country columns = everything except Date
+    country_columns = [c for c in df.columns if c != "Date"]
+
+    if not country_columns:
+        raise HTTPException(status_code=400, detail="No country columns found")
+
+    docs = []
+
+    # 🔁 Convert wide → long
+    for _, row in df.iterrows():
+        try:
+            date = pd.to_datetime(row["Date"]).to_pydatetime()
+        except Exception:
+            continue
+
+        for country_col in country_columns:
+            try:
+                price = row[country_col]
+                if pd.isna(price):
+                    continue
+
+                country, market = split_country_and_market(country_col)
+
+                docs.append({
+                    "product": PRODUCT,
+                    "country": country,
+                    "market": market,
+                    "prices": [{
+                        "date": date,
+                        "price": float(price)
+                    }],
+                    "source_excel": file.filename,
+                    "uploaded_at": datetime.utcnow()
+                })
+            except Exception:
+                continue
+
+    if not docs:
+        raise HTTPException(status_code=400, detail="No valid price data found")
+
+    # 🔥 Replace existing dataset
+    charcoal_collection.delete_many({})
+    charcoal_collection.insert_many(docs)
+
+    return {
+        "message": "Excel uploaded successfully (wide format processed)",
+        "rows_inserted": len(docs),
+        "countries": country_columns
+    }
 
 
 # =========================================================

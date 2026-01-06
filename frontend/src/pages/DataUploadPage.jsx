@@ -8,6 +8,7 @@ const API = "http://localhost:8000";
 
 export default function DataUploadPage() {
   const [refreshNote, setRefreshNote] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   const handleExcelUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -16,14 +17,23 @@ export default function DataUploadPage() {
     const form = new FormData();
     form.append("file", file);
 
+    setUploading(true);
+    setRefreshNote("");
+
     try {
-      await axios.post(`${API}/upload-excel`, form, {
+      const res = await axios.post(`${API}/upload-excel`, form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setRefreshNote("✅ Excel uploaded. Go to Dashboard to see the new data.");
+
+      setRefreshNote(`✅ ${res.data.message}`);
     } catch (err) {
-      console.error(err);
-      setRefreshNote("❌ Upload failed. Check the console.");
+      console.error(err.response?.data || err);
+      setRefreshNote(
+        err.response?.data?.detail || "❌ Excel upload failed"
+      );
+    } finally {
+      setUploading(false);
+      e.target.value = ""; // reset input
     }
   };
 
@@ -32,23 +42,40 @@ export default function DataUploadPage() {
       {/* PDF upload */}
       <section className="panel upload-panel">
         <h2 className="panel-title">📤 Upload Monthly PDFs</h2>
-        <p className="panel-sub">Drop or select multiple WPU PDFs (12 months, etc.).</p>
-        <UploadPDF onDone={() => setRefreshNote("✅ PDFs uploaded. Visit Dashboard to view.")} />
+        <p className="panel-sub">
+          Drop or select multiple WPU PDFs (12 months, etc.).
+        </p>
+
+        <UploadPDF
+          onDone={() =>
+            setRefreshNote("✅ PDFs uploaded. Visit Dashboard to view.")
+          }
+        />
       </section>
 
       {/* Excel upload */}
       <section className="panel upload-panel">
         <h2 className="panel-title">📊 Upload Excel Price Data</h2>
         <p className="panel-sub">
-          Upload .xlsx/.xls containing prices for Sri Lanka • Indonesia • India • Thailand.
+          Upload .xlsx / .xls with Country, Product, Date, Price columns.
         </p>
 
         <label className="excel-upload">
-          <input type="file" accept=".xlsx,.xls" onChange={handleExcelUpload} />
-          📁 Select Excel File
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleExcelUpload}
+            disabled={uploading}
+          />
+          📁 {uploading ? "Uploading..." : "Select Excel File"}
         </label>
 
-        <a href="http://localhost:8000/download-template" className="download-template-btn">
+        <a
+          href={`${API}/download-template`}
+          className="download-template-btn"
+          target="_blank"
+          rel="noreferrer"
+        >
           ⬇ Download Excel Template
         </a>
 

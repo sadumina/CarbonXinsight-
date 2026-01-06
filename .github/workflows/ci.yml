@@ -28,7 +28,7 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-  backend:
+    backend:
     name: Backend Validation
     runs-on: ubuntu-latest
 
@@ -47,7 +47,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Validate backend imports
+      - name: Validate backend syntax
         working-directory: backend
         run: |
           python -m compileall .

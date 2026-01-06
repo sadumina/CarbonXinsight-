@@ -23,16 +23,14 @@ initHC(OfflineExporting);
 const API = "http://localhost:8000";
 
 // ==========================
-// 🎨 COUNTRY COLOR SYSTEM (NEW)
+// 🎨 COUNTRY COLOR SYSTEM
 // ==========================
 const COUNTRY_COLORS = {
-  "Sri Lanka": "#16A34A",    // Emerald Green
-  "India": "#DC2626",        // Strong Red
-  "Indonesia": "#2563EB",    // Royal Blue
+  "Sri Lanka": "#16A34A", // Emerald Green
+  "India": "#DC2626", // Strong Red
+  "Indonesia": "#2563EB", // Royal Blue
 };
-
 const MUTED_COLOR = "#475569";
-
 
 // ---------- helpers ----------
 const fmtPct = (v) => (v == null ? "—" : `${Number(v).toFixed(2)}%`);
@@ -58,6 +56,10 @@ export default function AnalyticsChart() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [compareAt, setCompareAt] = useState(null);
+
+  // ✅ Progressive disclosure flags (NEW)
+  const [hasDateRange, setHasDateRange] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   // ==========================
   // LOAD COUNTRIES
@@ -88,19 +90,15 @@ export default function AnalyticsChart() {
         grouped[p.country].push({ ts, price: p.price });
       });
 
-      Object.values(grouped).forEach((arr) =>
-        arr.sort((a, b) => a.ts - b.ts)
-      );
+      Object.values(grouped).forEach((arr) => arr.sort((a, b) => a.ts - b.ts));
 
-      // 🔥 APPLY COLOR + HIGHLIGHT LOGIC (NEW)
+      // ✅ APPLY COLOR + HIGHLIGHT
       const series = Object.keys(grouped).map((country) => {
         const isActive = selected.includes(country);
-
         return {
           id: country,
           name: country,
           data: grouped[country].map((pt) => [pt.ts, pt.price]),
-
           color: COUNTRY_COLORS[country] || MUTED_COLOR,
           lineWidth: isActive ? 4 : 2,
           opacity: isActive ? 1 : 0.25,
@@ -135,13 +133,18 @@ export default function AnalyticsChart() {
       return;
     }
 
+    // Zoom chart
     chartRef.current.chart.xAxis[0].setExtremes(min, max);
 
+    // Load KPI data
     const res = await axios.get(`${API}/compare/summary`, {
       params: { fromDate, toDate },
     });
 
     setKpis(res.data.filter((r) => selected.includes(r.country)));
+
+    // ✅ Progressive disclosure: KPIs appear only after Apply
+    setHasDateRange(true);
   };
 
   // ==========================
@@ -153,6 +156,10 @@ export default function AnalyticsChart() {
     setAggRows([]);
     setKpis([]);
     setCompareAt(null);
+
+    // ✅ Reset disclosure flags (NEW)
+    setHasDateRange(false);
+    setHasInteracted(false);
 
     if (chartRef.current) {
       chartRef.current.chart.xAxis[0].setExtremes(null, null);
@@ -177,6 +184,9 @@ export default function AnalyticsChart() {
   // BUILD COMPARISON (CLICK)
   // ==========================
   const buildComparison = async (clickedTs) => {
+    // ✅ Progressive disclosure: user interaction unlocks advanced drawer
+    setHasInteracted(true);
+
     const minTs = fromDate ? new Date(fromDate).getTime() : null;
 
     const data = Object.keys(rawSeries)
@@ -288,9 +298,7 @@ export default function AnalyticsChart() {
         <img src={HaycarbLogo} className="header-logo" alt="Haycarb" />
         <div>
           <h1 className="header-title">Coconut Shell Charcoal Pricing</h1>
-          <p className="header-subtitle">
-            Haycarb • Country-Level Market Analytics
-          </p>
+          <p className="header-subtitle">Haycarb • Country-Level Market Analytics</p>
         </div>
       </header>
 
@@ -320,22 +328,28 @@ export default function AnalyticsChart() {
           className="date-apply-btn"
           onClick={applyCalendarRange}
           disabled={!fromDate || !toDate}
+          
         >
           Apply
         </button>
       </div>
 
-      {/* KPI CARDS */}
-      {kpis.length > 0 && (
+      {/* ✅ Progressive disclosure hint (NEW)
+      {!hasDateRange && (
+        <div className="helper-hint">
+          Select a date range and click Apply to unlock KPI insights. Click a point on the chart to open comparison.
+        </div>
+      )} */}
+
+      {/* KPI CARDS (✅ shown only after Apply) */}
+      {hasDateRange && kpis.length > 0 && (
         <div className="kpi-row">
           {kpis.map((k) => (
             <div
               key={k.country}
               className="kpi-card"
               style={{
-                borderTop: `4px solid ${
-                  COUNTRY_COLORS[k.country] || MUTED_COLOR
-                }`,
+                borderTop: `4px solid ${COUNTRY_COLORS[k.country] || MUTED_COLOR}`,
               }}
             >
               <div className="kpi-country">{k.country}</div>
@@ -369,8 +383,8 @@ export default function AnalyticsChart() {
         />
       </div>
 
-      {/* Comparison Drawer */}
-      {drawerOpen && (
+      {/* Comparison Drawer (✅ shown only after interaction) */}
+      {hasInteracted && drawerOpen && (
         <div className="compare-drawer">
           <div className="compare-head">
             <div>
@@ -399,9 +413,7 @@ export default function AnalyticsChart() {
 
             <tbody>
               {aggRows.map((a) => {
-                const deltaRow = rows.find(
-                  (r) => r.country === a.country
-                );
+                const deltaRow = rows.find((r) => r.country === a.country);
 
                 return (
                   <tr key={a.country}>

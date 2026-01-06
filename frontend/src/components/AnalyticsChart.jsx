@@ -391,7 +391,56 @@ const exportKpiSummary = useMemo(() => {
       series: seriesData,
     }),
     [seriesData, drawerOpen, fromDate, toDate]
+
   );
+
+  const CALCULATION_TEXT = {
+  min: {
+    title: "Minimum Price",
+    formula: "Min = smallest daily aggregated price in selected period",
+    steps: [
+      "Combine all markets per country per day",
+      "List all daily prices in the selected range",
+      "Pick the smallest value",
+    ],
+  },
+  avg: {
+    title: "Average Price",
+    formula: "Avg = sum of daily prices ÷ number of days",
+    steps: [
+      "Combine all markets per country per day",
+      "Add all daily prices",
+      "Divide by total number of days",
+    ],
+  },
+  max: {
+    title: "Maximum Price",
+    formula: "Max = largest daily aggregated price in selected period",
+    steps: [
+      "Combine all markets per country per day",
+      "List all daily prices in the selected range",
+      "Pick the largest value",
+    ],
+  },
+  delta: {
+    title: "Price Change (Δ)",
+    formula: "Δ = Last price − First price",
+    steps: [
+      "Identify first available price in range",
+      "Identify last available price in range",
+      "Subtract first from last",
+    ],
+  },
+  pct: {
+    title: "Percentage Change (Δ%)",
+    formula: "Δ% = (Δ ÷ First price) × 100",
+    steps: [
+      "Calculate Δ (price change)",
+      "Divide by first price",
+      "Multiply by 100",
+    ],
+  },
+};
 
   // ==========================
   // RENDER

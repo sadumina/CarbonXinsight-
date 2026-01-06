@@ -377,6 +377,9 @@ def get_aggregated_series(
 # =========================================================
 # COUNTRY COMPARISON SUMMARY (Min / Avg / Max)
 # =========================================================
+# =========================================================
+# COUNTRY KPI SUMMARY (Min / Avg / Max) — AGGREGATED
+# =========================================================
 @app.get("/compare/summary")
 def compare_summary(fromDate: str, toDate: str):
     start = datetime.fromisoformat(fromDate)
@@ -387,7 +390,7 @@ def compare_summary(fromDate: str, toDate: str):
         {"$unwind": "$prices"},
         {"$match": {"prices.date": {"$gte": start, "$lte": end}}},
 
-        # 🔹 group by country + date (aggregate markets)
+        # 1️⃣ Combine all markets per country per day
         {
             "$group": {
                 "_id": {
@@ -398,23 +401,24 @@ def compare_summary(fromDate: str, toDate: str):
             }
         },
 
-        # 🔹 now group by country
+        # 2️⃣ Calculate KPIs per country
         {
             "$group": {
                 "_id": "$_id.country",
                 "min": {"$min": "$daily_total"},
                 "max": {"$max": "$daily_total"},
-                "avg": {"$avg": "$daily_total"},
+                "avg": {"$avg": "$daily_total"}
             }
         },
 
+        # 3️⃣ Clean output
         {
             "$project": {
                 "_id": 0,
                 "country": "$_id",
                 "min": {"$round": ["$min", 2]},
-                "max": {"$round": ["$max", 2]},
                 "avg": {"$round": ["$avg", 2]},
+                "max": {"$round": ["$max", 2]}
             }
         },
 
@@ -422,6 +426,7 @@ def compare_summary(fromDate: str, toDate: str):
     ]
 
     return list(charcoal_collection.aggregate(pipeline))
+
 
 
 # =========================================================

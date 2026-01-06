@@ -375,6 +375,56 @@ def get_aggregated_series(
     return list(charcoal_collection.aggregate(pipeline))
 
 # =========================================================
+# COUNTRY COMPARISON SUMMARY (Min / Avg / Max)
+# =========================================================
+@app.get("/compare/summary")
+def compare_summary(fromDate: str, toDate: str):
+    start = datetime.fromisoformat(fromDate)
+    end = datetime.fromisoformat(toDate)
+
+    pipeline = [
+        {"$match": {"product": PRODUCT}},
+        {"$unwind": "$prices"},
+        {"$match": {"prices.date": {"$gte": start, "$lte": end}}},
+
+        # 🔹 group by country + date (aggregate markets)
+        {
+            "$group": {
+                "_id": {
+                    "country": "$country",
+                    "date": "$prices.date"
+                },
+                "daily_total": {"$sum": "$prices.price"}
+            }
+        },
+
+        # 🔹 now group by country
+        {
+            "$group": {
+                "_id": "$_id.country",
+                "min": {"$min": "$daily_total"},
+                "max": {"$max": "$daily_total"},
+                "avg": {"$avg": "$daily_total"},
+            }
+        },
+
+        {
+            "$project": {
+                "_id": 0,
+                "country": "$_id",
+                "min": {"$round": ["$min", 2]},
+                "max": {"$round": ["$max", 2]},
+                "avg": {"$round": ["$avg", 2]},
+            }
+        },
+
+        {"$sort": {"country": 1}}
+    ]
+
+    return list(charcoal_collection.aggregate(pipeline))
+
+
+# =========================================================
 # HEALTH
 # =========================================================
 @app.get("/")

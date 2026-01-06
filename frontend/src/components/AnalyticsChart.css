@@ -1,6 +1,6 @@
 /* =====================================================
    CarbonXInsight — AnalyticsChart.css
-   Clean • Unified • Enterprise-ready
+   Enterprise • Calm • Trustworthy
 ===================================================== */
 
 /* =========================
@@ -9,18 +9,16 @@
 :root {
   --page-bg: #0b1514;
 
-  --panel: #12171d;
-  --panel-2: #1a2128;
-  --panel-3: #10161c;
+  --panel: #0f1720;
+  --panel-soft: #121922;
 
   --text-primary: #f4f7fa;
   --text-secondary: #b9c3cc;
-  --text-muted: #a7b4bf;
+  --text-muted: rgba(244, 247, 250, 0.55);
 
   --brand: #178a33;
   --brand-soft: #6cd17a;
-  --brand-border: rgba(23, 138, 51, 0.32);
-  --brand-glow: rgba(23, 138, 51, 0.2);
+  --brand-border: rgba(23, 138, 51, 0.28);
 
   --success: #2baa4b;
   --danger: #f85149;
@@ -29,9 +27,8 @@
   --radius-lg: 16px;
 
   --shadow-1: 0 6px 18px rgba(0, 0, 0, 0.25);
-  --shadow-2: 0 12px 36px rgba(0, 0, 0, 0.4);
 
-  --separator: rgba(255, 255, 255, 0.1);
+  --separator: rgba(255, 255, 255, 0.08);
 }
 
 /* =========================
@@ -61,20 +58,15 @@ body {
 .panel {
   max-width: 1280px;
   margin: 24px auto;
-  padding: 24px 28px 26px;
-  background: linear-gradient(
-    180deg,
-    var(--panel-2),
-    var(--panel-3)
-  );
+  padding: 24px 26px;
+  background: var(--panel);
   border: 1px solid var(--brand-border);
   border-radius: 18px;
   box-shadow: var(--shadow-1);
-  transition: filter 0.25s ease;
 }
 
 .panel.drawer-open {
-  filter: saturate(0.9) brightness(0.92);
+  filter: brightness(0.95);
 }
 
 /* =========================
@@ -84,89 +76,169 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 18px 20px;
-  background: linear-gradient(180deg, #0e141b, #0b1117);
-  border-radius: 14px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--separator);
   margin-bottom: 18px;
 }
 
 .header-logo {
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
   object-fit: contain;
 }
 
 .header-title {
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 600;
   margin: 0;
-  color: #ffffff;
 }
 
 .header-subtitle {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
 /* =========================
-   FILTERS & PILLS
+   DATE RANGE
 ========================= */
-.filters-row {
-  margin-top: 18px;
-  margin-bottom: 10px;
+.date-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  margin: 18px 0 14px;
+  flex-wrap: wrap;
+}
+
+.date-field {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  align-items: center;
+  gap: 4px;
 }
 
-.pill-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
+.date-field label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
-.pill {
-  padding: 8px 18px;
-  border-radius: 20px;
-  background: #1e252b;
-  font-size: 14px;
+.date-input {
+  height: 40px;
+  min-width: 160px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: var(--panel-soft);
+  border: 1px solid var(--separator);
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+}
+
+.date-input:focus {
+  border-color: var(--brand);
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.8;
+}
+
+.date-apply-btn {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: none;
+  background: var(--brand);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  border: 1px solid #313a41;
-  color: #d8e0e8;
-  transition: 0.25s;
 }
 
-.pill:hover {
-  border-color: var(--brand-soft);
+.date-apply-btn:hover:not(:disabled) {
+  background: #1fa84a;
 }
 
-.pill-active {
-  background: var(--brand-soft);
-  color: #0a0d0f;
-  border-color: var(--brand-soft);
-  font-weight: 700;
-  box-shadow: 0 0 10px var(--brand-glow);
+.date-apply-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* =========================
-   CHART CARD
+   HELPER HINT
+========================= */
+.helper-hint {
+  margin: 12px 0 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* =========================
+   KPI CARDS
+========================= */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 14px 0 18px;
+}
+
+.kpi-card {
+  background: var(--panel-soft);
+  border-radius: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--separator);
+}
+
+.kpi-country {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.kpi-values {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.kpi-item {
+  text-align: center;
+}
+
+.kpi-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.kpi-value {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* =========================
+   CHART
 ========================= */
 .chart-card {
-  background: linear-gradient(180deg, #121922, #0d131a);
+  margin-top: 18px;
+  background: var(--panel-soft);
   border-radius: var(--radius-lg);
-  padding: 16px 16px 12px;
-  box-shadow: var(--shadow-2);
+  padding: 12px;
+  border: 1px solid var(--separator);
 }
 
 /* =========================
    HIGHCHARTS OVERRIDES
 ========================= */
 .highcharts-background {
-  fill: var(--panel) !important;
+  fill: var(--panel-soft) !important;
 }
 
 .highcharts-grid-line {
@@ -175,63 +247,39 @@ body {
 
 .highcharts-axis-labels text {
   fill: #d6dde4 !important;
-  font-size: 13px !important;
-  font-weight: 500;
+  font-size: 12px !important;
 }
 
 .highcharts-series path {
-  stroke-width: 3.2px !important;
-}
-
-.highcharts-tooltip text {
-  fill: #ffffff !important;
-  font-size: 14px !important;
-  font-weight: 600;
+  stroke-width: 3px !important;
 }
 
 .highcharts-legend-item text {
   fill: var(--text-primary) !important;
-  font-size: 13px !important;
-}
-
-/* Range selector */
-.highcharts-range-selector-buttons text {
-  fill: #cbd5e1 !important;
-  font-size: 11px !important;
-}
-
-.highcharts-range-selector-buttons .highcharts-button-box {
-  fill: #0f1720 !important;
-  stroke: var(--separator) !important;
-}
-
-.highcharts-range-selector-buttons
-  .highcharts-button-pressed
-  .highcharts-button-box {
-  fill: var(--brand-soft) !important;
-  stroke: none !important;
+  font-size: 12px !important;
 }
 
 /* =========================
    COMPARISON DRAWER
 ========================= */
 .compare-drawer {
-  margin-top: 22px;
-  background: linear-gradient(180deg, #0f1720, #0b1218);
-  border: 1px solid var(--brand-border);
+  margin-top: 20px;
+  background: var(--panel-soft);
+  border: 1px solid var(--separator);
   border-radius: var(--radius);
-  padding: 18px 20px 22px;
-  box-shadow: var(--shadow-2);
+  padding: 16px 18px 20px;
 }
 
 .compare-head {
-  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
 .compare-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--text-primary);
 }
 
 .compare-subtitle {
@@ -246,101 +294,23 @@ body {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  font-variant-numeric: tabular-nums;
 }
 
 .compare-table th {
   text-align: left;
   padding: 10px 12px;
-  color: var(--brand-soft);
-  font-weight: 600;
+  color: var(--text-secondary);
+  font-weight: 500;
   border-bottom: 1px solid var(--separator);
 }
 
 .compare-table td {
   padding: 10px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
 }
 
 .compare-table tr:last-child td {
   border-bottom: none;
-}
-
-/* =========================
-   CALCULATION CELLS
-========================= */
-.calc-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.calc-value {
-  font-weight: 600;
-}
-
-.calc-icon {
-  font-size: 12px;
-  color: var(--brand-soft);
-  cursor: pointer;
-  border: 1px solid var(--brand-border);
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.calc-icon:hover {
-  background: var(--brand-glow);
-}
-
-/* =========================
-   CALCULATION POPUP
-========================= */
-.equation-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.equation-box {
-  width: 420px;
-  background: #0f1720;
-  border-radius: var(--radius);
-  padding: 20px 22px;
-  border: 1px solid var(--brand-border);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-}
-
-.equation-box h4 {
-  margin: 0 0 10px;
-  font-size: 16px;
-  color: var(--text-primary);
-}
-
-.equation-formula {
-  font-family: monospace;
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-}
-
-.equation-steps {
-  padding-left: 18px;
-  margin-bottom: 16px;
-}
-
-.equation-steps li {
-  font-size: 13px;
-  color: var(--text-primary);
-  margin-bottom: 6px;
 }
 
 /* =========================
@@ -360,92 +330,13 @@ body {
 }
 
 /* =========================
-   DATE RANGE (CALENDAR)
+   TRUST FOOTNOTE
 ========================= */
-
-.date-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 14px;
-  margin: 18px 0 14px;
-  flex-wrap: wrap;
-}
-
-/* Date field wrapper */
-.date-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.date-field label {
+.dashboard-footnote {
+  margin-top: 14px;
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: #9fb2c8;
-}
-
-/* Date input */
-.date-input {
-  height: 42px;
-  min-width: 160px;
-  padding: 0 12px;
-  border-radius: 10px;
-  background: #0f1720;
-  border: 1px solid rgba(23, 138, 51, 0.55);
-  color: #f4f7fa;
-  font-size: 14px;
-  font-weight: 500;
-  outline: none;
-  transition: 0.2s ease;
-}
-
-/* Hover & focus */
-.date-input:hover {
-  border-color: #6cd17a;
-}
-
-.date-input:focus {
-  border-color: #00ff9d;
-  box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.18);
-}
-
-/* Calendar icon (Chrome / Edge) */
-.date-input::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-  cursor: pointer;
-  opacity: 0.85;
-}
-
-/* Apply button */
-.date-apply-btn {
-  height: 42px;
-  padding: 0 18px;
-  border-radius: 10px;
-  border: 1px solid rgba(23, 138, 51, 0.55);
-  background: linear-gradient(180deg, #1c2b22, #15201a);
-  color: #d9ffe9;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.25s ease;
-}
-
-.date-apply-btn:hover {
-  background: linear-gradient(180deg, #27a857, #1e8f46);
-  color: #06110a;
-  box-shadow: 0 6px 16px rgba(0, 255, 157, 0.35);
-}
-
-.date-apply-btn:active {
-  transform: scale(0.97);
-}
-
-/* Disabled state */
-.date-apply-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  color: rgba(244, 247, 250, 0.45);
+  text-align: right;
 }
 
 /* =========================
@@ -470,52 +361,4 @@ body {
     width: 44px;
     height: 44px;
   }
-}
-/* =========================
-   KPI CARDS
-========================= */
-.kpi-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
-  margin: 16px 0 18px;
-}
-
-.kpi-card {
-  background: linear-gradient(180deg, #0f1720, #0b1218);
-  border: 1px solid var(--brand-border);
-  border-radius: 14px;
-  padding: 14px 16px;
-  box-shadow: var(--shadow-1);
-}
-
-.kpi-country {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--brand-soft);
-  margin-bottom: 8px;
-}
-
-.kpi-values {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.kpi-item {
-  text-align: center;
-}
-
-.kpi-label {
-  font-size: 11px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-
-.kpi-value {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-top: 2px;
 }

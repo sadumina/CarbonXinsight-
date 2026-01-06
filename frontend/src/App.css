@@ -1,35 +1,38 @@
-/* ---- App Layout ---- */
+/* =========================
+   APP LAYOUT (GLOBAL)
+========================= */
+
 .app-shell {
   height: 100vh;
   width: 100vw;
   display: flex;
-  background: #0a0f14;
+  background: #0b1514;
   overflow: hidden;
 }
 
-/* ---- Sidebar ---- */
+/* Sidebar */
 .app-sidebar {
   width: 240px;
   background: linear-gradient(180deg, #061017, #020407);
-  border-right: 1px solid rgba(0, 255, 170, 0.15);
+  border-right: 1px solid rgba(23, 138, 51, 0.25);
   padding: 22px 16px;
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.35);
 }
 
-/* ---- Main content ---- */
+/* Main content */
 .app-main {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 36px;
-  color: white;
-  background: #0b1116;
+  padding: 28px 36px;
+  background: #0b1514;
+  color: #f4f7fa;
 }
 
-/* Smooth scrolling */
+/* Scrollbar */
 .app-main::-webkit-scrollbar {
   width: 6px;
 }
+
 .app-main::-webkit-scrollbar-thumb {
-  background: rgba(0, 255, 170, 0.25);
+  background: rgba(23, 138, 51, 0.35);
   border-radius: 50px;
 }

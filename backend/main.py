@@ -326,6 +326,53 @@ def get_monthly_data(year: int, month: int):
         "summary": summary
     }
 
+# =========================================================
+# AGGREGATED SERIES (COUNTRY LEVEL)
+# =========================================================
+@app.get("/series/aggregated")
+def get_aggregated_series(
+    countries: Optional[List[str]] = Query(None),
+    fromDate: Optional[str] = None,
+    toDate: Optional[str] = None,
+):
+    pipeline = [
+        {"$match": {"product": PRODUCT}},
+        {"$unwind": "$prices"},
+    ]
+
+    if countries:
+        pipeline.append({"$match": {"country": {"$in": countries}}})
+
+    if fromDate or toDate:
+        date_filter = {}
+        if fromDate:
+            date_filter["$gte"] = datetime.fromisoformat(fromDate)
+        if toDate:
+            date_filter["$lte"] = datetime.fromisoformat(toDate)
+        pipeline.append({"$match": {"prices.date": date_filter}})
+
+    pipeline.extend([
+        {
+            "$group": {
+                "_id": {
+                    "country": "$country",
+                    "date": "$prices.date"
+                },
+                "total_price": {"$sum": "$prices.price"}
+            }
+        },
+        {"$sort": {"_id.date": 1}},
+        {
+            "$project": {
+                "_id": 0,
+                "country": "$_id.country",
+                "date": "$_id.date",
+                "price": "$total_price"
+            }
+        }
+    ])
+
+    return list(charcoal_collection.aggregate(pipeline))
 
 # =========================================================
 # HEALTH

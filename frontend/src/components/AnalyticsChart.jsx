@@ -1,4 +1,4 @@
-// ✅ CarbonXInsight — Market Dashboard (FINAL + Comparison Stats)
+// ✅ CarbonXInsight — Analytics Dashboard (Country Aggregated)
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
@@ -24,16 +24,16 @@ const API = "http://localhost:8000";
 
 // ---------- helpers ----------
 const fmtPct = (v) => (v == null ? "—" : `${Number(v).toFixed(2)}%`);
-const fmtDate = (ts) => new Date(ts).toISOString().slice(0, 10);
 
 export default function AnalyticsChart() {
   const chartRef = useRef(null);
 
   // ==========================
-  // STATE (EXISTING)
+  // STATE
   // ==========================
   const [countries, setCountries] = useState([]);
   const [selected, setSelected] = useState([]);
+
   const [seriesData, setSeriesData] = useState([]);
   const [rawSeries, setRawSeries] = useState({});
 
@@ -41,15 +41,10 @@ export default function AnalyticsChart() {
   const [toDate, setToDate] = useState("");
 
   const [rows, setRows] = useState([]);
+  const [aggRows, setAggRows] = useState([]);
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [compareAt, setCompareAt] = useState(null);
-
-  const [equation, setEquation] = useState(null);
-
-  // ==========================
-  // ✅ NEW STATE (ADDED)
-  // ==========================
-  const [aggRows, setAggRows] = useState([]);
 
   // ==========================
   // LOAD COUNTRIES
@@ -63,16 +58,17 @@ export default function AnalyticsChart() {
   }, []);
 
   // ==========================
-  // FETCH SERIES DATA
+  // FETCH AGGREGATED SERIES
   // ==========================
   useEffect(() => {
     if (!selected.length) return;
 
-    const url = new URL(`${API}/series`);
+    const url = new URL(`${API}/series/aggregated`);
     selected.forEach((c) => url.searchParams.append("countries", c));
 
     axios.get(url.toString()).then((res) => {
       const grouped = {};
+
       (res.data || []).forEach((p) => {
         const ts = new Date(p.date).getTime();
         if (!grouped[p.country]) grouped[p.country] = [];
@@ -85,7 +81,7 @@ export default function AnalyticsChart() {
 
       const series = Object.keys(grouped).map((country) => ({
         id: country,
-        name: country,
+        name: country, // ✅ only country name (no FOB / Domestic)
         data: grouped[country].map((pt) => [pt.ts, pt.price]),
       }));
 
@@ -95,7 +91,7 @@ export default function AnalyticsChart() {
   }, [selected]);
 
   // ==========================
-  // RESET ZOOM
+  // RESET ZOOM ON DATA CHANGE
   // ==========================
   useEffect(() => {
     if (!chartRef.current || !seriesData.length) return;
@@ -120,14 +116,13 @@ export default function AnalyticsChart() {
   };
 
   // ==========================
-  // REFRESH
+  // REFRESH VIEW
   // ==========================
   const handleRefreshView = () => {
     setDrawerOpen(false);
     setRows([]);
     setAggRows([]);
     setCompareAt(null);
-    setEquation(null);
 
     if (chartRef.current) {
       chartRef.current.chart.xAxis[0].setExtremes(null, null);
@@ -149,9 +144,9 @@ export default function AnalyticsChart() {
   };
 
   // ==========================
-  // BUILD Δ / Δ% (EXISTING)
+  // BUILD COMPARISON
   // ==========================
-  const buildComparison = (clickedTs) => {
+  const buildComparison = async (clickedTs) => {
     const minTs = fromDate ? new Date(fromDate).getTime() : null;
 
     const data = Object.keys(rawSeries)
@@ -168,8 +163,7 @@ export default function AnalyticsChart() {
         );
 
         const avg =
-          slice.reduce((s, p) => s + p.price, 0) /
-          slice.length;
+          slice.reduce((s, p) => s + p.price, 0) / slice.length;
 
         return {
           country,
@@ -186,21 +180,13 @@ export default function AnalyticsChart() {
     setCompareAt(clickedTs);
     setDrawerOpen(true);
 
-    // ✅ LOAD AGGREGATED STATS (NEW)
-    loadAggregatedComparison();
-  };
-
-  // ==========================
-  // ✅ AGGREGATED MIN / AVG / MAX
-  // ==========================
-  const loadAggregatedComparison = async () => {
-    if (!fromDate || !toDate) return;
-
-    const res = await axios.get(`${API}/compare/summary`, {
-      params: { fromDate, toDate },
-    });
-
-    setAggRows(res.data || []);
+    // aggregated min / avg / max
+    if (fromDate && toDate) {
+      const res = await axios.get(`${API}/compare/summary`, {
+        params: { fromDate, toDate },
+      });
+      setAggRows(res.data || []);
+    }
   };
 
   // ==========================
@@ -267,7 +253,7 @@ export default function AnalyticsChart() {
         <div>
           <h1 className="header-title">Coconut Shell Charcoal Pricing</h1>
           <p className="header-subtitle">
-            Haycarb • Coconut Shell Charcoal Market Analytics
+            Haycarb • Country-Level Market Analytics
           </p>
         </div>
       </header>
@@ -318,7 +304,7 @@ export default function AnalyticsChart() {
         <div className="compare-drawer">
           <div className="compare-head">
             <div>
-              <div className="compare-title">Market Comparison</div>
+              <div className="compare-title">Country Comparison</div>
               <div className="compare-subtitle">
                 {fromDate} → {toDate}
               </div>
@@ -348,7 +334,7 @@ export default function AnalyticsChart() {
                 );
 
                 return (
-                  <tr key={`${a.country}-${a.market}`}>
+                  <tr key={a.country}>
                     <td>{a.country}</td>
                     <td>{a.min}</td>
                     <td>{a.avg}</td>
@@ -360,24 +346,6 @@ export default function AnalyticsChart() {
               })}
             </tbody>
           </table>
-        </div>
-      )}
-
-      {/* Equation Popup */}
-      {equation && (
-        <div className="equation-modal">
-          <div className="equation-box">
-            <h4>{equation.title}</h4>
-            <div className="equation-formula">{equation.formula}</div>
-            <ul className="equation-steps">
-              {equation.steps.map((s, i) => (
-                <li key={i}>{s}</li>
-              ))}
-            </ul>
-            <button className="btn-ghost" onClick={() => setEquation(null)}>
-              Close
-            </button>
-          </div>
         </div>
       )}
     </section>

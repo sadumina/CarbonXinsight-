@@ -1,4 +1,4 @@
-// ✅ CarbonXInsight — Analytics Dashboard (Country Aggregated)
+// ✅ CarbonXInsight — Analytics Dashboard (Country Aggregated + KPI Cards)
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
@@ -42,6 +42,7 @@ export default function AnalyticsChart() {
 
   const [rows, setRows] = useState([]);
   const [aggRows, setAggRows] = useState([]);
+  const [kpis, setKpis] = useState([]);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [compareAt, setCompareAt] = useState(null);
@@ -81,7 +82,7 @@ export default function AnalyticsChart() {
 
       const series = Object.keys(grouped).map((country) => ({
         id: country,
-        name: country, // ✅ only country name (no FOB / Domestic)
+        name: country, // ✅ country only
         data: grouped[country].map((pt) => [pt.ts, pt.price]),
       }));
 
@@ -99,9 +100,9 @@ export default function AnalyticsChart() {
   }, [seriesData]);
 
   // ==========================
-  // APPLY DATE RANGE
+  // APPLY DATE RANGE + LOAD KPI
   // ==========================
-  const applyCalendarRange = () => {
+  const applyCalendarRange = async () => {
     if (!chartRef.current || !fromDate || !toDate) return;
 
     const min = new Date(fromDate).getTime();
@@ -112,7 +113,15 @@ export default function AnalyticsChart() {
       return;
     }
 
+    // Zoom chart
     chartRef.current.chart.xAxis[0].setExtremes(min, max);
+
+    // Load KPI data
+    const res = await axios.get(`${API}/compare/summary`, {
+      params: { fromDate, toDate },
+    });
+
+    setKpis(res.data.filter((r) => selected.includes(r.country)));
   };
 
   // ==========================
@@ -122,6 +131,7 @@ export default function AnalyticsChart() {
     setDrawerOpen(false);
     setRows([]);
     setAggRows([]);
+    setKpis([]);
     setCompareAt(null);
 
     if (chartRef.current) {
@@ -144,7 +154,7 @@ export default function AnalyticsChart() {
   };
 
   // ==========================
-  // BUILD COMPARISON
+  // BUILD COMPARISON (CLICK)
   // ==========================
   const buildComparison = async (clickedTs) => {
     const minTs = fromDate ? new Date(fromDate).getTime() : null;
@@ -158,20 +168,12 @@ export default function AnalyticsChart() {
         const end = nearest(arr, clickedTs);
         if (!start || !end) return null;
 
-        const slice = arr.filter(
-          (p) => p.ts >= start.ts && p.ts <= end.ts
-        );
-
-        const avg =
-          slice.reduce((s, p) => s + p.price, 0) / slice.length;
-
         return {
           country,
           start,
           end,
           delta: end.price - start.price,
           pct: ((end.price - start.price) / start.price) * 100,
-          avg,
         };
       })
       .filter(Boolean);
@@ -180,7 +182,6 @@ export default function AnalyticsChart() {
     setCompareAt(clickedTs);
     setDrawerOpen(true);
 
-    // aggregated min / avg / max
     if (fromDate && toDate) {
       const res = await axios.get(`${API}/compare/summary`, {
         params: { fromDate, toDate },
@@ -288,6 +289,32 @@ export default function AnalyticsChart() {
           Apply
         </button>
       </div>
+
+      {/* KPI CARDS */}
+      {kpis.length > 0 && (
+        <div className="kpi-row">
+          {kpis.map((k) => (
+            <div key={k.country} className="kpi-card">
+              <div className="kpi-country">{k.country}</div>
+
+              <div className="kpi-values">
+                <div className="kpi-item">
+                  <div className="kpi-label">Min</div>
+                  <div className="kpi-value">{k.min}</div>
+                </div>
+                <div className="kpi-item">
+                  <div className="kpi-label">Avg</div>
+                  <div className="kpi-value">{k.avg}</div>
+                </div>
+                <div className="kpi-item">
+                  <div className="kpi-label">Max</div>
+                  <div className="kpi-value">{k.max}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Chart */}
       <div className="chart-card">

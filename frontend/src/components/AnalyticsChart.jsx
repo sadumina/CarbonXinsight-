@@ -22,6 +22,18 @@ initHC(OfflineExporting);
 
 const API = "http://localhost:8000";
 
+// ==========================
+// 🎨 COUNTRY COLOR SYSTEM (NEW)
+// ==========================
+const COUNTRY_COLORS = {
+  "Sri Lanka": "#16A34A",    // Emerald Green
+  "India": "#DC2626",        // Strong Red
+  "Indonesia": "#2563EB",    // Royal Blue
+};
+
+const MUTED_COLOR = "#475569";
+
+
 // ---------- helpers ----------
 const fmtPct = (v) => (v == null ? "—" : `${Number(v).toFixed(2)}%`);
 
@@ -80,11 +92,21 @@ export default function AnalyticsChart() {
         arr.sort((a, b) => a.ts - b.ts)
       );
 
-      const series = Object.keys(grouped).map((country) => ({
-        id: country,
-        name: country, // ✅ country only
-        data: grouped[country].map((pt) => [pt.ts, pt.price]),
-      }));
+      // 🔥 APPLY COLOR + HIGHLIGHT LOGIC (NEW)
+      const series = Object.keys(grouped).map((country) => {
+        const isActive = selected.includes(country);
+
+        return {
+          id: country,
+          name: country,
+          data: grouped[country].map((pt) => [pt.ts, pt.price]),
+
+          color: COUNTRY_COLORS[country] || MUTED_COLOR,
+          lineWidth: isActive ? 4 : 2,
+          opacity: isActive ? 1 : 0.25,
+          zIndex: isActive ? 10 : 1,
+        };
+      });
 
       setRawSeries(grouped);
       setSeriesData(series);
@@ -113,10 +135,8 @@ export default function AnalyticsChart() {
       return;
     }
 
-    // Zoom chart
     chartRef.current.chart.xAxis[0].setExtremes(min, max);
 
-    // Load KPI data
     const res = await axios.get(`${API}/compare/summary`, {
       params: { fromDate, toDate },
     });
@@ -209,6 +229,18 @@ export default function AnalyticsChart() {
         borderRadius: 10,
         style: { color: "#f4f7fa", fontSize: "13px", fontWeight: "600" },
         enabled: !drawerOpen,
+        formatter() {
+          return this.points
+            .map(
+              (p) => `
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="width:10px;height:10px;border-radius:50%;background:${p.color}"></span>
+                <b>${p.series.name}</b>: ${p.y}
+              </div>
+            `
+            )
+            .join("");
+        },
       },
 
       xAxis: { crosshair: !drawerOpen },
@@ -228,6 +260,9 @@ export default function AnalyticsChart() {
         series: {
           cursor: "pointer",
           marker: { enabled: false },
+          states: {
+            inactive: { opacity: 0.2 },
+          },
           point: {
             events: {
               click() {
@@ -294,7 +329,15 @@ export default function AnalyticsChart() {
       {kpis.length > 0 && (
         <div className="kpi-row">
           {kpis.map((k) => (
-            <div key={k.country} className="kpi-card">
+            <div
+              key={k.country}
+              className="kpi-card"
+              style={{
+                borderTop: `4px solid ${
+                  COUNTRY_COLORS[k.country] || MUTED_COLOR
+                }`,
+              }}
+            >
               <div className="kpi-country">{k.country}</div>
 
               <div className="kpi-values">

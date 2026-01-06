@@ -71,6 +71,22 @@ export default function AnalyticsChart() {
       setSelected(data);
     })();
   }, []);
+// ==========================
+// KPI SUMMARY FOR EXPORT (NEW)
+// ==========================
+const exportKpiSummary = useMemo(() => {
+  if (!kpis.length) return null;
+
+  const values = kpis.flatMap((k) => [k.min, k.avg, k.max]);
+
+  return {
+    min: Math.min(...values).toFixed(2),
+    avg: (
+      values.reduce((a, b) => a + b, 0) / values.length
+    ).toFixed(2),
+    max: Math.max(...values).toFixed(2),
+  };
+}, [kpis]);
 
   // ==========================
   // FETCH AGGREGATED SERIES
@@ -230,6 +246,88 @@ export default function AnalyticsChart() {
         height: 520,
         zoomType: "x",
       },
+
+      exporting: {
+  enabled: true,
+  sourceWidth: 1200,
+  sourceHeight: 720,
+
+  chartOptions: {
+    title: {
+      text: "Coconut Shell Charcoal Pricing",
+      style: {
+        fontSize: "20px",
+        fontWeight: "700",
+      },
+    },
+
+    subtitle: {
+      text:
+        fromDate && toDate
+          ? `Period: ${fromDate} → ${toDate}`
+          : "All available data",
+      style: {
+        fontSize: "13px",
+        color: "#9fb2c8",
+      },
+    },
+
+    caption: {
+      text: "Source: CarbonXInsight • Generated automatically",
+      style: {
+        fontSize: "11px",
+        color: "#94a3b8",
+      },
+    },
+
+    chart: {
+      spacingTop: 120,
+      spacingBottom: 80,
+    },
+
+    annotations: exportKpiSummary
+      ? [
+          {
+            labels: [
+              {
+                align: "left",
+                verticalAlign: "top",
+                y: -90,
+                x: 0,
+                useHTML: true,
+                html: `
+                  <div style="display:flex;gap:16px">
+                    ${["Min", "Avg", "Max"]
+                      .map(
+                        (k) => `
+                      <div style="
+                        background:#0f1720;
+                        border:1px solid rgba(255,255,255,0.15);
+                        border-radius:8px;
+                        padding:10px 14px;
+                        min-width:120px;
+                        text-align:center;
+                        color:#f4f7fa;
+                        font-family:Inter,system-ui;
+                      ">
+                        <div style="font-size:11px;color:#9fb2c8">${k}</div>
+                        <div style="font-size:18px;font-weight:700">
+                          ${exportKpiSummary[k.toLowerCase()]}
+                        </div>
+                      </div>
+                    `
+                      )
+                      .join("")}
+                  </div>
+                `,
+              },
+            ],
+          },
+        ]
+      : [],
+  },
+},
+
 
       tooltip: {
         shared: true,

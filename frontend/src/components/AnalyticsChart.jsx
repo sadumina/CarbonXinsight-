@@ -557,11 +557,37 @@ const exportKpiSummary = useMemo(() => {
             <thead>
               <tr>
                 <th>Country</th>
-                <th>Min</th>
-                <th>Avg</th>
-                <th>Max</th>
-                <th>Δ</th>
-                <th>Δ%</th>
+                <th>
+  Min
+  <span className="calc-icon" onClick={() => { setCalcType("min"); setShowCalc(true); }}>
+    ⓘ
+  </span>
+</th>
+<th>
+  Avg
+  <span className="calc-icon" onClick={() => { setCalcType("avg"); setShowCalc(true); }}>
+    ⓘ
+  </span>
+</th>
+<th>
+  Max
+  <span className="calc-icon" onClick={() => { setCalcType("max"); setShowCalc(true); }}>
+    ⓘ
+  </span>
+</th>
+<th>
+  Δ
+  <span className="calc-icon" onClick={() => { setCalcType("delta"); setShowCalc(true); }}>
+    ⓘ
+  </span>
+</th>
+<th>
+  Δ%
+  <span className="calc-icon" onClick={() => { setCalcType("pct"); setShowCalc(true); }}>
+    ⓘ
+  </span>
+</th>
+
               </tr>
             </thead>
 
@@ -584,6 +610,34 @@ const exportKpiSummary = useMemo(() => {
           </table>
         </div>
       )}
+      {showCalc && calcType && (
+  <div className="equation-modal" onClick={() => setShowCalc(false)}>
+    <div
+      className="equation-box"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h4>{CALCULATION_TEXT[calcType].title}</h4>
+
+      <div className="equation-formula">
+        {CALCULATION_TEXT[calcType].formula}
+      </div>
+
+      <ul className="equation-steps">
+        {CALCULATION_TEXT[calcType].steps.map((s, i) => (
+          <li key={i}>{s}</li>
+        ))}
+      </ul>
+
+      <button
+        className="btn-ghost"
+        onClick={() => setShowCalc(false)}
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
+
     </section>
   );
 }

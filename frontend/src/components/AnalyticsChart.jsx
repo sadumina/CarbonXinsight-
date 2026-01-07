@@ -168,18 +168,18 @@ export default function AnalyticsChart() {
   // ==========================
   // REFRESH VIEW
   // ==========================
-  const handleRefreshView = () => {
-    setDrawerOpen(false);
-    setRows([]);
-    setAggRows([]);
-    setKpis([]);
-    setCompareAt(null);
-    setHasDateRange(false);
-    setHasInteracted(false);
-    if (chartRef.current) {
-      chartRef.current.chart.xAxis[0].setExtremes(null, null);
-    }
-  };
+  // const handleRefreshView = () => {
+  //   setDrawerOpen(false);
+  //   setRows([]);
+  //   setAggRows([]);
+  //   setKpis([]);
+  //   setCompareAt(null);
+  //   setHasDateRange(false);
+  //   setHasInteracted(false);
+  //   if (chartRef.current) {
+  //     chartRef.current.chart.xAxis[0].setExtremes(null, null);
+  //   }
+  // };
 
   // ==========================
   // HELPERS
@@ -198,41 +198,41 @@ export default function AnalyticsChart() {
   // ==========================
   // BUILD COMPARISON
   // ==========================
-  const buildComparison = async (clickedTs) => {
-    setHasInteracted(true);
+  // const buildComparison = async (clickedTs) => {
+  //   setHasInteracted(true);
 
-    const minTs = fromDate ? new Date(fromDate).getTime() : null;
+  //   const minTs = fromDate ? new Date(fromDate).getTime() : null;
 
-    const data = Object.keys(rawSeries)
-      .map((country) => {
-        const arr = rawSeries[country];
-        if (!arr?.length) return null;
+  //   const data = Object.keys(rawSeries)
+  //     .map((country) => {
+  //       const arr = rawSeries[country];
+  //       if (!arr?.length) return null;
 
-        const start = minTs ? nearest(arr, minTs) : arr[0];
-        const end = nearest(arr, clickedTs);
-        if (!start || !end) return null;
+  //       const start = minTs ? nearest(arr, minTs) : arr[0];
+  //       const end = nearest(arr, clickedTs);
+  //       if (!start || !end) return null;
 
-        return {
-          country,
-          start,
-          end,
-          delta: end.price - start.price,
-          pct: ((end.price - start.price) / start.price) * 100,
-        };
-      })
-      .filter(Boolean);
+  //       return {
+  //         country,
+  //         start,
+  //         end,
+  //         delta: end.price - start.price,
+  //         pct: ((end.price - start.price) / start.price) * 100,
+  //       };
+  //     })
+  //     .filter(Boolean);
 
-    setRows(data);
-    setCompareAt(clickedTs);
-    setDrawerOpen(true);
+  //   setRows(data);
+  //   setCompareAt(clickedTs);
+  //   setDrawerOpen(true);
 
-    if (fromDate && toDate) {
-      const res = await axios.get(`${API}/compare/summary`, {
-        params: { fromDate, toDate },
-      });
-      setAggRows(res.data || []);
-    }
-  };
+  //   if (fromDate && toDate) {
+  //     const res = await axios.get(`${API}/compare/summary`, {
+  //       params: { fromDate, toDate },
+  //     });
+  //     setAggRows(res.data || []);
+  //   }
+  // };
 
   // ==========================
   // CHART OPTIONS

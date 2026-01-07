@@ -1,5 +1,5 @@
 // ✅ CarbonXInsight — Analytics Dashboard
-// Country Aggregated + KPI Cards + Point Click Modal (Option A)
+// Country Aggregated + KPI Cards (with Δ and Δ%) + Point Click Popup (Nice)
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
@@ -34,7 +34,7 @@ const COUNTRY_COLORS = {
 const MUTED_COLOR = "#475569";
 
 // ---------- helpers ----------
-const fmtPct = (v) => (v == null ? "—" : `${Number(v).toFixed(2)}%`);
+const fmtNum = (v) => (v == null || v === "" ? "—" : Number(v).toFixed(2));
 
 export default function AnalyticsChart() {
   const chartRef = useRef(null);
@@ -51,24 +51,11 @@ export default function AnalyticsChart() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
-  const [rows, setRows] = useState([]);
-  const [aggRows, setAggRows] = useState([]);
   const [kpis, setKpis] = useState([]);
-
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [compareAt, setCompareAt] = useState(null);
-
   const [hasDateRange, setHasDateRange] = useState(false);
-  const [hasInteracted, setHasInteracted] = useState(false);
 
-  // ✅ NEW — point click modal (Option A)
+  // ✅ point click popup
   const [pointDetails, setPointDetails] = useState(null);
-
-  // ==========================
-  // CALCULATION EXPLANATION
-  // ==========================
-  const [showCalc, setShowCalc] = useState(false);
-  const [calcType, setCalcType] = useState(null);
 
   // ==========================
   // LOAD COUNTRIES
@@ -80,19 +67,6 @@ export default function AnalyticsChart() {
       setSelected(data);
     })();
   }, []);
-
-  // ==========================
-  // KPI SUMMARY FOR EXPORT
-  // ==========================
-  const exportKpiSummary = useMemo(() => {
-    if (!kpis.length) return null;
-    const values = kpis.flatMap((k) => [k.min, k.avg, k.max]);
-    return {
-      min: Math.min(...values).toFixed(2),
-      avg: (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2),
-      max: Math.max(...values).toFixed(2),
-    };
-  }, [kpis]);
 
   // ==========================
   // FETCH AGGREGATED SERIES
@@ -112,10 +86,12 @@ export default function AnalyticsChart() {
         grouped[p.country].push({ ts, price: p.price });
       });
 
+      // sort by time
       Object.values(grouped).forEach((arr) =>
         arr.sort((a, b) => a.ts - b.ts)
       );
 
+      // build series for Highcharts
       const series = Object.keys(grouped).map((country) => ({
         id: country,
         name: country,
@@ -142,7 +118,7 @@ export default function AnalyticsChart() {
   }, [seriesData]);
 
   // ==========================
-  // APPLY DATE RANGE
+  // APPLY DATE RANGE + KPI
   // ==========================
   const applyCalendarRange = async () => {
     if (!chartRef.current || !fromDate || !toDate) return;
@@ -155,84 +131,36 @@ export default function AnalyticsChart() {
       return;
     }
 
+    // zoom chart
     chartRef.current.chart.xAxis[0].setExtremes(min, max);
 
+    // load KPI data
     const res = await axios.get(`${API}/compare/summary`, {
       params: { fromDate, toDate },
     });
 
-    setKpis(res.data.filter((r) => selected.includes(r.country)));
+    setKpis((res.data || []).filter((r) => selected.includes(r.country)));
     setHasDateRange(true);
   };
 
   // ==========================
-  // REFRESH VIEW
+  // KPI CHANGE (Δ, Δ%)
+  // Rule: first value -> last value (for that country in loaded series)
   // ==========================
-  // const handleRefreshView = () => {
-  //   setDrawerOpen(false);
-  //   setRows([]);
-  //   setAggRows([]);
-  //   setKpis([]);
-  //   setCompareAt(null);
-  //   setHasDateRange(false);
-  //   setHasInteracted(false);
-  //   if (chartRef.current) {
-  //     chartRef.current.chart.xAxis[0].setExtremes(null, null);
-  //   }
-  // };
+  const computeChange = (country) => {
+    const arr = rawSeries[country];
+    if (!arr || arr.length < 2) return null;
 
-  // ==========================
-  // HELPERS
-  // ==========================
-  const nearest = (arr, ts) => {
-    let lo = 0,
-      hi = arr.length - 1;
-    while (lo < hi) {
-      const mid = Math.floor((lo + hi) / 2);
-      if (arr[mid].ts < ts) lo = mid + 1;
-      else hi = mid;
-    }
-    return arr[Math.max(0, lo - 1)];
+    const start = Number(arr[0].price);
+    const end = Number(arr[arr.length - 1].price);
+
+    if (!isFinite(start) || !isFinite(end) || start === 0) return null;
+
+    const delta = end - start;
+    const pct = (delta / start) * 100;
+
+    return { delta, pct };
   };
-
-  // ==========================
-  // BUILD COMPARISON
-  // ==========================
-  // const buildComparison = async (clickedTs) => {
-  //   setHasInteracted(true);
-
-  //   const minTs = fromDate ? new Date(fromDate).getTime() : null;
-
-  //   const data = Object.keys(rawSeries)
-  //     .map((country) => {
-  //       const arr = rawSeries[country];
-  //       if (!arr?.length) return null;
-
-  //       const start = minTs ? nearest(arr, minTs) : arr[0];
-  //       const end = nearest(arr, clickedTs);
-  //       if (!start || !end) return null;
-
-  //       return {
-  //         country,
-  //         start,
-  //         end,
-  //         delta: end.price - start.price,
-  //         pct: ((end.price - start.price) / start.price) * 100,
-  //       };
-  //     })
-  //     .filter(Boolean);
-
-  //   setRows(data);
-  //   setCompareAt(clickedTs);
-  //   setDrawerOpen(true);
-
-  //   if (fromDate && toDate) {
-  //     const res = await axios.get(`${API}/compare/summary`, {
-  //       params: { fromDate, toDate },
-  //     });
-  //     setAggRows(res.data || []);
-  //   }
-  // };
 
   // ==========================
   // CHART OPTIONS
@@ -247,7 +175,7 @@ export default function AnalyticsChart() {
 
       tooltip: { enabled: false },
 
-      xAxis: { crosshair: !drawerOpen },
+      xAxis: { type: "datetime" },
 
       rangeSelector: {
         selected: 5,
@@ -265,15 +193,11 @@ export default function AnalyticsChart() {
           point: {
             events: {
               click() {
-                // ✅ OPTION A
                 setPointDetails({
                   country: this.country,
                   price: this.y,
                   date: new Date(this.x),
                 });
-
-                // keep existing behavior
-                buildComparison(this.x);
               },
             },
           },
@@ -282,28 +206,14 @@ export default function AnalyticsChart() {
 
       series: seriesData,
     }),
-    [seriesData, drawerOpen]
+    [seriesData]
   );
-
-  const computeChange = (country) => {
-  const arr = rawSeries[country];
-  if (!arr || arr.length < 2) return null;
-
-  const start = arr[0].price;
-  const end = arr[arr.length - 1].price;
-
-  const delta = end - start;
-  const pct = (delta / start) * 100;
-
-  return { delta, pct };
-};
-
 
   // ==========================
   // RENDER
   // ==========================
   return (
-    <section className={`panel ${drawerOpen ? "drawer-open" : ""}`}>
+    <section className="panel">
       {/* Header */}
       <header className="dashboard-header">
         <img src={HaycarbLogo} className="header-logo" alt="Haycarb" />
@@ -349,33 +259,58 @@ export default function AnalyticsChart() {
       {/* KPI Cards */}
       {hasDateRange && kpis.length > 0 && (
         <div className="kpi-row">
-          {kpis.map((k) => (
-            <div
-              key={k.country}
-              className="kpi-card"
-              style={{
-                borderTop: `4px solid ${
-                  COUNTRY_COLORS[k.country] || MUTED_COLOR
-                }`,
-              }}
-            >
-              <div className="kpi-country">{k.country}</div>
-              <div className="kpi-values">
-                <div className="kpi-item">
-                  <div className="kpi-label">Min</div>
-                  <div className="kpi-value">{k.min}</div>
+          {kpis.map((k) => {
+            const change = computeChange(k.country);
+
+            return (
+              <div
+                key={k.country}
+                className="kpi-card"
+                style={{
+                  borderTop: `4px solid ${
+                    COUNTRY_COLORS[k.country] || MUTED_COLOR
+                  }`,
+                }}
+              >
+                <div className="kpi-country">{k.country}</div>
+
+                <div className="kpi-values">
+                  <div className="kpi-item">
+                    <div className="kpi-label">Min</div>
+                    <div className="kpi-value">{fmtNum(k.min)}</div>
+                  </div>
+                  <div className="kpi-item">
+                    <div className="kpi-label">Avg</div>
+                    <div className="kpi-value">{fmtNum(k.avg)}</div>
+                  </div>
+                  <div className="kpi-item">
+                    <div className="kpi-label">Max</div>
+                    <div className="kpi-value">{fmtNum(k.max)}</div>
+                  </div>
                 </div>
-                <div className="kpi-item">
-                  <div className="kpi-label">Avg</div>
-                  <div className="kpi-value">{k.avg}</div>
-                </div>
-                <div className="kpi-item">
-                  <div className="kpi-label">Max</div>
-                  <div className="kpi-value">{k.max}</div>
-                </div>
+
+                {change && (
+                  <div className="kpi-change">
+                    <span
+                      className={`kpi-delta ${
+                        change.delta >= 0 ? "up" : "down"
+                      }`}
+                    >
+                      {change.delta >= 0 ? "+" : ""}
+                      {change.delta.toFixed(2)}
+                    </span>
+
+                    <span
+                      className={`kpi-pct ${change.pct >= 0 ? "up" : "down"}`}
+                    >
+                      ({change.pct >= 0 ? "+" : ""}
+                      {change.pct.toFixed(2)}%)
+                    </span>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -389,105 +324,52 @@ export default function AnalyticsChart() {
         />
       </div>
 
-      {/* Comparison Drawer */}
-      {/* {hasInteracted && drawerOpen && (
-        <div className="compare-drawer">
-          <div className="compare-head">
-            <div>
-              <div className="compare-title">Country Comparison</div>
-              <div className="compare-subtitle">
-                {fromDate} → {toDate}
+      {/* ✅ NICE POPUP MESSAGE (click a point) */}
+      {pointDetails && (
+        <div
+          className="point-pop-overlay"
+          onClick={() => setPointDetails(null)}
+        >
+          <div
+            className="point-pop-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="point-pop-header">
+              <div className="point-pop-title">Price Snapshot</div>
+              <div
+                className="point-pop-badge"
+                style={{
+                  background: COUNTRY_COLORS[pointDetails.country] || MUTED_COLOR,
+                }}
+              >
+                {pointDetails.country}
               </div>
             </div>
 
-            <button className="btn-ghost" onClick={handleRefreshView}>
-              ⟳ Refresh
-            </button>
+            <div className="point-pop-body">
+              <div className="point-pop-item">
+                <span>Date</span>
+                <strong>
+                  {pointDetails.date.toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </strong>
+              </div>
+
+              <div className="point-pop-item">
+                <span>Price</span>
+                <strong className="point-pop-price">
+                  USD/MT {Number(pointDetails.price).toFixed(2)}
+                </strong>
+              </div>
+            </div>
+
+            <div className="point-pop-foot">Click outside to close</div>
           </div>
-
-          <table className="compare-table">
-            <thead>
-              <tr>
-                <th>Country</th>
-                <th>Min</th>
-                <th>Avg</th>
-                <th>Max</th>
-                <th>Δ</th>
-                <th>Δ%</th>
-              </tr>
-            </thead>
-            <tbody>
-              {aggRows.map((a) => {
-                const deltaRow = rows.find((r) => r.country === a.country);
-                return (
-                  <tr key={a.country}>
-                    <td>{a.country}</td>
-                    <td>{a.min}</td>
-                    <td>{a.avg}</td>
-                    <td>{a.max}</td>
-                    <td>{deltaRow ? deltaRow.delta.toFixed(2) : "—"}</td>
-                    <td>{deltaRow ? fmtPct(deltaRow.pct) : "—"}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
         </div>
-      )} */}
-
-      {/* ✅ OPTION A — POINT DETAIL MODAL */}
-      {pointDetails && (
-  <div
-    className="point-pop-overlay"
-    onClick={() => setPointDetails(null)}
-  >
-    <div
-      className="point-pop-card"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Header */}
-      <div className="point-pop-header">
-        <div className="point-pop-title">Price Snapshot</div>
-        <div
-          className="point-pop-badge"
-          style={{
-            background:
-              COUNTRY_COLORS[pointDetails.country] || "#475569",
-          }}
-        >
-          {pointDetails.country}
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="point-pop-body">
-        <div className="point-pop-item">
-          <span>Date</span>
-          <strong>
-            {pointDetails.date.toLocaleDateString("en-GB", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            })}
-          </strong>
-        </div>
-
-        <div className="point-pop-item">
-          <span>Price</span>
-          <strong className="point-pop-price">
-            USD/MT{pointDetails.price}
-          </strong>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="point-pop-foot">
-        Click anywhere outside to close
-      </div>
-    </div>
-  </div>
-)}
-
+      )}
     </section>
   );
 }

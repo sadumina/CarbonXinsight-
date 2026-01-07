@@ -456,6 +456,34 @@ body {
   text-align: center;
 }
 
+.kpi-change {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.kpi-delta,
+.kpi-pct {
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.kpi-delta.up,
+.kpi-pct.up {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.12);
+}
+
+.kpi-delta.down,
+.kpi-pct.down {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.12);
+}
+
+
 
 
 @media (max-width: 480px) {

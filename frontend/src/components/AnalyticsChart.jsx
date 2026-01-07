@@ -203,6 +203,98 @@ export default function AnalyticsChart() {
           },
         },
       },
+      exporting: {
+  enabled: true,
+
+  // Professional filename
+  filename: `CarbonXInsight_Price_Stats_${fromDate || "ALL"}_${toDate || "ALL"}`,
+
+  // Print-ready resolution
+  sourceWidth: 1400,
+  sourceHeight: 800,
+
+  chartOptions: {
+    title: {
+      text: "Coconut Shell Charcoal Pricing",
+      style: {
+        fontSize: "20px",
+        fontWeight: "700",
+      },
+    },
+
+    subtitle: {
+      text: [
+        "Unit: USD / MT",
+        fromDate && toDate
+          ? `Period: ${fromDate} → ${toDate}`
+          : "Period: All available data",
+      ].join(" • "),
+      style: {
+        fontSize: "13px",
+        color: "#9fb2c8",
+      },
+    },
+
+    caption: {
+      text: `Markets: ${selected.join(", ")}`,
+      style: {
+        fontSize: "11px",
+        color: "#94a3b8",
+      },
+    },
+  },
+
+  buttons: {
+    contextButton: {
+      menuItems: [
+        "viewFullscreen",
+        "printChart",
+        "separator",
+
+        {
+          text: "Download PNG (Report)",
+          onclick() {
+            this.exportChart({ type: "image/png" });
+          },
+        },
+        {
+          text: "Download JPG (Email)",
+          onclick() {
+            this.exportChart({ type: "image/jpeg" });
+          },
+        },
+        {
+          text: "Download PDF (Executive)",
+          onclick() {
+            this.exportChart({ type: "application/pdf" });
+          },
+        },
+        {
+          text: "Download SVG (Design)",
+          onclick() {
+            this.exportChart({ type: "image/svg+xml" });
+          },
+        },
+
+        "separator",
+
+        {
+          text: "Download CSV (Data)",
+          onclick() {
+            this.downloadCSV();
+          },
+        },
+        {
+          text: "Download XLS (Excel)",
+          onclick() {
+            this.downloadXLS();
+          },
+        },
+      ],
+    },
+  },
+},
+
 
       series: seriesData,
     }),

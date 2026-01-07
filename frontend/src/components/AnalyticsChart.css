@@ -367,6 +367,95 @@ body {
   border-radius: 12px;
   width: 420px;
 }
+/* =====================================================
+   Premium Point Popup (Executive-grade)
+===================================================== */
+
+.point-pop-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.point-pop-card {
+  width: 320px;
+  background: #0f1720;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 18px 20px;
+  animation: popIn 160ms ease-out;
+}
+
+/* subtle scale-in */
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Header */
+.point-pop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.point-pop-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f4f7fa;
+}
+
+.point-pop-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: #ffffff;
+}
+
+/* Body */
+.point-pop-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.point-pop-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.point-pop-item span {
+  color: #9fb2c8;
+}
+
+.point-pop-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f4f7fa;
+}
+
+/* Footer hint */
+.point-pop-foot {
+  margin-top: 14px;
+  font-size: 11px;
+  color: #94a3b8;
+  text-align: center;
+}
+
 
 
 @media (max-width: 480px) {

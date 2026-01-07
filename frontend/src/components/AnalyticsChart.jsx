@@ -1,4 +1,5 @@
-// ✅ CarbonXInsight — Analytics Dashboard (Country Aggregated + KPI Cards)
+// ✅ CarbonXInsight — Analytics Dashboard
+// Country Aggregated + KPI Cards + Point Click Modal (Option A)
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
@@ -26,9 +27,9 @@ const API = "http://localhost:8000";
 // 🎨 COUNTRY COLOR SYSTEM
 // ==========================
 const COUNTRY_COLORS = {
-  "Sri Lanka": "#16A34A", // Emerald Green
-  "India": "#DC2626", // Strong Red
-  "Indonesia": "#2563EB", // Royal Blue
+  "Sri Lanka": "#16A34A",
+  India: "#DC2626",
+  Indonesia: "#2563EB",
 };
 const MUTED_COLOR = "#475569";
 
@@ -57,20 +58,21 @@ export default function AnalyticsChart() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [compareAt, setCompareAt] = useState(null);
 
-  // ✅ Progressive disclosure flags (NEW)
   const [hasDateRange, setHasDateRange] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
+
+  // ✅ NEW — point click modal (Option A)
+  const [pointDetails, setPointDetails] = useState(null);
+
+  // ==========================
+  // CALCULATION EXPLANATION
+  // ==========================
+  const [showCalc, setShowCalc] = useState(false);
+  const [calcType, setCalcType] = useState(null);
 
   // ==========================
   // LOAD COUNTRIES
   // ==========================
-
-  // ==========================
-// CALCULATION EXPLANATION (NEW)
-// ==========================
-const [showCalc, setShowCalc] = useState(false);
-const [calcType, setCalcType] = useState(null);
-
   useEffect(() => {
     (async () => {
       const { data = [] } = await axios.get(`${API}/countries`);
@@ -78,22 +80,19 @@ const [calcType, setCalcType] = useState(null);
       setSelected(data);
     })();
   }, []);
-// ==========================
-// KPI SUMMARY FOR EXPORT (NEW)
-// ==========================
-const exportKpiSummary = useMemo(() => {
-  if (!kpis.length) return null;
 
-  const values = kpis.flatMap((k) => [k.min, k.avg, k.max]);
-
-  return {
-    min: Math.min(...values).toFixed(2),
-    avg: (
-      values.reduce((a, b) => a + b, 0) / values.length
-    ).toFixed(2),
-    max: Math.max(...values).toFixed(2),
-  };
-}, [kpis]);
+  // ==========================
+  // KPI SUMMARY FOR EXPORT
+  // ==========================
+  const exportKpiSummary = useMemo(() => {
+    if (!kpis.length) return null;
+    const values = kpis.flatMap((k) => [k.min, k.avg, k.max]);
+    return {
+      min: Math.min(...values).toFixed(2),
+      avg: (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2),
+      max: Math.max(...values).toFixed(2),
+    };
+  }, [kpis]);
 
   // ==========================
   // FETCH AGGREGATED SERIES
@@ -113,21 +112,21 @@ const exportKpiSummary = useMemo(() => {
         grouped[p.country].push({ ts, price: p.price });
       });
 
-      Object.values(grouped).forEach((arr) => arr.sort((a, b) => a.ts - b.ts));
+      Object.values(grouped).forEach((arr) =>
+        arr.sort((a, b) => a.ts - b.ts)
+      );
 
-      // ✅ APPLY COLOR + HIGHLIGHT
-      const series = Object.keys(grouped).map((country) => {
-        const isActive = selected.includes(country);
-        return {
-          id: country,
-          name: country,
-          data: grouped[country].map((pt) => [pt.ts, pt.price]),
-          color: COUNTRY_COLORS[country] || MUTED_COLOR,
-          lineWidth: isActive ? 4 : 2,
-          opacity: isActive ? 1 : 0.25,
-          zIndex: isActive ? 10 : 1,
-        };
-      });
+      const series = Object.keys(grouped).map((country) => ({
+        id: country,
+        name: country,
+        data: grouped[country].map((pt) => ({
+          x: pt.ts,
+          y: pt.price,
+          country,
+        })),
+        color: COUNTRY_COLORS[country] || MUTED_COLOR,
+        lineWidth: 3,
+      }));
 
       setRawSeries(grouped);
       setSeriesData(series);
@@ -143,7 +142,7 @@ const exportKpiSummary = useMemo(() => {
   }, [seriesData]);
 
   // ==========================
-  // APPLY DATE RANGE + LOAD KPI
+  // APPLY DATE RANGE
   // ==========================
   const applyCalendarRange = async () => {
     if (!chartRef.current || !fromDate || !toDate) return;
@@ -156,17 +155,13 @@ const exportKpiSummary = useMemo(() => {
       return;
     }
 
-    // Zoom chart
     chartRef.current.chart.xAxis[0].setExtremes(min, max);
 
-    // Load KPI data
     const res = await axios.get(`${API}/compare/summary`, {
       params: { fromDate, toDate },
     });
 
     setKpis(res.data.filter((r) => selected.includes(r.country)));
-
-    // ✅ Progressive disclosure: KPIs appear only after Apply
     setHasDateRange(true);
   };
 
@@ -179,11 +174,8 @@ const exportKpiSummary = useMemo(() => {
     setAggRows([]);
     setKpis([]);
     setCompareAt(null);
-
-    // ✅ Reset disclosure flags (NEW)
     setHasDateRange(false);
     setHasInteracted(false);
-
     if (chartRef.current) {
       chartRef.current.chart.xAxis[0].setExtremes(null, null);
     }
@@ -204,10 +196,9 @@ const exportKpiSummary = useMemo(() => {
   };
 
   // ==========================
-  // BUILD COMPARISON (CLICK)
+  // BUILD COMPARISON
   // ==========================
   const buildComparison = async (clickedTs) => {
-    // ✅ Progressive disclosure: user interaction unlocks advanced drawer
     setHasInteracted(true);
 
     const minTs = fromDate ? new Date(fromDate).getTime() : null;
@@ -254,117 +245,13 @@ const exportKpiSummary = useMemo(() => {
         zoomType: "x",
       },
 
-      exporting: {
-  enabled: true,
-  sourceWidth: 1200,
-  sourceHeight: 720,
-
-  chartOptions: {
-    title: {
-      text: "Coconut Shell Charcoal Pricing",
-      style: {
-        fontSize: "20px",
-        fontWeight: "700",
-      },
-    },
-
-    subtitle: {
-      text:
-        fromDate && toDate
-          ? `Period: ${fromDate} → ${toDate}`
-          : "All available data",
-      style: {
-        fontSize: "13px",
-        color: "#9fb2c8",
-      },
-    },
-
-    caption: {
-      text: "Source: CarbonXInsight • Generated automatically",
-      style: {
-        fontSize: "11px",
-        color: "#94a3b8",
-      },
-    },
-
-    chart: {
-      spacingTop: 120,
-      spacingBottom: 80,
-    },
-
-    annotations: exportKpiSummary
-      ? [
-          {
-            labels: [
-              {
-                align: "left",
-                verticalAlign: "top",
-                y: -90,
-                x: 0,
-                useHTML: true,
-                html: `
-                  <div style="display:flex;gap:16px">
-                    ${["Min", "Avg", "Max"]
-                      .map(
-                        (k) => `
-                      <div style="
-                        background:#0f1720;
-                        border:1px solid rgba(255,255,255,0.15);
-                        border-radius:8px;
-                        padding:10px 14px;
-                        min-width:120px;
-                        text-align:center;
-                        color:#f4f7fa;
-                        font-family:Inter,system-ui;
-                      ">
-                        <div style="font-size:11px;color:#9fb2c8">${k}</div>
-                        <div style="font-size:18px;font-weight:700">
-                          ${exportKpiSummary[k.toLowerCase()]}
-                        </div>
-                      </div>
-                    `
-                      )
-                      .join("")}
-                  </div>
-                `,
-              },
-            ],
-          },
-        ]
-      : [],
-  },
-},
-
-
-      tooltip: {
-        shared: true,
-        useHTML: true,
-        backgroundColor: "#0f1720",
-        borderColor: "rgba(23,138,51,0.6)",
-        borderRadius: 10,
-        style: { color: "#f4f7fa", fontSize: "13px", fontWeight: "600" },
-        enabled: !drawerOpen,
-        formatter() {
-          return this.points
-            .map(
-              (p) => `
-              <div style="display:flex;align-items:center;gap:6px">
-                <span style="width:10px;height:10px;border-radius:50%;background:${p.color}"></span>
-                <b>${p.series.name}</b>: ${p.y}
-              </div>
-            `
-            )
-            .join("");
-        },
-      },
+      tooltip: { enabled: false },
 
       xAxis: { crosshair: !drawerOpen },
-      legend: { enabled: true },
 
       rangeSelector: {
         selected: 5,
         inputEnabled: false,
-        inputStyle: { color: "transparent" },
         labelStyle: { color: "transparent" },
       },
 
@@ -375,12 +262,17 @@ const exportKpiSummary = useMemo(() => {
         series: {
           cursor: "pointer",
           marker: { enabled: false },
-          states: {
-            inactive: { opacity: 0.2 },
-          },
           point: {
             events: {
               click() {
+                // ✅ OPTION A
+                setPointDetails({
+                  country: this.country,
+                  price: this.y,
+                  date: new Date(this.x),
+                });
+
+                // keep existing behavior
                 buildComparison(this.x);
               },
             },
@@ -390,57 +282,8 @@ const exportKpiSummary = useMemo(() => {
 
       series: seriesData,
     }),
-    [seriesData, drawerOpen, fromDate, toDate]
-
+    [seriesData, drawerOpen]
   );
-
-  const CALCULATION_TEXT = {
-  min: {
-    title: "Minimum Price",
-    formula: "Min = smallest daily aggregated price in selected period",
-    steps: [
-      "Combine all markets per country per day",
-      "List all daily prices in the selected range",
-      "Pick the smallest value",
-    ],
-  },
-  avg: {
-    title: "Average Price",
-    formula: "Avg = sum of daily prices ÷ number of days",
-    steps: [
-      "Combine all markets per country per day",
-      "Add all daily prices",
-      "Divide by total number of days",
-    ],
-  },
-  max: {
-    title: "Maximum Price",
-    formula: "Max = largest daily aggregated price in selected period",
-    steps: [
-      "Combine all markets per country per day",
-      "List all daily prices in the selected range",
-      "Pick the largest value",
-    ],
-  },
-  delta: {
-    title: "Price Change (Δ)",
-    formula: "Δ = Last price − First price",
-    steps: [
-      "Identify first available price in range",
-      "Identify last available price in range",
-      "Subtract first from last",
-    ],
-  },
-  pct: {
-    title: "Percentage Change (Δ%)",
-    formula: "Δ% = (Δ ÷ First price) × 100",
-    steps: [
-      "Calculate Δ (price change)",
-      "Divide by first price",
-      "Multiply by 100",
-    ],
-  },
-};
 
   // ==========================
   // RENDER
@@ -452,7 +295,9 @@ const exportKpiSummary = useMemo(() => {
         <img src={HaycarbLogo} className="header-logo" alt="Haycarb" />
         <div>
           <h1 className="header-title">Coconut Shell Charcoal Pricing</h1>
-          <p className="header-subtitle">Haycarb • Country-Level Market Analytics</p>
+          <p className="header-subtitle">
+            Haycarb • Country-Level Market Analytics
+          </p>
         </div>
       </header>
 
@@ -482,20 +327,12 @@ const exportKpiSummary = useMemo(() => {
           className="date-apply-btn"
           onClick={applyCalendarRange}
           disabled={!fromDate || !toDate}
-          
         >
           Apply
         </button>
       </div>
 
-      {/* ✅ Progressive disclosure hint (NEW)
-      {!hasDateRange && (
-        <div className="helper-hint">
-          Select a date range and click Apply to unlock KPI insights. Click a point on the chart to open comparison.
-        </div>
-      )} */}
-
-      {/* KPI CARDS (✅ shown only after Apply) */}
+      {/* KPI Cards */}
       {hasDateRange && kpis.length > 0 && (
         <div className="kpi-row">
           {kpis.map((k) => (
@@ -503,11 +340,12 @@ const exportKpiSummary = useMemo(() => {
               key={k.country}
               className="kpi-card"
               style={{
-                borderTop: `4px solid ${COUNTRY_COLORS[k.country] || MUTED_COLOR}`,
+                borderTop: `4px solid ${
+                  COUNTRY_COLORS[k.country] || MUTED_COLOR
+                }`,
               }}
             >
               <div className="kpi-country">{k.country}</div>
-
               <div className="kpi-values">
                 <div className="kpi-item">
                   <div className="kpi-label">Min</div>
@@ -537,7 +375,7 @@ const exportKpiSummary = useMemo(() => {
         />
       </div>
 
-      {/* Comparison Drawer (✅ shown only after interaction) */}
+      {/* Comparison Drawer */}
       {hasInteracted && drawerOpen && (
         <div className="compare-drawer">
           <div className="compare-head">
@@ -557,44 +395,16 @@ const exportKpiSummary = useMemo(() => {
             <thead>
               <tr>
                 <th>Country</th>
-                <th>
-  Min
-  <span className="calc-icon" onClick={() => { setCalcType("min"); setShowCalc(true); }}>
-    ⓘ
-  </span>
-</th>
-<th>
-  Avg
-  <span className="calc-icon" onClick={() => { setCalcType("avg"); setShowCalc(true); }}>
-    ⓘ
-  </span>
-</th>
-<th>
-  Max
-  <span className="calc-icon" onClick={() => { setCalcType("max"); setShowCalc(true); }}>
-    ⓘ
-  </span>
-</th>
-<th>
-  Δ
-  <span className="calc-icon" onClick={() => { setCalcType("delta"); setShowCalc(true); }}>
-    ⓘ
-  </span>
-</th>
-<th>
-  Δ%
-  <span className="calc-icon" onClick={() => { setCalcType("pct"); setShowCalc(true); }}>
-    ⓘ
-  </span>
-</th>
-
+                <th>Min</th>
+                <th>Avg</th>
+                <th>Max</th>
+                <th>Δ</th>
+                <th>Δ%</th>
               </tr>
             </thead>
-
             <tbody>
               {aggRows.map((a) => {
                 const deltaRow = rows.find((r) => r.country === a.country);
-
                 return (
                   <tr key={a.country}>
                     <td>{a.country}</td>
@@ -610,30 +420,56 @@ const exportKpiSummary = useMemo(() => {
           </table>
         </div>
       )}
-      {showCalc && calcType && (
-  <div className="equation-modal" onClick={() => setShowCalc(false)}>
+
+      {/* ✅ OPTION A — POINT DETAIL MODAL */}
+      {pointDetails && (
+  <div
+    className="point-pop-overlay"
+    onClick={() => setPointDetails(null)}
+  >
     <div
-      className="equation-box"
+      className="point-pop-card"
       onClick={(e) => e.stopPropagation()}
     >
-      <h4>{CALCULATION_TEXT[calcType].title}</h4>
-
-      <div className="equation-formula">
-        {CALCULATION_TEXT[calcType].formula}
+      {/* Header */}
+      <div className="point-pop-header">
+        <div className="point-pop-title">Price Snapshot</div>
+        <div
+          className="point-pop-badge"
+          style={{
+            background:
+              COUNTRY_COLORS[pointDetails.country] || "#475569",
+          }}
+        >
+          {pointDetails.country}
+        </div>
       </div>
 
-      <ul className="equation-steps">
-        {CALCULATION_TEXT[calcType].steps.map((s, i) => (
-          <li key={i}>{s}</li>
-        ))}
-      </ul>
+      {/* Body */}
+      <div className="point-pop-body">
+        <div className="point-pop-item">
+          <span>Date</span>
+          <strong>
+            {pointDetails.date.toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })}
+          </strong>
+        </div>
 
-      <button
-        className="btn-ghost"
-        onClick={() => setShowCalc(false)}
-      >
-        Close
-      </button>
+        <div className="point-pop-item">
+          <span>Price</span>
+          <strong className="point-pop-price">
+            ${pointDetails.price}
+          </strong>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="point-pop-foot">
+        Click anywhere outside to close
+      </div>
     </div>
   </div>
 )}

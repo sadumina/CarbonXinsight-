@@ -202,7 +202,20 @@ useEffect(() => {
         zoomType: "x",
       },
 
-      tooltip: { enabled: false },
+      tooltip: {
+  useHTML: true,
+  backgroundColor: "#020617",
+  borderColor: "#1f2937",
+  borderRadius: 10,
+  shadow: false,
+  padding: 12,
+  style: {
+    color: "#e5e7eb",
+    fontSize: "12px",
+  },
+  
+},
+
 
       xAxis: { type: "datetime" },
 

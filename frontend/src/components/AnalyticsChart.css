@@ -177,6 +177,30 @@ body {
   cursor: not-allowed;
 }
 
+/* Chart export actions */
+.chart-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin: 8px 0 12px;
+}
+
+.chart-actions .btn-ghost {
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: #c7d0d9;
+  cursor: pointer;
+}
+
+.chart-actions .btn-ghost:hover {
+  background: rgba(255,255,255,0.08);
+  color: #ffffff;
+}
+
+
 /* =========================
    HELPER HINT
 ========================= */

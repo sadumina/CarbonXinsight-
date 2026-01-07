@@ -295,6 +295,7 @@ export default function AnalyticsChart() {
                   </div>
                 </div>
 
+                  
                 {change && (
                   <div className="kpi-change">
                     <span

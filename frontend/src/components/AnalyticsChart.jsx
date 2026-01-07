@@ -285,6 +285,20 @@ export default function AnalyticsChart() {
     [seriesData, drawerOpen]
   );
 
+  const computeChange = (country) => {
+  const arr = rawSeries[country];
+  if (!arr || arr.length < 2) return null;
+
+  const start = arr[0].price;
+  const end = arr[arr.length - 1].price;
+
+  const delta = end - start;
+  const pct = (delta / start) * 100;
+
+  return { delta, pct };
+};
+
+
   // ==========================
   // RENDER
   // ==========================
@@ -376,7 +390,7 @@ export default function AnalyticsChart() {
       </div>
 
       {/* Comparison Drawer */}
-      {hasInteracted && drawerOpen && (
+      {/* {hasInteracted && drawerOpen && (
         <div className="compare-drawer">
           <div className="compare-head">
             <div>
@@ -419,7 +433,7 @@ export default function AnalyticsChart() {
             </tbody>
           </table>
         </div>
-      )}
+      )} */}
 
       {/* ✅ OPTION A — POINT DETAIL MODAL */}
       {pointDetails && (

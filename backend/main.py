@@ -467,7 +467,17 @@ async def upload_excel(file: UploadFile = File(...)):
         "rows_inserted": len(docs),
         "countries": country_columns
     }
+@app.get("/meta/data-status")
+def get_data_status():
+    doc = db.prices.find_one(
+        {},
+        sort=[("date", -1)],
+        projection={"date": 1, "_id": 0}
+    )
 
+    return {
+        "last_updated": doc["date"] if doc else None
+    }
 
 # =========================================================
 # HEALTH

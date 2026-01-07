@@ -98,6 +98,18 @@ body {
   color: var(--text-muted);
   margin-top: 2px;
 }
+/* Unit / metadata text under title */
+.header-meta {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #9fb2c8;
+}
+
+.header-meta strong {
+  font-weight: 600;
+  color: #c7d0d9;
+}
+
 
 /* =========================
    DATE RANGE

@@ -216,14 +216,20 @@ export default function AnalyticsChart() {
     <section className="panel">
       {/* Header */}
       <header className="dashboard-header">
-        <img src={HaycarbLogo} className="header-logo" alt="Haycarb" />
-        <div>
-          <h1 className="header-title">Coconut Shell Charcoal Pricing</h1>
-          <p className="header-subtitle">
-            Haycarb • Country-Level Market Analytics
-          </p>
-        </div>
-      </header>
+  <img src={HaycarbLogo} className="header-logo" alt="Haycarb" />
+  <div>
+    <h1 className="header-title">Coconut Shell Charcoal Pricing</h1>
+
+    <p className="header-subtitle">
+      Haycarb • Country-Level Market Analytics
+    </p>
+
+    <p className="header-meta">
+      Prices shown in <strong>USD / MT</strong> (Metric Ton)
+    </p>
+  </div>
+</header>
+
 
       {/* Date Range */}
       <div className="date-row">

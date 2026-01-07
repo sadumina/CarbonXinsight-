@@ -57,33 +57,25 @@ export default function AnalyticsChart() {
   // ✅ point click popup
   const [pointDetails, setPointDetails] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  
 
-  useEffect(() => {
-    axios
-      .get(`${API}/meta/data-status`)
-      .then((res) => {
-        console.log("META STATUS RESPONSE:", res.data);
+useEffect(() => {
+  axios
+    .get(`${API}/meta/data-status`)
+    .then((res) => {
+      const raw = res.data?.last_updated;
+      if (!raw) return;
 
-        const raw = res.data?.last_updated;
-        if (!raw) {
-          console.warn("No last_updated returned from backend");
-          return;
-        }
+      const parsed = new Date(raw);
+      if (!isNaN(parsed)) {
+        setLastUpdated(parsed);
+      }
+    })
+    .catch((err) => {
+      console.error("Failed to load data status", err);
+    });
+}, []);
 
-        const parsed = new Date(
-          typeof raw === "string" ? raw + "T00:00:00" : raw
-        );
-
-        if (!isNaN(parsed)) {
-          setLastUpdated(parsed);
-        } else {
-          console.warn("Invalid date format:", raw);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to load data status", err);
-      });
-  }, []);
 
   // ==========================
   // LOAD COUNTRIES

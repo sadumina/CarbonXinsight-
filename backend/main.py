@@ -469,14 +469,22 @@ async def upload_excel(file: UploadFile = File(...)):
     }
 @app.get("/meta/data-status")
 def get_data_status():
-    doc = db.prices.find_one(
-        {},
-        sort=[("date", -1)],
-        projection={"date": 1, "_id": 0}
-    )
+    pipeline = [
+        {"$unwind": "$prices"},
+        {"$sort": {"prices.date": -1}},
+        {"$limit": 1},
+        {
+            "$project": {
+                "_id": 0,
+                "last_updated": "$prices.date"
+            }
+        }
+    ]
+
+    result = list(charcoal_collection.aggregate(pipeline))
 
     return {
-        "last_updated": doc["date"] if doc else None
+        "last_updated": result[0]["last_updated"] if result else None
     }
 
 # =========================================================

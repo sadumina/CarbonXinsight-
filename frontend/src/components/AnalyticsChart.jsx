@@ -461,7 +461,7 @@ export default function AnalyticsChart() {
         <div className="point-pop-item">
           <span>Price</span>
           <strong className="point-pop-price">
-            ${pointDetails.price}
+            USD/MT{pointDetails.price}
           </strong>
         </div>
       </div>

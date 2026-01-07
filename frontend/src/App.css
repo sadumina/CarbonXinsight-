@@ -1,6 +1,9 @@
 /* =====================================================
-   CarbonXInsight — App Shell (SAFE)
-   Matches App.jsx exactly
+   CarbonXInsight — Application Shell
+   Scope: App.jsx ONLY
+   - Sidebar container
+   - Main content container
+   - Global layout & spacing
 ===================================================== */
 
 /* =========================
@@ -8,24 +11,18 @@
 ========================= */
 :root {
   --bg-app: #0b1110;
-  --bg-sidebar: #0e1413;
   --bg-main: #0b1110;
 
-  --surface-1: #0f1720;
-  --surface-2: #131c24;
+  --surface-sidebar: #0e1413;
 
   --text-primary: #f4f7fa;
-  --text-secondary: #c7d0d9;
   --text-muted: #8b9aaa;
 
-  --brand: #178a33;
-  --brand-soft: #22c55e;
+  --brand-glow: rgba(23, 138, 51, 0.08);
 
   --border-subtle: rgba(255, 255, 255, 0.06);
 
-  --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 16px;
 }
 
 /* =========================
@@ -50,32 +47,36 @@ body {
 }
 
 /* =========================
-   APP SHELL (MAIN FIX)
+   APP SHELL (App.jsx root)
 ========================= */
 .app-shell {
   display: flex;
   min-height: 100vh;
+  width: 100%;
   background: var(--bg-app);
 }
 
 /* =========================
-   SIDEBAR (WRAPS Sidebar.jsx)
+   SIDEBAR CONTAINER
+   (Styles Sidebar positioning only)
 ========================= */
 .app-shell > aside,
 .app-shell > nav {
+  flex-shrink: 0;
   background: linear-gradient(180deg, #0d1513, #0a100f);
   border-right: 1px solid var(--border-subtle);
 }
 
 /* =========================
-   MAIN CONTENT
+   MAIN CONTENT AREA
 ========================= */
 .app-main {
   flex: 1;
   padding: 24px 28px;
-  background: radial-gradient(
+  background:
+    radial-gradient(
       1200px 600px at 100% 0%,
-      rgba(34, 197, 94, 0.08),
+      var(--brand-glow),
       transparent
     ),
     var(--bg-main);
@@ -83,7 +84,7 @@ body {
 }
 
 /* =========================
-   PAGE CONTAINMENT
+   CONTENT WIDTH CONTROL
 ========================= */
 .app-main > * {
   max-width: 1280px;
@@ -91,42 +92,32 @@ body {
 }
 
 /* =========================
-   GENERIC CARD SURFACE
+   PAGE TRANSITION (SUBTLE)
 ========================= */
-.card {
-  background: var(--surface-1);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 16px;
+.app-main > * {
+  animation: appFadeIn 0.25s ease-out;
+}
+
+@keyframes appFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* =========================
-   SECTION TITLES
-========================= */
-.section-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin: 22px 0 12px;
-}
-
-/* =========================
-   BUTTONS (SAFE)
-========================= */
-button {
-  font-family: inherit;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* =========================
-   RESPONSIVE
+   RESPONSIVE SAFETY
 ========================= */
 @media (max-width: 768px) {
   .app-main {
     padding: 16px;
+  }
+
+  .app-main > * {
+    max-width: 100%;
   }
 }

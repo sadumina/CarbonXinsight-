@@ -1,95 +1,115 @@
-/* --- HARD RESET inside the sidebar scope --- */
+/* =====================================================
+   CarbonXInsight — Professional Sidebar
+===================================================== */
+
+/* Reset inside sidebar only */
 .sidebar,
 .sidebar * {
   box-sizing: border-box;
 }
-.app-sidebar, .sidebar {
-  margin: 0;
-  padding: 0;
-}
-.app-sidebar ul,
-.app-sidebar li,
-.sidebar ul,
-.sidebar li {
-  list-style: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-}
-/* kill default blue links inside sidebar */
-.app-sidebar a,
-.sidebar a {
-  text-decoration: none !important;
-  color: #d5e0e8 !important;
-}
 
-/* --- Layout --- */
+/* Sidebar container */
 .sidebar {
+  width: 240px;
+  min-height: 100vh;
+  padding: 20px 16px;
+
+  background: linear-gradient(180deg, #0d1513, #0a100f);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+
   display: flex;
   flex-direction: column;
-  height: 100%;
-  color: #d5e0e8;
+
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: #c7d0d9;
 }
 
+/* ---------- Brand ---------- */
 .sidebar-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 6px 0 22px;
+  margin-bottom: 28px;
 }
 
 .sidebar-logo {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
 }
 
 .app-name {
   font-size: 15px;
-  font-weight: 700;
-  color: #00ff9d;
+  font-weight: 600;
+  color: #e6f4ea;
   letter-spacing: 0.2px;
 }
 
-/* menu */
+/* ---------- Menu ---------- */
 .sidebar-menu {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
-/* base link styles */
+/* Menu item */
 .sidebar-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+
+  padding: 10px 14px;
   border-radius: 10px;
-  font-size: 14.5px;
-  background: transparent !important;   /* <- no green by default */
-  transition: background 160ms ease, color 160ms ease, transform 80ms ease;
+
+  font-size: 14px;
+  color: #c7d0d9;
+  text-decoration: none;
+
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
 }
 
+/* Hover (subtle) */
 .sidebar-item:hover {
-  background: rgba(0, 255, 170, 0.14);
-  color: #ffffff !important;
+  background: rgba(23, 138, 51, 0.08);
+  color: #eef7f1;
 }
 
-/* only the active route is green */
+/* Active (calm, authoritative) */
 .sidebar-item.active {
-  background: rgba(0, 255, 170, 0.26) !important;
-  color: #ffffff !important;
-  border-left: 3px solid #00ff9d;
+  background: linear-gradient(
+    135deg,
+    rgba(23, 138, 51, 0.18),
+    rgba(23, 138, 51, 0.08)
+  );
+  color: #eef7f1;
+  font-weight: 500;
 }
 
-/* disabled row */
+/* Disabled */
 .sidebar-item.disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-/* keyboard focus (optional) */
+.sidebar-item.disabled:hover {
+  background: none;
+}
+
+/* Label */
+.nav-label {
+  line-height: 1;
+}
+
+/* Separator */
+.sidebar-separator {
+  height: 1px;
+  margin: 14px 8px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Accessibility */
 .sidebar-item:focus-visible {
-  outline: 2px solid rgba(0, 255, 170, 0.45);
+  outline: 2px solid rgba(23, 138, 51, 0.4);
   outline-offset: 2px;
 }

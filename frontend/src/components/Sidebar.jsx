@@ -4,9 +4,9 @@ import Logo from "../assets/haycarb-logo.png";
 
 export default function Sidebar() {
   return (
-    <div className="sidebar">
+    <aside className="sidebar">
       <div className="sidebar-header">
-        <img src={Logo} alt="logo" className="sidebar-logo" />
+        <img src={Logo} alt="Haycarb logo" className="sidebar-logo" />
         <span className="app-name">CarbonXInsight</span>
       </div>
 
@@ -14,27 +14,37 @@ export default function Sidebar() {
         <NavLink
           to="/dashboard"
           end
-          className={({ isActive }) => `sidebar-item ${isActive ? "active" : ""}`}
+          className={({ isActive }) =>
+            `sidebar-item ${isActive ? "active" : ""}`
+          }
         >
-          📊 Dashboard
+          <span className="nav-label">Dashboard</span>
         </NavLink>
 
         <NavLink
           to="/view-data"
-          className={({ isActive }) => `sidebar-item ${isActive ? "active" : ""}`}
+          className={({ isActive }) =>
+            `sidebar-item ${isActive ? "active" : ""}`
+          }
         >
-          📅 View Data
+          <span className="nav-label">View Data</span>
         </NavLink>
 
         <NavLink
           to="/upload"
-          className={({ isActive }) => `sidebar-item ${isActive ? "active" : ""}`}
+          className={({ isActive }) =>
+            `sidebar-item ${isActive ? "active" : ""}`
+          }
         >
-          ⬆ Data Upload
+          <span className="nav-label">Data Upload</span>
         </NavLink>
 
-        <div className="sidebar-item disabled">⚙ Settings (soon)</div>
+        <div className="sidebar-separator" />
+
+        <div className="sidebar-item disabled">
+          <span className="nav-label">Settings (soon)</span>
+        </div>
       </nav>
-    </div>
+    </aside>
   );
 }

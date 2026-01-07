@@ -63,9 +63,10 @@ body {
 .app-shell > aside,
 .app-shell > nav {
   flex-shrink: 0;
-  background: linear-gradient(180deg, #0d1513, #0a100f);
-  border-right: 1px solid var(--border-subtle);
+  background: var(--bg-app); /* same as main */
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
+
 
 /* =========================
    MAIN CONTENT AREA
@@ -73,13 +74,7 @@ body {
 .app-main {
   flex: 1;
   padding: 24px 28px;
-  background:
-    radial-gradient(
-      1200px 600px at 100% 0%,
-      var(--brand-glow),
-      transparent
-    ),
-    var(--bg-main);
+  background: var(--bg-main); /* flat, neutral */
   overflow-y: auto;
 }
 

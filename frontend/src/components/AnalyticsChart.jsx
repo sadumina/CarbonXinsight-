@@ -58,33 +58,32 @@ export default function AnalyticsChart() {
   const [pointDetails, setPointDetails] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
 
-useEffect(() => {
-  axios
-    .get(`${API}/meta/data-status`)
-    .then((res) => {
-      console.log("META STATUS RESPONSE:", res.data);
+  useEffect(() => {
+    axios
+      .get(`${API}/meta/data-status`)
+      .then((res) => {
+        console.log("META STATUS RESPONSE:", res.data);
 
-      const raw = res.data?.last_updated;
-      if (!raw) {
-        console.warn("No last_updated returned from backend");
-        return;
-      }
+        const raw = res.data?.last_updated;
+        if (!raw) {
+          console.warn("No last_updated returned from backend");
+          return;
+        }
 
-      const parsed = new Date(
-        typeof raw === "string" ? raw + "T00:00:00" : raw
-      );
+        const parsed = new Date(
+          typeof raw === "string" ? raw + "T00:00:00" : raw
+        );
 
-      if (!isNaN(parsed)) {
-        setLastUpdated(parsed);
-      } else {
-        console.warn("Invalid date format:", raw);
-      }
-    })
-    .catch((err) => {
-      console.error("Failed to load data status", err);
-    });
-}, []);
-
+        if (!isNaN(parsed)) {
+          setLastUpdated(parsed);
+        } else {
+          console.warn("Invalid date format:", raw);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load data status", err);
+      });
+  }, []);
 
   // ==========================
   // LOAD COUNTRIES
@@ -116,9 +115,7 @@ useEffect(() => {
       });
 
       // sort by time
-      Object.values(grouped).forEach((arr) =>
-        arr.sort((a, b) => a.ts - b.ts)
-      );
+      Object.values(grouped).forEach((arr) => arr.sort((a, b) => a.ts - b.ts));
 
       // build series for Highcharts
       const series = Object.keys(grouped).map((country) => ({
@@ -203,19 +200,17 @@ useEffect(() => {
       },
 
       tooltip: {
-  useHTML: true,
-  backgroundColor: "#020617",
-  borderColor: "#1f2937",
-  borderRadius: 10,
-  shadow: false,
-  padding: 12,
-  style: {
-    color: "#e5e7eb",
-    fontSize: "12px",
-  },
-  
-},
-
+        useHTML: true,
+        backgroundColor: "#020617",
+        borderColor: "#1f2937",
+        borderRadius: 10,
+        shadow: false,
+        padding: 12,
+        style: {
+          color: "#e5e7eb",
+          fontSize: "12px",
+        },
+      },
 
       xAxis: { type: "datetime" },
 
@@ -246,97 +241,98 @@ useEffect(() => {
         },
       },
       exporting: {
-  enabled: true,
+        enabled: true,
 
-  // Professional filename
-  filename: `CarbonXInsight_Price_Stats_${fromDate || "ALL"}_${toDate || "ALL"}`,
+        // Professional filename
+        filename: `CarbonXInsight_Price_Stats_${fromDate || "ALL"}_${
+          toDate || "ALL"
+        }`,
 
-  // Print-ready resolution
-  sourceWidth: 1400,
-  sourceHeight: 800,
+        // Print-ready resolution
+        sourceWidth: 1400,
+        sourceHeight: 800,
 
-  chartOptions: {
-    title: {
-      text: "Coconut Shell Charcoal Pricing",
-      style: {
-        fontSize: "20px",
-        fontWeight: "700",
+        chartOptions: {
+          title: {
+            text: "Coconut Shell Charcoal Pricing",
+            style: {
+              fontSize: "20px",
+              fontWeight: "700",
+            },
+          },
+
+          subtitle: {
+            text: [
+              "Unit: USD / MT",
+              fromDate && toDate
+                ? `Period: ${fromDate} → ${toDate}`
+                : "Period: All available data",
+            ].join(" • "),
+            style: {
+              fontSize: "13px",
+              color: "#9fb2c8",
+            },
+          },
+
+          caption: {
+            text: `Markets: ${selected.join(", ")}`,
+            style: {
+              fontSize: "11px",
+              color: "#94a3b8",
+            },
+          },
+        },
+
+        buttons: {
+          contextButton: {
+            menuItems: [
+              "viewFullscreen",
+              "printChart",
+              "separator",
+
+              {
+                text: "Download PNG (Report)",
+                onclick() {
+                  this.exportChart({ type: "image/png" });
+                },
+              },
+              {
+                text: "Download JPG (Email)",
+                onclick() {
+                  this.exportChart({ type: "image/jpeg" });
+                },
+              },
+              {
+                text: "Download PDF (Executive)",
+                onclick() {
+                  this.exportChart({ type: "application/pdf" });
+                },
+              },
+              {
+                text: "Download SVG (Design)",
+                onclick() {
+                  this.exportChart({ type: "image/svg+xml" });
+                },
+              },
+
+              "separator",
+
+              {
+                text: "Download CSV (Data)",
+                onclick() {
+                  this.downloadCSV();
+                },
+              },
+              {
+                text: "Download XLS (Excel)",
+                onclick() {
+                  this.downloadXLS();
+                },
+              },
+            ],
+          },
+        },
       },
-    },
-
-    subtitle: {
-      text: [
-        "Unit: USD / MT",
-        fromDate && toDate
-          ? `Period: ${fromDate} → ${toDate}`
-          : "Period: All available data",
-      ].join(" • "),
-      style: {
-        fontSize: "13px",
-        color: "#9fb2c8",
-      },
-    },
-
-    caption: {
-      text: `Markets: ${selected.join(", ")}`,
-      style: {
-        fontSize: "11px",
-        color: "#94a3b8",
-      },
-    },
-  },
-
-  buttons: {
-    contextButton: {
-      menuItems: [
-        "viewFullscreen",
-        "printChart",
-        "separator",
-
-        {
-          text: "Download PNG (Report)",
-          onclick() {
-            this.exportChart({ type: "image/png" });
-          },
-        },
-        {
-          text: "Download JPG (Email)",
-          onclick() {
-            this.exportChart({ type: "image/jpeg" });
-          },
-        },
-        {
-          text: "Download PDF (Executive)",
-          onclick() {
-            this.exportChart({ type: "application/pdf" });
-          },
-        },
-        {
-          text: "Download SVG (Design)",
-          onclick() {
-            this.exportChart({ type: "image/svg+xml" });
-          },
-        },
-
-        "separator",
-
-        {
-          text: "Download CSV (Data)",
-          onclick() {
-            this.downloadCSV();
-          },
-        },
-        {
-          text: "Download XLS (Excel)",
-          onclick() {
-            this.downloadXLS();
-          },
-        },
-      ],
-    },
-  },
-},
-
 
       series: seriesData,
     }),
@@ -349,36 +345,34 @@ useEffect(() => {
   return (
     <section className="panel">
       {/* Header */}
-<header className="dashboard-header">
-  <div className="header-left">
-    <img src={HaycarbLogo} className="header-logo" alt="Haycarb" />
-    <div>
-      <h1 className="header-title">Coconut Shell Charcoal Pricing</h1>
-      <p className="header-subtitle">
-        Haycarb • Country-Level Market Analytics
-      </p>
-      <p className="header-meta">
-        Prices shown in <strong>USD / MT</strong> (Metric Ton)
-      </p>
-    </div>
-  </div>
+      <header className="dashboard-header">
+        <div className="header-left">
+          <img src={HaycarbLogo} className="header-logo" alt="Haycarb" />
+          <div>
+            <h1 className="header-title">Coconut Shell Charcoal Pricing</h1>
+            <p className="header-subtitle">
+              Haycarb • Country-Level Market Analytics
+            </p>
+            <p className="header-meta">
+              Prices shown in <strong>USD / MT</strong> (Metric Ton)
+            </p>
+          </div>
+        </div>
 
-  {lastUpdated && (
-    <div className="data-status">
-      <span className="status-dot" />
-      Data updated until{" "}
-      <strong>
-        {lastUpdated.toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })}
-      </strong>
-    </div>
-  )}
-</header>
-
-
+        {lastUpdated && (
+          <div className="data-status">
+            <span className="status-dot" />
+            Data updated until{" "}
+            <strong>
+              {lastUpdated.toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
+            </strong>
+          </div>
+        )}
+      </header>
 
       {/* Date Range */}
       <div className="date-row">
@@ -444,7 +438,6 @@ useEffect(() => {
                   </div>
                 </div>
 
-                  
                 {change && (
                   <div className="kpi-change">
                     <span
@@ -486,16 +479,14 @@ useEffect(() => {
           className="point-pop-overlay"
           onClick={() => setPointDetails(null)}
         >
-          <div
-            className="point-pop-card"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="point-pop-card" onClick={(e) => e.stopPropagation()}>
             <div className="point-pop-header">
               <div className="point-pop-title">Price Snapshot</div>
               <div
                 className="point-pop-badge"
                 style={{
-                  background: COUNTRY_COLORS[pointDetails.country] || MUTED_COLOR,
+                  background:
+                    COUNTRY_COLORS[pointDetails.country] || MUTED_COLOR,
                 }}
               >
                 {pointDetails.country}

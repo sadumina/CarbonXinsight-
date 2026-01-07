@@ -56,6 +56,35 @@ export default function AnalyticsChart() {
 
   // ✅ point click popup
   const [pointDetails, setPointDetails] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
+
+useEffect(() => {
+  axios
+    .get(`${API}/meta/data-status`)
+    .then((res) => {
+      console.log("META STATUS RESPONSE:", res.data);
+
+      const raw = res.data?.last_updated;
+      if (!raw) {
+        console.warn("No last_updated returned from backend");
+        return;
+      }
+
+      const parsed = new Date(
+        typeof raw === "string" ? raw + "T00:00:00" : raw
+      );
+
+      if (!isNaN(parsed)) {
+        setLastUpdated(parsed);
+      } else {
+        console.warn("Invalid date format:", raw);
+      }
+    })
+    .catch((err) => {
+      console.error("Failed to load data status", err);
+    });
+}, []);
+
 
   // ==========================
   // LOAD COUNTRIES
@@ -307,20 +336,35 @@ export default function AnalyticsChart() {
   return (
     <section className="panel">
       {/* Header */}
-      <header className="dashboard-header">
-  <img src={HaycarbLogo} className="header-logo" alt="Haycarb" />
-  <div>
-    <h1 className="header-title">Coconut Shell Charcoal Pricing</h1>
-
-    <p className="header-subtitle">
-      Haycarb • Country-Level Market Analytics
-    </p>
-
-    <p className="header-meta">
-      Prices shown in <strong>USD / MT</strong> (Metric Ton)
-    </p>
+<header className="dashboard-header">
+  <div className="header-left">
+    <img src={HaycarbLogo} className="header-logo" alt="Haycarb" />
+    <div>
+      <h1 className="header-title">Coconut Shell Charcoal Pricing</h1>
+      <p className="header-subtitle">
+        Haycarb • Country-Level Market Analytics
+      </p>
+      <p className="header-meta">
+        Prices shown in <strong>USD / MT</strong> (Metric Ton)
+      </p>
+    </div>
   </div>
+
+  {lastUpdated && (
+    <div className="data-status">
+      <span className="status-dot" />
+      Data updated until{" "}
+      <strong>
+        {lastUpdated.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })}
+      </strong>
+    </div>
+  )}
 </header>
+
 
 
       {/* Date Range */}

@@ -180,6 +180,36 @@ useEffect(() => {
 
     return { delta, pct };
   };
+const applyPresetRange = (preset) => {
+  if (!chartRef.current) return;
+
+  const now = new Date();
+  let from = null;
+  let to = new Date();
+
+  if (preset.all) {
+    chartRef.current.chart.xAxis[0].setExtremes(null, null);
+    setFromDate("");
+    setToDate("");
+    setHasDateRange(false);
+    return;
+  }
+
+  if (preset.ytd) {
+    from = new Date(now.getFullYear(), 0, 1);
+  } else {
+    from = new Date();
+    from.setMonth(from.getMonth() - preset.months);
+  }
+
+  setFromDate(from.toISOString().slice(0, 10));
+  setToDate(to.toISOString().slice(0, 10));
+
+  chartRef.current.chart.xAxis[0].setExtremes(
+    from.getTime(),
+    to.getTime()
+  );
+};
 
   // ==========================
   // CHART OPTIONS

@@ -1,6 +1,5 @@
 /* =====================================================
    CarbonXInsight — AnalyticsChart.css
-   Enterprise • Calm • Trustworthy
 ===================================================== */
 
 /* =========================
@@ -48,8 +47,7 @@ body {
   margin: 0;
   background: var(--page-bg);
   color: var(--text-primary);
-  font-family: Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial,
-    sans-serif;
+  font-family: Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* =========================
@@ -65,16 +63,13 @@ body {
   box-shadow: var(--shadow-1);
 }
 
-.panel.drawer-open {
-  filter: brightness(0.95);
-}
-
 /* =========================
    HEADER
 ========================= */
 .dashboard-header {
   display: flex;
-  align-items: center;
+  justify-content: space-between;
+  align-items: flex-start;
   gap: 16px;
   padding-bottom: 14px;
   border-bottom: 1px solid var(--separator);
@@ -98,73 +93,71 @@ body {
   color: var(--text-muted);
   margin-top: 2px;
 }
-/* Unit / metadata text under title */
+
 .header-meta {
   margin-top: 4px;
   font-size: 12px;
   color: #9fb2c8;
 }
 
-.header-meta strong {
-  font-weight: 600;
-  color: #c7d0d9;
+/* Data freshness badge */
+.data-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #9fb2c8;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 6px 12px;
+  border-radius: 999px;
 }
 
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #16a34a;
+}
 
 /* =========================
-   DATE RANGE
+   DATE RANGE (PRIMARY)
 ========================= */
 .date-row {
   display: flex;
-  align-items: flex-end;
   gap: 14px;
-  margin: 18px 0 14px;
-  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-top: 18px;
 }
 
 .date-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .date-field label {
   font-size: 11px;
-  font-weight: 500;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: #9ca3af;
+  letter-spacing: 0.06em;
 }
 
 .date-input {
-  height: 40px;
-  min-width: 160px;
-  padding: 0 12px;
+  background: #020617;
+  border: 1px solid #1f2937;
+  color: #e5e7eb;
+  padding: 9px 12px;
   border-radius: 10px;
-  background: var(--panel-soft);
-  border: 1px solid var(--separator);
-  color: var(--text-primary);
-  font-size: 13px;
-  outline: none;
-}
-
-.date-input:focus {
-  border-color: var(--brand);
-}
-
-.date-input::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-  opacity: 0.8;
 }
 
 .date-apply-btn {
-  height: 40px;
-  padding: 0 18px;
-  border-radius: 10px;
+  padding: 10px 18px;
+  background: #166534;
   border: none;
-  background: var(--brand);
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 500;
+  border-radius: 10px;
+  color: #dcfce7;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -173,45 +166,42 @@ body {
 }
 
 .date-apply-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
-/* Chart export actions */
-.chart-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin: 8px 0 12px;
-}
-
-.chart-actions .btn-ghost {
-  font-size: 12px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.04);
-  color: #c7d0d9;
-  cursor: pointer;
-}
-
-.chart-actions .btn-ghost:hover {
-  background: rgba(255,255,255,0.08);
-  color: #ffffff;
-}
-
-
 /* =========================
-   HELPER HINT
+   QUICK PRESETS (SECONDARY)
 ========================= */
-.helper-hint {
-  margin: 12px 0 16px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px dashed rgba(255, 255, 255, 0.12);
+.preset-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 20px;
+  padding-left: 2px;
+}
+
+.preset-btn {
+  padding: 6px 14px;
   font-size: 12px;
-  color: var(--text-muted);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  color: #a7f3d0;
+  border: 1px solid rgba(6,95,70,0.6);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.preset-btn:hover {
+  background: rgba(6,95,70,0.35);
+  color: #ecfdf5;
+}
+
+/* Optional active state (JS-controlled) */
+.preset-btn.active {
+  background: #064e3b;
+  color: #6ee7b7;
+  border-color: #065f46;
 }
 
 /* =========================
@@ -256,7 +246,34 @@ body {
 .kpi-value {
   font-size: 16px;
   font-weight: 600;
-  margin-top: 2px;
+}
+
+/* Delta */
+.kpi-change {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.kpi-delta,
+.kpi-pct {
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.kpi-delta.up,
+.kpi-pct.up {
+  color: #16a34a;
+  background: rgba(22,163,74,0.12);
+}
+
+.kpi-delta.down,
+.kpi-pct.down {
+  color: #dc2626;
+  background: rgba(220,38,38,0.12);
 }
 
 /* =========================
@@ -278,7 +295,7 @@ body {
 }
 
 .highcharts-grid-line {
-  stroke: rgba(255, 255, 255, 0.08) !important;
+  stroke: rgba(255,255,255,0.08) !important;
 }
 
 .highcharts-axis-labels text {
@@ -290,127 +307,13 @@ body {
   stroke-width: 3px !important;
 }
 
-.highcharts-legend-item text {
-  fill: var(--text-primary) !important;
-  font-size: 12px !important;
-}
-
 /* =========================
-   COMPARISON DRAWER
+   POINT POPUP
 ========================= */
-.compare-drawer {
-  margin-top: 20px;
-  background: var(--panel-soft);
-  border: 1px solid var(--separator);
-  border-radius: var(--radius);
-  padding: 16px 18px 20px;
-}
-
-.compare-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.compare-title {
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.compare-subtitle {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-/* =========================
-   COMPARISON TABLE
-========================= */
-.compare-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.compare-table th {
-  text-align: left;
-  padding: 10px 12px;
-  color: var(--text-secondary);
-  font-weight: 500;
-  border-bottom: 1px solid var(--separator);
-}
-
-.compare-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.compare-table tr:last-child td {
-  border-bottom: none;
-}
-
-/* =========================
-   BUTTONS
-========================= */
-.btn-ghost {
-  background: transparent;
-  border: 1px solid var(--separator);
-  color: var(--text-primary);
-  padding: 6px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-/* =========================
-   TRUST FOOTNOTE
-========================= */
-.dashboard-footnote {
-  margin-top: 14px;
-  font-size: 11px;
-  color: rgba(244, 247, 250, 0.45);
-  text-align: right;
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
-@media (max-width: 768px) {
-  .panel {
-    padding: 18px;
-  }
-
-  .header-title {
-    font-size: 20px;
-  }
-}
-.equation-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.equation-box {
-  background: #0f1720;
-  padding: 20px;
-  border-radius: 12px;
-  width: 420px;
-}
-/* =====================================================
-   Premium Point Popup (Executive-grade)
-===================================================== */
-
 .point-pop-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0,0,0,0.45);
   backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
@@ -421,142 +324,20 @@ body {
 .point-pop-card {
   width: 320px;
   background: #0f1720;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 16px;
   padding: 18px 20px;
-  animation: popIn 160ms ease-out;
 }
 
-/* subtle scale-in */
-@keyframes popIn {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Header */
-.point-pop-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-}
-
-.point-pop-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #f4f7fa;
-}
-
-.point-pop-badge {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 999px;
-  color: #ffffff;
-}
-
-/* Body */
-.point-pop-body {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.point-pop-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-}
-
-.point-pop-item span {
-  color: #9fb2c8;
-}
-
-.point-pop-price {
-  font-size: 20px;
-  font-weight: 700;
-  color: #f4f7fa;
-}
-
-/* Footer hint */
-.point-pop-foot {
-  margin-top: 14px;
-  font-size: 11px;
-  color: #94a3b8;
-  text-align: center;
-}
-
-.kpi-change {
-  margin-top: 10px;
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.kpi-delta,
-.kpi-pct {
-  padding: 2px 8px;
-  border-radius: 999px;
-}
-
-.kpi-delta.up,
-.kpi-pct.up {
-  color: #16a34a;
-  background: rgba(22, 163, 74, 0.12);
-}
-
-.kpi-delta.down,
-.kpi-pct.down {
-  color: #dc2626;
-  background: rgba(220, 38, 38, 0.12);
-}
-/* Header layout */
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-/* Data freshness badge */
-.data-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: #9fb2c8;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  padding: 6px 10px;
-  border-radius: 999px;
-  white-space: nowrap;
-}
-
-/* Green dot */
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #16a34a;
-}
-
-
-
-
-@media (max-width: 480px) {
-  .panel {
-    padding: 14px;
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 768px) {
+  .date-row {
+    flex-wrap: wrap;
   }
 
-  .header-logo {
-    width: 44px;
-    height: 44px;
+  .preset-row {
+    flex-wrap: wrap;
   }
 }

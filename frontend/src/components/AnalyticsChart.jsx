@@ -208,9 +208,7 @@ useEffect(() => {
       xAxis: { type: "datetime" },
 
       rangeSelector: {
-        selected: 5,
-        inputEnabled: false,
-        labelStyle: { color: "transparent" },
+        enabled: false,
       },
 
       navigator: { enabled: false },
@@ -398,35 +396,57 @@ useEffect(() => {
       </header>
 
       {/* Date Range */}
-      <div className="date-row">
-        <div className="date-field">
-          <label>From</label>
-          <input
-            type="date"
-            className="date-input"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-          />
-        </div>
+   {/* Date Range */}
+<div className="date-row">
+  <div className="date-field">
+    <label>From</label>
+    <input
+      type="date"
+      className="date-input"
+      value={fromDate}
+      onChange={(e) => setFromDate(e.target.value)}
+    />
+  </div>
 
-        <div className="date-field">
-          <label>To</label>
-          <input
-            type="date"
-            className="date-input"
-            value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
-          />
-        </div>
+  <div className="date-field">
+    <label>To</label>
+    <input
+      type="date"
+      className="date-input"
+      value={toDate}
+      onChange={(e) => setToDate(e.target.value)}
+    />
+  </div>
 
-        <button
-          className="date-apply-btn"
-          onClick={applyCalendarRange}
-          disabled={!fromDate || !toDate}
-        >
-          Apply
-        </button>
-      </div>
+  <button
+    className="date-apply-btn"
+    onClick={applyCalendarRange}
+    disabled={!fromDate || !toDate}
+  >
+    Apply
+  </button>
+</div>
+
+{/* Quick Time Presets (AFTER date selection) */}
+<div className="preset-row">
+  {[
+    { label: "1M", months: 1 },
+    { label: "3M", months: 3 },
+    { label: "6M", months: 6 },
+    { label: "YTD", ytd: true },
+    { label: "1Y", months: 12 },
+    { label: "ALL", all: true },
+  ].map((p) => (
+    <button
+      key={p.label}
+      className="preset-btn"
+      onClick={() => applyPresetRange(p)}
+    >
+      {p.label}
+    </button>
+  ))}
+</div>
+
 
       {/* KPI Cards */}
       {hasDateRange && kpis.length > 0 && (

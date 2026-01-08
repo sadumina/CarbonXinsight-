@@ -350,6 +350,36 @@ useEffect(() => {
               Prices shown in <strong>USD / MT</strong> (Metric Ton)
             </p>
           </div>
+          <div
+  style={{
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 12,
+    padding: "6px 10px",
+    borderRadius: 6,
+    background: "rgba(255,255,255,0.08)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    fontSize: 12,
+    color: "#E5E7EB",
+  }}
+>
+  <span style={{ opacity: 0.8 }}>Data Source:</span>
+
+  <a
+    href="https://coconutcommunity.org/page-statistics/weekly-price-update"
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{
+      color: "#93C5FD",
+      textDecoration: "none",
+      fontWeight: 500,
+    }}
+  >
+    Coconut Community – Weekly Price Update
+  </a>
+</div>
+
         </div>
 
         {lastUpdated && (

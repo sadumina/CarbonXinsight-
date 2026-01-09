@@ -166,20 +166,39 @@ useEffect(() => {
   // KPI CHANGE (Δ, Δ%)
   // Rule: first value -> last value (for that country in loaded series)
   // ==========================
-  const computeChange = (country) => {
-    const arr = rawSeries[country];
-    if (!arr || arr.length < 2) return null;
+// ==========================
+// KPI CHANGE (Δ, Δ%) — RANGE-AWARE
+// Uses the selected date range (fromDate/toDate) if available,
+// otherwise falls back to full series.
+// ==========================
+const computeChange = (country) => {
+  const arr = rawSeries[country];
+  if (!arr || arr.length < 2) return null;
 
-    const start = Number(arr[0].price);
-    const end = Number(arr[arr.length - 1].price);
+  // Decide which range we use
+  const useRange = hasDateRange && fromDate && toDate;
 
-    if (!isFinite(start) || !isFinite(end) || start === 0) return null;
+  const minTs = useRange ? new Date(fromDate).getTime() : null;
+  const maxTs = useRange ? new Date(toDate).getTime() : null;
 
-    const delta = end - start;
-    const pct = (delta / start) * 100;
+  // Filter points into selected range (or use full list)
+  const points = useRange
+    ? arr.filter((p) => p.ts >= minTs && p.ts <= maxTs)
+    : arr;
 
-    return { delta, pct };
-  };
+  if (!points || points.length < 2) return null;
+
+  const start = Number(points[0].price);
+  const end = Number(points[points.length - 1].price);
+
+  if (!isFinite(start) || !isFinite(end) || start === 0) return null;
+
+  const delta = end - start;
+  const pct = (delta / start) * 100;
+
+  return { delta, pct };
+};
+
 const applyPresetRange = (preset) => {
   if (!chartRef.current) return;
 

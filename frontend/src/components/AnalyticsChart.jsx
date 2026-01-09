@@ -554,6 +554,19 @@ const applyPresetRange = (preset) => {
           })}
         </div>
       )}
+      {/* KPI Explanation */}
+{hasDateRange && kpis.length > 0 && (
+  <div className="kpi-explanation">
+    <span className="info-dot">ⓘ</span>
+    <span>
+      <strong>Change (Δ)</strong> represents the difference between the first
+      and last prices within the selected date range.
+      <strong> Change %</strong> indicates the percentage change relative to the
+      starting price.
+    </span>
+  </div>
+)}
+
 
       {/* Chart */}
       <div className="chart-card">

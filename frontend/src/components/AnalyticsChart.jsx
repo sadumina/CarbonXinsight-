@@ -58,6 +58,12 @@ export default function AnalyticsChart() {
   // ✅ point click popup
   const [pointDetails, setPointDetails] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+
+  const [hasUserInteraction, setHasUserInteraction] = useState(false);
+    // ✅ NEW: track real user interaction + visible range
+  const [visibleRange, setVisibleRange] = useState({ min: null, max: null });
+
+
   
 
 useEffect(() => {
@@ -171,19 +177,23 @@ useEffect(() => {
 // Uses the selected date range (fromDate/toDate) if available,
 // otherwise falls back to full series.
 // ==========================
+// ==========================
+// KPI CHANGE (Δ, Δ%) — USER INTERACTION AWARE
+// ==========================
 const computeChange = (country) => {
   const arr = rawSeries[country];
   if (!arr || arr.length < 2) return null;
 
-  // Decide which range we use
-  const useRange = hasDateRange && fromDate && toDate;
+  // If user interacted, use visible chart range
+  const useVisible =
+    hasUserInteraction &&
+    visibleRange.min != null &&
+    visibleRange.max != null;
 
-  const minTs = useRange ? new Date(fromDate).getTime() : null;
-  const maxTs = useRange ? new Date(toDate).getTime() : null;
-
-  // Filter points into selected range (or use full list)
-  const points = useRange
-    ? arr.filter((p) => p.ts >= minTs && p.ts <= maxTs)
+  const points = useVisible
+    ? arr.filter(
+        (p) => p.ts >= visibleRange.min && p.ts <= visibleRange.max
+      )
     : arr;
 
   if (!points || points.length < 2) return null;
@@ -198,6 +208,7 @@ const computeChange = (country) => {
 
   return { delta, pct };
 };
+
 
 const applyPresetRange = (preset) => {
   if (!chartRef.current) return;
@@ -254,7 +265,26 @@ const applyPresetRange = (preset) => {
         },
       },
 
-      xAxis: { type: "datetime" },
+            xAxis: {
+        type: "datetime",
+
+        // ✅ NEW: detect real user drag / zoom / arrow movement
+        events: {
+          afterSetExtremes(e) {
+            // always track visible range
+            setVisibleRange({
+              min: e.min ?? null,
+              max: e.max ?? null,
+            });
+
+            // mark interaction ONLY if triggered by user
+            if (e?.trigger) {
+              setHasUserInteraction(true);
+            }
+          },
+        },
+      },
+
 
       rangeSelector: {
         enabled: false,
@@ -268,16 +298,18 @@ const applyPresetRange = (preset) => {
           cursor: "pointer",
           marker: { enabled: false },
           point: {
-            events: {
-              click() {
-                setPointDetails({
-                  country: this.country,
-                  price: this.y,
-                  date: new Date(this.x),
-                });
-              },
-            },
-          },
+  events: {
+    click() {
+      setHasUserInteraction(true); // ✅ NEW
+      setPointDetails({
+        country: this.country,
+        price: this.y,
+        date: new Date(this.x),
+      });
+    },
+  },
+},
+
         },
       },
       exporting: {

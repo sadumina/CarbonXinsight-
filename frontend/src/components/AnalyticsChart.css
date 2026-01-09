@@ -558,6 +558,19 @@ body {
   background: #16a34a;
 }
 
+.kpi-explanation {
+  margin-top: 12px;
+  font-size: 12px;
+  color: rgba(244, 247, 250, 0.75);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.kpi-explanation .info-dot {
+  font-weight: 700;
+  color: #60a5fa;
+}
 
 
 

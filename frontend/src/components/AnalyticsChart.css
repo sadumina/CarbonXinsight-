@@ -186,21 +186,21 @@ body {
 /* =========================
    LIGHT THEME OVERRIDES
 ========================= */
+/* =========================
+   LIGHT THEME (Professional)
+========================= */
 .light-theme {
-  --page-bg: #f8fafc;
-
-  --panel: #ffffff;
-  --panel-soft: #f1f5f9;
+  --page-bg: #f8fafc;        /* app background */
+  --panel: #ffffff;          /* cards */
+  --panel-soft: #f1f5f9;     /* chart area surface */
 
   --text-primary: #0f172a;
   --text-secondary: #334155;
   --text-muted: rgba(15, 23, 42, 0.6);
 
-  --brand: #178a33;
-  --brand-border: rgba(23, 138, 51, 0.25);
-
   --separator: rgba(15, 23, 42, 0.12);
 }
+
 
 
 /* Chrome / Edge / Brave */

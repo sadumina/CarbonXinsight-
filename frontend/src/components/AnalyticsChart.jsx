@@ -569,21 +569,31 @@ return (
 
               {change && (
   <div className="kpi-change">
-    {/* ✅ Topic label */}
-    <div className="kpi-change-title">Price Change</div>
+  <div className="kpi-change-title">Price Change</div>
 
-    <div className="kpi-change-values">
-      <span className={`kpi-delta ${change.delta >= 0 ? "up" : "down"}`}>
-        {change.delta >= 0 ? "+" : ""}
-        {change.delta.toFixed(2)}
-      </span>
+  <div className="kpi-change-values">
+    <span
+      className={`kpi-delta ${change.delta >= 0 ? "up" : "down"}`}
+    >
+      {change.delta >= 0 ? "+" : ""}
+      {change.delta.toFixed(2)}
+    </span>
 
-      <span className={`kpi-pct ${change.pct >= 0 ? "up" : "down"}`}>
-        ({change.pct >= 0 ? "+" : ""}
-        {change.pct.toFixed(2)}%)
-      </span>
-    </div>
+    <span
+      className={`kpi-pct ${change.pct >= 0 ? "up" : "down"}`}
+    >
+      ({change.pct >= 0 ? "+" : ""}
+      {change.pct.toFixed(2)}%)
+    </span>
   </div>
+
+  {/* ✅ Explanation message */}
+  <div className="kpi-change-note">
+    This price change is calculated using the difference between the
+    first and last prices within the selected time range.
+  </div>
+</div>
+
 )}
 
             </div>

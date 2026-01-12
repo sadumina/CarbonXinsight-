@@ -543,19 +543,34 @@ body {
   text-align: center;
 }
 
+/* ===== KPI CHANGE (CLEAN) ===== */
 .kpi-change {
-  margin-top: 10px;
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  font-size: 13px;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.kpi-change-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  margin-bottom: 6px;
   font-weight: 600;
+}
+
+.kpi-change-values {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 6px;
 }
 
 .kpi-delta,
 .kpi-pct {
-  padding: 2px 8px;
+  padding: 4px 10px;
   border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .kpi-delta.up,
@@ -563,13 +578,29 @@ body {
   color: #16a34a;
   background: rgba(22, 163, 74, 0.12);
 }
-/* KPI change explanation note */
+
+.kpi-delta.down,
+.kpi-pct.down {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.12);
+}
+
+/* Explanation text */
 .kpi-change-note {
-  margin-top: 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
   font-size: 11px;
-  color: rgba(244, 247, 250, 0.65);
-  text-align: center;
   line-height: 1.4;
+  color: rgba(244, 247, 250, 0.7);
+  max-width: 220px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.kpi-change-note .info-dot {
+  color: #60a5fa;
+  font-weight: 700;
 }
 
 

@@ -34,8 +34,12 @@ const COUNTRY_COLORS = {
 };
 const MUTED_COLOR = "#475569";
 
-// ---------- helpers ----------
-const fmtNum = (v) => (v == null || v === "" ? "—" : Number(v).toFixed(2));
+// // ---------- helpers ----------
+// const fmtNum = (v) => (v == null || v === "" ? "—" : Number(v).toFixed(2));
+
+const fmtNum = (v) =>
+  v == null || v === "" ? "—" : Math.ceil(Number(v));
+
 
 export default function AnalyticsChart() {
   const chartRef = useRef(null);

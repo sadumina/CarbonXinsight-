@@ -179,15 +179,28 @@ body {
   cursor: not-allowed;
 }
 
-/* Preset buttons */
-/* Preset buttons row */
+/* Toolbar: date inputs (left) + presets (right) */
+.date-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+/* Keep existing styles */
+.date-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-end;
+}
+
+/* Preset buttons aligned right */
 .preset-row {
   display: flex;
-  align-items: center;
-  justify-content: flex-end; /* ✅ RIGHT aligned */
   gap: 8px;
-  margin-top: 8px;
-  width: 100%;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 

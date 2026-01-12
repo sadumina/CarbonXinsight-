@@ -516,10 +516,8 @@ return (
   {/* RIGHT: Presets */}
   <div className="preset-row">
     {[
-      { label: "1M", months: 1 },
       { label: "3M", months: 3 },
       { label: "6M", months: 6 },
-      { label: "YTD", ytd: true },
       { label: "1Y", months: 12 },
       { label: "ALL", all: true },
     ].map((p) => (

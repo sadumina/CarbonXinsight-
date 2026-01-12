@@ -414,246 +414,235 @@ const applyPresetRange = (preset) => {
   // ==========================
   // RENDER
   // ==========================
-  return (
-    <section className="panel">
-      {/* Header */}
-      <header className="dashboard-header">
-        <div className="header-left">
-          <img src={HaycarbLogo} className="header-logo" alt="Haycarb" />
-          <div>
-            <h1 className="header-title">Coconut Shell Charcoal Pricing</h1>
-            <p className="header-subtitle">
-              Haycarb • Country-Level Market Analytics
-            </p>
-            <p className="header-meta">
-              Prices shown in <strong>USD / MT</strong> (Metric Ton)
-            </p>
-          </div>
-          <div
-  style={{
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 12,
-    padding: "6px 10px",
-    borderRadius: 6,
-    background: "rgba(255,255,255,0.08)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    fontSize: 12,
-    color: "#E5E7EB",
-  }}
->
-  <span style={{ opacity: 0.8 }}>Data Source:</span>
-
-  <a
-    href="https://coconutcommunity.org/page-statistics/weekly-price-update"
-    target="_blank"
-    rel="noopener noreferrer"
-    style={{
-      color: "#93C5FD",
-      textDecoration: "none",
-      fontWeight: 500,
-    }}
-  >
-    Coconut Community – Weekly Price Update
-  </a>
-</div>
-
+return (
+  <section className="panel">
+    {/* Header */}
+    <header className="dashboard-header">
+      <div className="header-left">
+        <img src={HaycarbLogo} className="header-logo" alt="Haycarb" />
+        <div>
+          <h1 className="header-title">Coconut Shell Charcoal Pricing</h1>
+          <p className="header-subtitle">
+            Haycarb • Country-Level Market Analytics
+          </p>
+          <p className="header-meta">
+            Prices shown in <strong>USD / MT</strong> (Metric Ton)
+          </p>
         </div>
 
-        {lastUpdated && (
-          <div className="data-status">
-            <span className="status-dot" />
-            Data updated until{" "}
-            <strong>
-              {lastUpdated.toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })}
-            </strong>
-          </div>
-        )}
-      </header>
+        {/* Data Source */}
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            marginTop: 12,
+            padding: "6px 10px",
+            borderRadius: 6,
+            background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            fontSize: 12,
+            color: "#E5E7EB",
+          }}
+        >
+          <span style={{ opacity: 0.8 }}>Data Source:</span>
+          <a
+            href="https://coconutcommunity.org/page-statistics/weekly-price-update"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: "#93C5FD",
+              textDecoration: "none",
+              fontWeight: 500,
+            }}
+          >
+            Coconut Community – Weekly Price Update
+          </a>
+        </div>
+      </div>
 
-      {/* Date Range */}
-   {/* Date Range */}
-<div className="date-row">
-  <div className="date-field">
-    <label>From</label>
-    <input
-      type="date"
-      className="date-input"
-      value={fromDate}
-      onChange={(e) => setFromDate(e.target.value)}
-    />
-  </div>
-
-  <div className="date-field">
-    <label>To</label>
-    <input
-      type="date"
-      className="date-input"
-      value={toDate}
-      onChange={(e) => setToDate(e.target.value)}
-    />
-  </div>
-
-  <button
-    className="date-apply-btn"
-    onClick={applyCalendarRange}
-    disabled={!fromDate || !toDate}
-  >
-    Apply
-  </button>
-</div>
-
-{/* Quick Time Presets (AFTER date selection) */}
-<div className="preset-row">
-  {[
-    { label: "1M", months: 1 },
-    { label: "3M", months: 3 },
-    { label: "6M", months: 6 },
-    { label: "YTD", ytd: true },
-    { label: "1Y", months: 12 },
-    { label: "ALL", all: true },
-  ].map((p) => (
-    <button
-      key={p.label}
-      className="preset-btn"
-      onClick={() => applyPresetRange(p)}
-    >
-      {p.label}
-    </button>
-  ))}
-</div>
-
-
-      {/* KPI Cards */}
-      {hasDateRange && kpis.length > 0 && (
-        <div className="kpi-row">
-          {kpis.map((k) => {
-            const change = computeChange(k.country);
-
-            return (
-              <div
-                key={k.country}
-                className="kpi-card"
-                style={{
-                  borderTop: `4px solid ${
-                    COUNTRY_COLORS[k.country] || MUTED_COLOR
-                  }`,
-                }}
-              >
-                <div className="kpi-country">{k.country}</div>
-
-                <div className="kpi-values">
-                  <div className="kpi-item">
-                    <div className="kpi-label">Min</div>
-                    <div className="kpi-value">{fmtNum(k.min)}</div>
-                  </div>
-                  <div className="kpi-item">
-                    <div className="kpi-label">Avg</div>
-                    <div className="kpi-value">{fmtNum(k.avg)}</div>
-                  </div>
-                  <div className="kpi-item">
-                    <div className="kpi-label">Max</div>
-                    <div className="kpi-value">{fmtNum(k.max)}</div>
-                  </div>
-                </div>
-
-                {change && (
-                  <div className="kpi-change">
-                    <span
-                      className={`kpi-delta ${
-                        change.delta >= 0 ? "up" : "down"
-                      }`}
-                    >
-                      {change.delta >= 0 ? "+" : ""}
-                      {change.delta.toFixed(2)}
-                    </span>
-
-                    <span
-                      className={`kpi-pct ${change.pct >= 0 ? "up" : "down"}`}
-                    >
-                      ({change.pct >= 0 ? "+" : ""}
-                      {change.pct.toFixed(2)}%)
-                    </span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+      {lastUpdated && (
+        <div className="data-status">
+          <span className="status-dot" />
+          Data updated until{" "}
+          <strong>
+            {lastUpdated.toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })}
+          </strong>
         </div>
       )}
-      {/* KPI Explanation */}
-{hasDateRange && kpis.length > 0 && (
-  <div className="kpi-explanation">
-    <span className="info-dot">ⓘ</span>
-    <span>
-      <strong>Change (Δ)</strong> represents the difference between the first
-      and last prices within the selected date range.
-      <strong> Change %</strong> indicates the percentage change relative to the
-      starting price.
-    </span>
-  </div>
-)}
+    </header>
 
-
-      {/* Chart */}
-      <div className="chart-card">
-        <HighchartsReact
-          ref={chartRef}
-          highcharts={Highcharts}
-          constructorType="stockChart"
-          options={chartOptions}
+    {/* Date Range */}
+    <div className="date-row">
+      <div className="date-field">
+        <label>From</label>
+        <input
+          type="date"
+          className="date-input"
+          value={fromDate}
+          onChange={(e) => setFromDate(e.target.value)}
         />
       </div>
 
-      {/* ✅ NICE POPUP MESSAGE (click a point) */}
-      {pointDetails && (
-        <div
-          className="point-pop-overlay"
-          onClick={() => setPointDetails(null)}
+      <div className="date-field">
+        <label>To</label>
+        <input
+          type="date"
+          className="date-input"
+          value={toDate}
+          onChange={(e) => setToDate(e.target.value)}
+        />
+      </div>
+
+      <button
+        className="date-apply-btn"
+        onClick={applyCalendarRange}
+        disabled={!fromDate || !toDate}
+      >
+        Apply
+      </button>
+    </div>
+
+    {/* Quick Presets */}
+    <div className="preset-row">
+      {[
+        { label: "1M", months: 1 },
+        { label: "3M", months: 3 },
+        { label: "6M", months: 6 },
+        { label: "YTD", ytd: true },
+        { label: "1Y", months: 12 },
+        { label: "ALL", all: true },
+      ].map((p) => (
+        <button
+          key={p.label}
+          className="preset-btn"
+          onClick={() => applyPresetRange(p)}
         >
-          <div className="point-pop-card" onClick={(e) => e.stopPropagation()}>
-            <div className="point-pop-header">
-              <div className="point-pop-title">Price Snapshot</div>
-              <div
-                className="point-pop-badge"
-                style={{
-                  background:
-                    COUNTRY_COLORS[pointDetails.country] || MUTED_COLOR,
-                }}
-              >
-                {pointDetails.country}
+          {p.label}
+        </button>
+      ))}
+    </div>
+
+    {/* KPI Cards */}
+    {hasDateRange && kpis.length > 0 && (
+      <div className="kpi-row">
+        {kpis.map((k) => {
+          const change = computeChange(k.country);
+
+          return (
+            <div
+              key={k.country}
+              className="kpi-card"
+              style={{
+                borderTop: `4px solid ${
+                  COUNTRY_COLORS[k.country] || MUTED_COLOR
+                }`,
+              }}
+            >
+              <div className="kpi-country">{k.country}</div>
+
+              {/* ✅ NEW: Data Fields */}
+              
+
+              <div className="kpi-values">
+                <div className="kpi-item">
+                  <div className="kpi-label">Min</div>
+                  <div className="kpi-value">{fmtNum(k.min)}</div>
+                </div>
+                <div className="kpi-item">
+                  <div className="kpi-label">Avg</div>
+                  <div className="kpi-value">{fmtNum(k.avg)}</div>
+                </div>
+                <div className="kpi-item">
+                  <div className="kpi-label">Max</div>
+                  <div className="kpi-value">{fmtNum(k.max)}</div>
+                </div>
               </div>
+
+              {change && (
+  <div className="kpi-change">
+    {/* ✅ Topic label */}
+    <div className="kpi-change-title">Price Change</div>
+
+    <div className="kpi-change-values">
+      <span className={`kpi-delta ${change.delta >= 0 ? "up" : "down"}`}>
+        {change.delta >= 0 ? "+" : ""}
+        {change.delta.toFixed(2)}
+      </span>
+
+      <span className={`kpi-pct ${change.pct >= 0 ? "up" : "down"}`}>
+        ({change.pct >= 0 ? "+" : ""}
+        {change.pct.toFixed(2)}%)
+      </span>
+    </div>
+  </div>
+)}
+
             </div>
+          );
+        })}
+      </div>
+    )}
 
-            <div className="point-pop-body">
-              <div className="point-pop-item">
-                <span>Date</span>
-                <strong>
-                  {pointDetails.date.toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </strong>
-              </div>
+    {/* Chart */}
+    <div className="chart-card">
+      <HighchartsReact
+        ref={chartRef}
+        highcharts={Highcharts}
+        constructorType="stockChart"
+        options={chartOptions}
+      />
+    </div>
 
-              <div className="point-pop-item">
-                <span>Price</span>
-                <strong className="point-pop-price">
-                  USD/MT {Number(pointDetails.price).toFixed(2)}
-                </strong>
-              </div>
+    {/* Point Popup */}
+    {pointDetails && (
+      <div
+        className="point-pop-overlay"
+        onClick={() => setPointDetails(null)}
+      >
+        <div className="point-pop-card" onClick={(e) => e.stopPropagation()}>
+          <div className="point-pop-header">
+            <div className="point-pop-title">Price Snapshot</div>
+            <div
+              className="point-pop-badge"
+              style={{
+                background:
+                  COUNTRY_COLORS[pointDetails.country] || MUTED_COLOR,
+              }}
+            >
+              {pointDetails.country}
             </div>
-
-            <div className="point-pop-foot">Click outside to close</div>
           </div>
+
+          <div className="point-pop-body">
+            <div className="point-pop-item">
+              <span>Date</span>
+              <strong>
+                {pointDetails.date.toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </strong>
+            </div>
+
+            <div className="point-pop-item">
+              <span>Price</span>
+              <strong className="point-pop-price">
+                USD/MT {Number(pointDetails.price).toFixed(2)}
+              </strong>
+            </div>
+          </div>
+
+          <div className="point-pop-foot">Click outside to close</div>
         </div>
-      )}
-    </section>
-  );
+      </div>
+    )}
+  </section>
+);
+
 }

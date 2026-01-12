@@ -184,7 +184,7 @@ body {
 .preset-row {
   display: flex;
   align-items: center;
-  justify-content: flex-start; /* LEFT aligned */
+  justify-content: flex-end; /* ✅ RIGHT aligned */
   gap: 8px;
   margin-top: 8px;
   width: 100%;

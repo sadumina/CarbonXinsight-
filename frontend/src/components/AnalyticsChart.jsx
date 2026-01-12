@@ -477,55 +477,59 @@ return (
     </header>
 
     {/* Date Range */}
-    <div className="date-row">
-      <div className="date-field">
-        <label>From</label>
-        <input
-          type="date"
-          className="date-input"
-          value={fromDate}
-          onChange={(e) => setFromDate(e.target.value)}
-        />
-      </div>
+<div className="date-toolbar">
+  {/* LEFT: Date inputs */}
+  <div className="date-row">
+    <div className="date-field">
+      <label>From</label>
+      <input
+        type="date"
+        className="date-input"
+        value={fromDate}
+        onChange={(e) => setFromDate(e.target.value)}
+      />
+    </div>
 
-      <div className="date-field">
-        <label>To</label>
-        <input
-          type="date"
-          className="date-input"
-          value={toDate}
-          onChange={(e) => setToDate(e.target.value)}
-        />
-      </div>
+    <div className="date-field">
+      <label>To</label>
+      <input
+        type="date"
+        className="date-input"
+        value={toDate}
+        onChange={(e) => setToDate(e.target.value)}
+      />
+    </div>
 
+    <button
+      className="date-apply-btn"
+      onClick={applyCalendarRange}
+      disabled={!fromDate || !toDate}
+    >
+      Apply
+    </button>
+  </div>
+
+  {/* RIGHT: Presets */}
+  <div className="preset-row">
+    {[
+      { label: "1M", months: 1 },
+      { label: "3M", months: 3 },
+      { label: "6M", months: 6 },
+      { label: "YTD", ytd: true },
+      { label: "1Y", months: 12 },
+      { label: "ALL", all: true },
+    ].map((p) => (
       <button
-        className="date-apply-btn"
-        onClick={applyCalendarRange}
-        disabled={!fromDate || !toDate}
+        key={p.label}
+        className="preset-btn"
+        onClick={() => applyPresetRange(p)}
       >
-        Apply
+        {p.label}
       </button>
-    </div>
+    ))}
+  </div>
+</div>
 
-    {/* Quick Presets */}
-    <div className="preset-row">
-      {[
-        { label: "1M", months: 1 },
-        { label: "3M", months: 3 },
-        { label: "6M", months: 6 },
-        { label: "YTD", ytd: true },
-        { label: "1Y", months: 12 },
-        { label: "ALL", all: true },
-      ].map((p) => (
-        <button
-          key={p.label}
-          className="preset-btn"
-          onClick={() => applyPresetRange(p)}
-        >
-          {p.label}
-        </button>
-      ))}
-    </div>
 
     {/* KPI Cards */}
     {hasDateRange && kpis.length > 0 && (

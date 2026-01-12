@@ -587,12 +587,14 @@ return (
     </span>
   </div>
 
-  {/* ✅ Explanation message */}
   <div className="kpi-change-note">
-    This price change is calculated using the difference between the
-    first and last prices within the selected time range.
+    <span className="info-dot">ⓘ</span>
+    This price change is calculated using the difference
+    between the first and last prices within the selected
+    time range.
   </div>
 </div>
+
 
 )}
 

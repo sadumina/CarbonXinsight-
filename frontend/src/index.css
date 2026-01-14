@@ -8,11 +8,11 @@
 }
 
 body {
-  background-color: var(--bg);
-  color: var(--text);
-  font-family: "Inter", sans-serif;
-  margin: 0;
+  background: var(--page-bg);
+  color: var(--text-primary);
+  transition: background 0.25s ease, color 0.25s ease;
 }
+
 
 button {
   background: var(--primary);

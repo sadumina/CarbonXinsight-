@@ -1,0 +1,23 @@
+/* =========================
+   Dark Theme — Analytics
+========================= */
+:root[data-theme="dark"] {
+  --page-bg: #0b1514;
+  --panel: #0f1720;
+  --panel-soft: #121922;
+  --panel-border: rgba(255,255,255,0.06);
+
+  --text-primary: #f4f7fa;
+  --text-secondary: #b9c3cc;
+  --text-muted: rgba(244,247,250,0.55);
+
+  --brand: #178a33;
+  --brand-soft: #6cd17a;
+  --brand-border: rgba(23,138,51,0.28);
+
+  --success: #2baa4b;
+  --danger: #f85149;
+
+  --shadow-1: 0 6px 18px rgba(0,0,0,0.25);
+  --shadow-2: 0 10px 30px rgba(0,0,0,0.35);
+}

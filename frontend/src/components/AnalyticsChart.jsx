@@ -7,7 +7,7 @@ import Highcharts from "highcharts/highstock";
 import HighchartsReact from "highcharts-react-official";
 import "./AnalyticsChart.css";
 import HaycarbLogo from "../assets/haycarb-logo.png";
-
+ 
 
 // Highcharts modules
 import Exporting from "highcharts/modules/exporting";

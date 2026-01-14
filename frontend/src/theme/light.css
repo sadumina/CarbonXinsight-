@@ -1,0 +1,23 @@
+/* =========================
+   Light Theme — Haycarb
+========================= */
+:root[data-theme="light"] {
+  --page-bg: #f6f8f7;
+  --panel: #ffffff;
+  --panel-soft: #f1f4f3;
+  --panel-border: #e2e8e6;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+
+  --brand: #178a33;
+  --brand-soft: #e7f5ec;
+  --brand-border: rgba(23, 138, 51, 0.25);
+
+  --success: #16a34a;
+  --danger: #dc2626;
+
+  --shadow-1: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-2: 0 4px 12px rgba(0,0,0,0.06);
+}

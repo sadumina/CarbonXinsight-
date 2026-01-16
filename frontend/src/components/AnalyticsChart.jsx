@@ -664,14 +664,7 @@ return (
 
   </div>
 
-  {hasDateRange && kpis.length > 0 && (
-  <div className="kpi-global-note">
-    <span className="info-dot">ⓘ</span>
-    <strong>Price Change (Δ & Δ%)</strong> represents the difference between
-    the first and last recorded prices within the selected time range.
-  </div>
-)}
-
+ 
 </div>
 
 

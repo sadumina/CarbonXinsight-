@@ -652,27 +652,26 @@ return (
   <div className="kpi-change-title">Price Change</div>
 
   <div className="kpi-change-values">
-    <span
-      className={`kpi-delta ${change.delta >= 0 ? "up" : "down"}`}
-    >
-      {change.delta >= 0 ? "+" : ""}
-      {change.delta.toFixed(2)}
-    </span>
+   <span className={`kpi-delta ${change.delta >= 0 ? "up" : "down"}`}>
+  {change.delta >= 0 ? "+" : ""}
+  {Math.round(change.delta)}
+</span>
 
-    <span
-      className={`kpi-pct ${change.pct >= 0 ? "up" : "down"}`}
-    >
-      ({change.pct >= 0 ? "+" : ""}
-      {change.pct.toFixed(2)}%)
-    </span>
+<span className={`kpi-pct ${change.pct >= 0 ? "up" : "down"}`}>
+  ({change.pct >= 0 ? "+" : ""}
+  {change.pct.toFixed(1)}%)
+</span>
+
   </div>
 
-  <div className="kpi-change-note">
+  {hasDateRange && kpis.length > 0 && (
+  <div className="kpi-global-note">
     <span className="info-dot">ⓘ</span>
-    This price change is calculated using the difference
-    between the first and last prices within the selected
-    time range.
+    <strong>Price Change (Δ & Δ%)</strong> represents the difference between
+    the first and last recorded prices within the selected time range.
   </div>
+)}
+
 </div>
 
 

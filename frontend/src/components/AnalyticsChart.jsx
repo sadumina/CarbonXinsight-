@@ -612,69 +612,91 @@ return (
 
 
     {/* KPI Cards */}
-    {hasDateRange && kpis.length > 0 && (
-      <div className="kpi-row">
-        {kpis.map((k) => {
-          const change = computeChange(k.country);
+ {/* =========================
+   KPI CARDS + EXPLANATION
+========================= */}
+{hasDateRange && kpis.length > 0 && (
+  <>
+    {/* KPI CARDS */}
+    <div className="kpi-row">
+      {kpis.map((k) => {
+        const change = computeChange(k.country);
 
-          return (
-            <div
-              key={k.country}
-              className="kpi-card"
-              style={{
-                borderTop: `4px solid ${
-                  COUNTRY_COLORS[k.country] || MUTED_COLOR
-                }`,
-              }}
-            >
-              <div className="kpi-country">{k.country}</div>
+        return (
+          <div
+            key={k.country}
+            className="kpi-card"
+            style={{
+              borderTop: `4px solid ${
+                COUNTRY_COLORS[k.country] || MUTED_COLOR
+              }`,
+            }}
+          >
+            {/* Country */}
+            <div className="kpi-country">{k.country}</div>
 
-              {/* ✅ NEW: Data Fields */}
-              
-
-              <div className="kpi-values">
-                <div className="kpi-item">
-                  <div className="kpi-label">Min</div>
-                  <div className="kpi-value">{fmtNum(k.min)}</div>
-                </div>
-                <div className="kpi-item">
-                  <div className="kpi-label">Avg</div>
-                  <div className="kpi-value">{fmtNum(k.avg)}</div>
-                </div>
-                <div className="kpi-item">
-                  <div className="kpi-label">Max</div>
-                  <div className="kpi-value">{fmtNum(k.max)}</div>
-                </div>
+            {/* Min / Avg / Max */}
+            <div className="kpi-values">
+              <div className="kpi-item">
+                <div className="kpi-label">Min</div>
+                <div className="kpi-value">{fmtNum(k.min)}</div>
               </div>
 
-              {change && (
-  <div className="kpi-change">
-  <div className="kpi-change-title">Price Change</div>
+              <div className="kpi-item">
+                <div className="kpi-label">Avg</div>
+                <div className="kpi-value">{fmtNum(k.avg)}</div>
+              </div>
 
-  <div className="kpi-change-values">
-   <span className={`kpi-delta ${change.delta >= 0 ? "up" : "down"}`}>
-  {change.delta >= 0 ? "+" : ""}
-  {Math.round(change.delta)}
-</span>
+              <div className="kpi-item">
+                <div className="kpi-label">Max</div>
+                <div className="kpi-value">{fmtNum(k.max)}</div>
+              </div>
+            </div>
 
-<span className={`kpi-pct ${change.pct >= 0 ? "up" : "down"}`}>
-  ({change.pct >= 0 ? "+" : ""}
-  {change.pct.toFixed(1)}%)
-</span>
+            {/* Price Change */}
+            {change && (
+              <div className="kpi-change">
+                <div className="kpi-change-title">Price Change</div>
 
-  </div>
+                <div className="kpi-change-values">
+                  <span
+                    className={`kpi-delta ${
+                      change.delta >= 0 ? "up" : "down"
+                    }`}
+                  >
+                    {change.delta >= 0 ? "+" : ""}
+                    {Math.round(change.delta)}
+                  </span>
 
- 
-</div>
+                  <span
+                    className={`kpi-pct ${
+                      change.pct >= 0 ? "up" : "down"
+                    }`}
+                  >
+                    ({change.pct >= 0 ? "+" : ""}
+                    {change.pct.toFixed(1)}%)
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
 
-
+    {/* GLOBAL EXPLANATION (ONE TIME ONLY) */}
+    <div className="kpi-explanation">
+      <span className="info-icon">ⓘ</span>
+      <span>
+        <strong>Price Change (Δ)</strong> is calculated as the difference
+        between the first and last recorded prices within the selected date
+        range. <strong>Percentage Change (Δ%)</strong> shows how large that
+        change is relative to the starting price.
+      </span>
+    </div>
+  </>
 )}
 
-            </div>
-          );
-        })}
-      </div>
-    )}
 
     {/* Chart */}
     <div className="chart-card">

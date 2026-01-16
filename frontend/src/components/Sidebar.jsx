@@ -7,7 +7,7 @@ export default function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-header">
         <img src={Logo} alt="Haycarb logo" className="sidebar-logo" />
-        <span className="app-name">CarbonXInsight</span>
+        <span className="app-name">HayCarb</span>
       </div>
 
       <nav className="sidebar-menu">

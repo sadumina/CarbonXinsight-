@@ -66,6 +66,8 @@ export default function AnalyticsChart() {
   const [hasUserInteraction, setHasUserInteraction] = useState(false);
     // ✅ NEW: track real user interaction + visible range
   const [visibleRange, setVisibleRange] = useState({ min: null, max: null });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
 
 
   

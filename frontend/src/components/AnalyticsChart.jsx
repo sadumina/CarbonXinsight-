@@ -174,6 +174,72 @@ useEffect(() => {
     setHasDateRange(true);
   };
 
+  const refreshDashboard = async () => {
+  if (!chartRef.current) return;
+
+  try {
+    setIsRefreshing(true);
+
+    // 1) Clear date inputs + KPI state
+    setFromDate("");
+    setToDate("");
+    setKpis([]);
+    setHasDateRange(false);
+
+    // 2) Clear interaction state (so KPI delta uses full series again)
+    setHasUserInteraction(false);
+    setVisibleRange({ min: null, max: null });
+
+    // 3) Close point popup if open
+    setPointDetails(null);
+
+    // 4) Reset zoom to ALL
+    chartRef.current.chart.xAxis[0].setExtremes(null, null);
+
+    // 5) (Optional but nice) Re-fetch last updated badge
+    const res = await axios.get(`${API}/meta/data-status`);
+    const raw = res.data?.last_updated;
+    if (raw) {
+      const parsed = new Date(raw);
+      if (!isNaN(parsed)) setLastUpdated(parsed);
+    }
+
+    // 6) (Optional) Re-fetch the aggregated series again (fresh data)
+    // If your backend data can change while UI is open, keep this.
+    const url = new URL(`${API}/series/aggregated`);
+    selected.forEach((c) => url.searchParams.append("countries", c));
+
+    const seriesRes = await axios.get(url.toString());
+
+    const grouped = {};
+    (seriesRes.data || []).forEach((p) => {
+      const ts = new Date(p.date).getTime();
+      if (!grouped[p.country]) grouped[p.country] = [];
+      grouped[p.country].push({ ts, price: p.price });
+    });
+    Object.values(grouped).forEach((arr) => arr.sort((a, b) => a.ts - b.ts));
+
+    const series = Object.keys(grouped).map((country) => ({
+      id: country,
+      name: country,
+      data: grouped[country].map((pt) => ({
+        x: pt.ts,
+        y: pt.price,
+        country,
+      })),
+      color: COUNTRY_COLORS[country] || MUTED_COLOR,
+      lineWidth: 3,
+    }));
+
+    setRawSeries(grouped);
+    setSeriesData(series);
+  } catch (err) {
+    console.error("Refresh failed", err);
+  } finally {
+    setIsRefreshing(false);
+  }
+};
+
   // ==========================
   // KPI CHANGE (Δ, Δ%)
   // Rule: first value -> last value (for that country in loaded series)

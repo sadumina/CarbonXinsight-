@@ -579,13 +579,7 @@ return (
     >
       Apply
     </button>
-    <button
-  className="date-apply-btn"
-  onClick={applyCalendarRange}
-  disabled={!fromDate || !toDate}
->
-  Apply
-</button>
+
 
 <button
   className="date-refresh-btn"

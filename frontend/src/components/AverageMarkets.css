@@ -48,3 +48,27 @@
   color: #ff5ea3;
   cursor: pointer;
 }
+.kpi-explanation {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+  color: #cbd5e1;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 900px;
+}
+
+.kpi-explanation strong {
+  color: #e5e7eb;
+  font-weight: 600;
+}
+
+.info-icon {
+  color: #60a5fa;
+  font-weight: 700;
+  line-height: 1.2;
+}

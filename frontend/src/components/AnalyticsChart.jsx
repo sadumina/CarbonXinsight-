@@ -162,28 +162,24 @@ useEffect(() => {
   // ==========================
   // APPLY DATE RANGE + KPI
   // ==========================
-  const applyCalendarRange = async () => {
-    if (!chartRef.current || !fromDate || !toDate) return;
+const applyCalendarRange = async () => {
+  if (!chartRef.current || !fromDate || !toDate) return;
 
-    const min = new Date(fromDate).getTime();
-    const max = new Date(toDate).getTime();
+  const min = new Date(fromDate).getTime();
+  const max = new Date(toDate).getTime();
 
-    if (min > max) {
-      alert("From date must be before To date");
-      return;
-    }
+  if (min > max) {
+    alert("From date must be before To date");
+    return;
+  }
 
-    // zoom chart
-    chartRef.current.chart.xAxis[0].setExtremes(min, max);
+  // Zoom chart
+  chartRef.current.chart.xAxis[0].setExtremes(min, max);
 
-    // load KPI data
-    const res = await axios.get(`${API}/compare/summary`, {
-      params: { fromDate, toDate },
-    });
+  // Load KPI automatically
+  await loadKpisForRange(fromDate, toDate);
+};
 
-    setKpis((res.data || []).filter((r) => selected.includes(r.country)));
-    setHasDateRange(true);
-  };
 
   const refreshDashboard = async () => {
   if (!chartRef.current) return;

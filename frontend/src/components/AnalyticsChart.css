@@ -470,6 +470,31 @@ body {
   color: rgba(244, 247, 250, 0.45);
   text-align: right;
 }
+.date-refresh-btn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e7eb;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.2s ease, border 0.2s ease;
+}
+
+.date-refresh-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.date-refresh-btn:active {
+  transform: translateY(1px);
+}
+
+.date-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 /* =========================
    RESPONSIVE

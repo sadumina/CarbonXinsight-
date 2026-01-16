@@ -579,6 +579,22 @@ return (
     >
       Apply
     </button>
+    <button
+  className="date-apply-btn"
+  onClick={applyCalendarRange}
+  disabled={!fromDate || !toDate}
+>
+  Apply
+</button>
+
+<button
+  className="date-refresh-btn"
+  onClick={refreshDashboard}
+  disabled={isRefreshing}
+>
+  {isRefreshing ? "Refreshing..." : "Refresh"}
+</button>
+
   </div>
 
   {/* RIGHT: Presets */}

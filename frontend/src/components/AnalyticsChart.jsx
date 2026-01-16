@@ -289,7 +289,7 @@ const computeChange = (country) => {
 };
 
 
-const applyPresetRange = (preset) => {
+const applyPresetRange = async (preset) => {
   if (!chartRef.current) return;
 
   const now = new Date();
@@ -297,9 +297,11 @@ const applyPresetRange = (preset) => {
   let to = new Date();
 
   if (preset.all) {
+    // Reset to ALL
     chartRef.current.chart.xAxis[0].setExtremes(null, null);
     setFromDate("");
     setToDate("");
+    setKpis([]);
     setHasDateRange(false);
     return;
   }
@@ -311,13 +313,21 @@ const applyPresetRange = (preset) => {
     from.setMonth(from.getMonth() - preset.months);
   }
 
-  setFromDate(from.toISOString().slice(0, 10));
-  setToDate(to.toISOString().slice(0, 10));
+  const fromStr = from.toISOString().slice(0, 10);
+  const toStr = to.toISOString().slice(0, 10);
 
+  // Set UI date inputs
+  setFromDate(fromStr);
+  setToDate(toStr);
+
+  // Zoom chart
   chartRef.current.chart.xAxis[0].setExtremes(
     from.getTime(),
     to.getTime()
   );
+
+  // 🔥 AUTO LOAD KPI (NO APPLY CLICK NEEDED)
+  await loadKpisForRange(fromStr, toStr);
 };
 
   // ==========================

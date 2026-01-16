@@ -148,6 +148,17 @@ useEffect(() => {
     chartRef.current.chart.xAxis[0].setExtremes(null, null);
   }, [seriesData]);
 
+  const loadKpisForRange = async (from, to) => {
+  if (!from || !to) return;
+
+  const res = await axios.get(`${API}/compare/summary`, {
+    params: { fromDate: from, toDate: to },
+  });
+
+  setKpis((res.data || []).filter((r) => selected.includes(r.country)));
+  setHasDateRange(true);
+};
+
   // ==========================
   // APPLY DATE RANGE + KPI
   // ==========================

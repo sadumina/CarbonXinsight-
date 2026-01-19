@@ -666,7 +666,7 @@ return (
           className="download-btn secondary"
           onClick={downloadReportImage}
         >
-          Download Image
+          Download 
         </button>
       </div>
 

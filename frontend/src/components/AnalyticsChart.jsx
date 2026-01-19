@@ -756,14 +756,11 @@ return (
                           {change.delta >= 0 ? "+" : ""}
                           {Math.round(change.delta)}
                         </span>
-                        <span
-                          className={`kpi-pct ${
-                            change.pct >= 0 ? "up" : "down"
-                          }`}
-                        >
-                          ({change.pct >= 0 ? "+" : ""}
-                          {change.pct.toFixed(1)}%)
-                        </span>
+                       <span className={`kpi-pct ${change.pct >= 0 ? "up" : "down"}`}>
+  ({change.pct >= 0 ? "+" : ""}
+  {Math.round(change.pct)}%)
+</span>
+
                       </div>
                     </div>
                   )}

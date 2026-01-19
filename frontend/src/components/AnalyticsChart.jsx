@@ -68,6 +68,7 @@ export default function AnalyticsChart() {
   const [visibleRange, setVisibleRange] = useState({ min: null, max: null });
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const reportRef = useRef(null);
 
 
   

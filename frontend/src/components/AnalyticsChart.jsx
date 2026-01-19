@@ -664,9 +664,9 @@ return (
         </button>
 
         {/* 🔽 REPORT DOWNLOAD BUTTONS */}
-        <button className="download-btn" onClick={downloadReportPDF}>
+        {/* <button className="download-btn" onClick={downloadReportPDF}>
           Download PDF
-        </button>
+        </button> */}
         <button className="download-btn secondary" onClick={downloadReportImage}>
           Download Image
         </button>

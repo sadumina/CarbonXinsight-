@@ -506,7 +506,9 @@ const applyPresetRange = async (preset) => {
   // ==========================
 return (
   <section className="panel">
-    {/* Header */}
+    {/* =========================
+        HEADER
+    ========================= */}
     <header className="dashboard-header">
       <div className="header-left">
         <img src={HaycarbLogo} className="header-logo" alt="Haycarb" />
@@ -566,167 +568,189 @@ return (
       )}
     </header>
 
-    {/* Date Range */}
-<div className="date-toolbar">
-  {/* LEFT: Date inputs */}
-  <div className="date-row">
-    <div className="date-field">
-      <label>From</label>
-      <input
-        type="date"
-        className="date-input"
-        value={fromDate}
-        onChange={(e) => setFromDate(e.target.value)}
-      />
-    </div>
+    {/* =========================
+        DATE TOOLBAR
+    ========================= */}
+    <div className="date-toolbar">
+      <div className="date-row">
+        <div className="date-field">
+          <label>From</label>
+          <input
+            type="date"
+            className="date-input"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+          />
+        </div>
 
-    <div className="date-field">
-      <label>To</label>
-      <input
-        type="date"
-        className="date-input"
-        value={toDate}
-        onChange={(e) => setToDate(e.target.value)}
-      />
-    </div>
+        <div className="date-field">
+          <label>To</label>
+          <input
+            type="date"
+            className="date-input"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+          />
+        </div>
 
-    <button
-      className="date-apply-btn"
-      onClick={applyCalendarRange}
-      disabled={!fromDate || !toDate}
-    >
-      Apply
-    </button>
+        <button
+          className="date-apply-btn"
+          onClick={applyCalendarRange}
+          disabled={!fromDate || !toDate}
+        >
+          Apply
+        </button>
 
+        <button
+          className="date-refresh-btn"
+          onClick={refreshDashboard}
+          disabled={isRefreshing}
+        >
+          {isRefreshing ? "Refreshing..." : "Refresh"}
+        </button>
 
-<button
-  className="date-refresh-btn"
-  onClick={refreshDashboard}
-  disabled={isRefreshing}
->
-  {isRefreshing ? "Refreshing..." : "Refresh"}
-</button>
+        {/* 🔽 REPORT DOWNLOAD BUTTONS */}
+        <button className="download-btn" onClick={downloadReportPDF}>
+          Download PDF
+        </button>
+        <button className="download-btn secondary" onClick={downloadReportImage}>
+          Download Image
+        </button>
+      </div>
 
-  </div>
-
-  {/* RIGHT: Presets */}
-  <div className="preset-row">
-    {[
-      { label: "3M", months: 3 },
-      { label: "6M", months: 6 },
-      { label: "1Y", months: 12 },
-      { label: "ALL", all: true },
-    ].map((p) => (
-      <button
-        key={p.label}
-        className="preset-btn"
-        onClick={() => applyPresetRange(p)}
-      >
-        {p.label}
-      </button>
-    ))}
-  </div>
-</div>
-
-
-    {/* KPI Cards */}
- {/* =========================
-   KPI CARDS + EXPLANATION
-========================= */}
-{hasDateRange && kpis.length > 0 && (
-  <>
-    {/* KPI CARDS */}
-    <div className="kpi-row">
-      {kpis.map((k) => {
-        const change = computeChange(k.country);
-
-        return (
-          <div
-            key={k.country}
-            className="kpi-card"
-            style={{
-              borderTop: `4px solid ${
-                COUNTRY_COLORS[k.country] || MUTED_COLOR
-              }`,
-            }}
+      <div className="preset-row">
+        {[
+          { label: "3M", months: 3 },
+          { label: "6M", months: 6 },
+          { label: "1Y", months: 12 },
+          { label: "ALL", all: true },
+        ].map((p) => (
+          <button
+            key={p.label}
+            className="preset-btn"
+            onClick={() => applyPresetRange(p)}
           >
-            {/* Country */}
-            <div className="kpi-country">{k.country}</div>
+            {p.label}
+          </button>
+        ))}
+      </div>
+    </div>
 
-            {/* Min / Avg / Max */}
-            <div className="kpi-values">
-              <div className="kpi-item">
-                <div className="kpi-label">Min</div>
-                <div className="kpi-value">{fmtNum(k.min)}</div>
-              </div>
+    {/* =========================
+        REPORT CONTAINER
+        (Used for PDF / Image export)
+    ========================= */}
+    <div ref={reportRef} className="report-container">
+      {/* Report Header */}
+      <div className="report-header">
+        <h2>Coconut Shell Charcoal Pricing</h2>
+        <div className="report-meta">
+          <span>
+            Period:{" "}
+            {fromDate && toDate
+              ? `${fromDate} → ${toDate}`
+              : "All available data"}
+          </span>
+          <span>Markets: {selected.join(", ")}</span>
+          <span>Unit: USD / MT</span>
+        </div>
+      </div>
 
-              <div className="kpi-item">
-                <div className="kpi-label">Avg</div>
-                <div className="kpi-value">{fmtNum(k.avg)}</div>
-              </div>
+      {/* KPI CARDS */}
+      {hasDateRange && kpis.length > 0 && (
+        <>
+          <div className="kpi-row">
+            {kpis.map((k) => {
+              const change = computeChange(k.country);
 
-              <div className="kpi-item">
-                <div className="kpi-label">Max</div>
-                <div className="kpi-value">{fmtNum(k.max)}</div>
-              </div>
-            </div>
+              return (
+                <div
+                  key={k.country}
+                  className="kpi-card"
+                  style={{
+                    borderTop: `4px solid ${
+                      COUNTRY_COLORS[k.country] || MUTED_COLOR
+                    }`,
+                  }}
+                >
+                  <div className="kpi-country">{k.country}</div>
 
-            {/* Price Change */}
-            {change && (
-              <div className="kpi-change">
-                <div className="kpi-change-title">Price Change</div>
+                  <div className="kpi-values">
+                    <div className="kpi-item">
+                      <div className="kpi-label">Min</div>
+                      <div className="kpi-value">{fmtNum(k.min)}</div>
+                    </div>
+                    <div className="kpi-item">
+                      <div className="kpi-label">Avg</div>
+                      <div className="kpi-value">{fmtNum(k.avg)}</div>
+                    </div>
+                    <div className="kpi-item">
+                      <div className="kpi-label">Max</div>
+                      <div className="kpi-value">{fmtNum(k.max)}</div>
+                    </div>
+                  </div>
 
-                <div className="kpi-change-values">
-                  <span
-                    className={`kpi-delta ${
-                      change.delta >= 0 ? "up" : "down"
-                    }`}
-                  >
-                    {change.delta >= 0 ? "+" : ""}
-                    {Math.round(change.delta)}
-                  </span>
-
-                  <span
-                    className={`kpi-pct ${
-                      change.pct >= 0 ? "up" : "down"
-                    }`}
-                  >
-                    ({change.pct >= 0 ? "+" : ""}
-                    {change.pct.toFixed(1)}%)
-                  </span>
+                  {change && (
+                    <div className="kpi-change">
+                      <div className="kpi-change-title">Price Change</div>
+                      <div className="kpi-change-values">
+                        <span
+                          className={`kpi-delta ${
+                            change.delta >= 0 ? "up" : "down"
+                          }`}
+                        >
+                          {change.delta >= 0 ? "+" : ""}
+                          {Math.round(change.delta)}
+                        </span>
+                        <span
+                          className={`kpi-pct ${
+                            change.pct >= 0 ? "up" : "down"
+                          }`}
+                        >
+                          ({change.pct >= 0 ? "+" : ""}
+                          {change.pct.toFixed(1)}%)
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })}
           </div>
-        );
-      })}
+
+          <div className="kpi-explanation">
+            <span className="info-icon">ⓘ</span>
+            <span>
+              <strong>Price Change (Δ)</strong> is calculated as the difference
+              between the first and last recorded prices within the selected
+              time range. <strong>Δ%</strong> shows the relative change from
+              the starting price.
+            </span>
+          </div>
+        </>
+      )}
+
+      {/* Chart */}
+      <div className="chart-card">
+        <HighchartsReact
+          ref={chartRef}
+          highcharts={Highcharts}
+          constructorType="stockChart"
+          options={chartOptions}
+        />
+      </div>
+
+      {/* Report Footer */}
+      <div className="report-footer">
+        Source: Coconut Community – Weekly Price Update
+        <br />
+        Generated on {new Date().toLocaleString()}
+      </div>
     </div>
 
-    {/* GLOBAL EXPLANATION (ONE TIME ONLY) */}
-    <div className="kpi-explanation">
-      <span className="info-icon">ⓘ</span>
-      <span>
-        <strong>Price Change (Δ)</strong> is calculated as the difference
-        between the first and last recorded prices within the selected date
-        range. <strong>Percentage Change (Δ%)</strong> shows how large that
-        change is relative to the starting price.
-      </span>
-    </div>
-  </>
-)}
-
-
-    {/* Chart */}
-    <div className="chart-card">
-      <HighchartsReact
-        ref={chartRef}
-        highcharts={Highcharts}
-        constructorType="stockChart"
-        options={chartOptions}
-      />
-    </div>
-
-    {/* Point Popup */}
+    {/* =========================
+        POINT POPUP
+    ========================= */}
     {pointDetails && (
       <div
         className="point-pop-overlay"

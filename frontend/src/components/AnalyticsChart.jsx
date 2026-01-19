@@ -561,7 +561,7 @@ const downloadReportImage = async () => {
 return (
   <section className="panel">
     {/* =========================
-        HEADER
+        HEADER (UI ONLY)
     ========================= */}
     <header className="dashboard-header">
       <div className="header-left">
@@ -576,7 +576,6 @@ return (
           </p>
         </div>
 
-        {/* Data Source */}
         <div
           style={{
             display: "inline-flex",
@@ -663,11 +662,10 @@ return (
           {isRefreshing ? "Refreshing..." : "Refresh"}
         </button>
 
-        {/* 🔽 REPORT DOWNLOAD BUTTONS */}
-        {/* <button className="download-btn" onClick={downloadReportPDF}>
-          Download PDF
-        </button> */}
-        <button className="download-btn secondary" onClick={downloadReportImage}>
+        <button
+          className="download-btn secondary"
+          onClick={downloadReportImage}
+        >
           Download Image
         </button>
       </div>
@@ -692,23 +690,20 @@ return (
 
     {/* =========================
         REPORT CONTAINER
-        (Used for PDF / Image export)
     ========================= */}
     <div ref={reportRef} className="report-container">
-      {/* Report Header */}
-      <div className="report-header">
-        {/* <h2>Coconut Shell Charcoal Pricing</h2> */}
-        <div className="report-meta">
-          {/* <span>
-            Period:{" "}
+
+      {/* 🔝 TIME PERIOD BANNER (TOP) */}
+      {hasDateRange && (
+        <div className="time-period-banner">
+          <span className="time-label">Time Period:</span>
+          <span className="time-value">
             {fromDate && toDate
               ? `${fromDate} → ${toDate}`
               : "All available data"}
-          </span> */}
-          {/* <span>Markets: {selected.join(", ")}</span>
-          <span>Unit: USD / MT</span> */}
+          </span>
         </div>
-      </div>
+      )}
 
       {/* KPI CARDS */}
       {hasDateRange && kpis.length > 0 && (
@@ -756,11 +751,14 @@ return (
                           {change.delta >= 0 ? "+" : ""}
                           {Math.round(change.delta)}
                         </span>
-                       <span className={`kpi-pct ${change.pct >= 0 ? "up" : "down"}`}>
-  ({change.pct >= 0 ? "+" : ""}
-  {Math.round(change.pct)}%)
-</span>
-
+                        <span
+                          className={`kpi-pct ${
+                            change.pct >= 0 ? "up" : "down"
+                          }`}
+                        >
+                          ({change.pct >= 0 ? "+" : ""}
+                          {Math.round(change.pct)}%)
+                        </span>
                       </div>
                     </div>
                   )}
@@ -774,8 +772,7 @@ return (
             <span>
               <strong>Price Change (Δ)</strong> is calculated as the difference
               between the first and last recorded prices within the selected
-              time range. <strong>Δ%</strong> shows the relative change from
-              the starting price.
+              time range. <strong>Δ%</strong> represents the relative change.
             </span>
           </div>
         </>
@@ -790,18 +787,9 @@ return (
           options={chartOptions}
         />
       </div>
-
-      {/* Report Footer */}
-      {/* <div className="report-footer">
-        Source: Coconut Community – Weekly Price Update
-        <br />
-        Generated on {new Date().toLocaleString()}
-      </div> */}
     </div>
 
-    {/* =========================
-        POINT POPUP
-    ========================= */}
+    {/* POINT POPUP */}
     {pointDetails && (
       <div
         className="point-pop-overlay"
@@ -847,5 +835,6 @@ return (
     )}
   </section>
 );
+
 
 }

@@ -794,11 +794,11 @@ return (
       </div>
 
       {/* Report Footer */}
-      <div className="report-footer">
+      {/* <div className="report-footer">
         Source: Coconut Community – Weekly Price Update
         <br />
         Generated on {new Date().toLocaleString()}
-      </div>
+      </div> */}
     </div>
 
     {/* =========================

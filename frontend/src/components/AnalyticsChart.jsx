@@ -8,6 +8,7 @@ import HighchartsReact from "highcharts-react-official";
 import "./AnalyticsChart.css";
 import HaycarbLogo from "../assets/haycarb-logo.png";
 import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 // Highcharts modules
 import Exporting from "highcharts/modules/exporting";

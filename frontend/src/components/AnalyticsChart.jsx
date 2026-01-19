@@ -363,6 +363,29 @@ const applyPresetRange = async (preset) => {
     console.error("Failed to generate PDF", err);
   }
 };
+const downloadReportImage = async () => {
+  if (!reportRef.current) {
+    console.error("Report container not found");
+    return;
+  }
+
+  try {
+    const canvas = await html2canvas(reportRef.current, {
+      scale: 2,
+      backgroundColor: "#0f172a",
+      useCORS: true,
+    });
+
+    const link = document.createElement("a");
+    link.download = `CarbonXInsight_Report_${fromDate || "ALL"}_${
+      toDate || "ALL"
+    }.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  } catch (err) {
+    console.error("Failed to generate image", err);
+  }
+};
 
   const chartOptions = useMemo(
     () => ({

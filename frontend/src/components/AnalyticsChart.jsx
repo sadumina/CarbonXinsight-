@@ -697,7 +697,7 @@ return (
     <div ref={reportRef} className="report-container">
       {/* Report Header */}
       <div className="report-header">
-        <h2>Coconut Shell Charcoal Pricing</h2>
+        {/* <h2>Coconut Shell Charcoal Pricing</h2> */}
         <div className="report-meta">
           {/* <span>
             Period:{" "}

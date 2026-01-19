@@ -698,14 +698,14 @@ return (
       <div className="report-header">
         <h2>Coconut Shell Charcoal Pricing</h2>
         <div className="report-meta">
-          <span>
+          {/* <span>
             Period:{" "}
             {fromDate && toDate
               ? `${fromDate} → ${toDate}`
               : "All available data"}
-          </span>
-          <span>Markets: {selected.join(", ")}</span>
-          <span>Unit: USD / MT</span>
+          </span> */}
+          {/* <span>Markets: {selected.join(", ")}</span>
+          <span>Unit: USD / MT</span> */}
         </div>
       </div>
 

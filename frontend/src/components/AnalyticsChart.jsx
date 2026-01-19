@@ -7,7 +7,7 @@ import Highcharts from "highcharts/highstock";
 import HighchartsReact from "highcharts-react-official";
 import "./AnalyticsChart.css";
 import HaycarbLogo from "../assets/haycarb-logo.png";
- 
+import html2canvas from "html2canvas";
 
 // Highcharts modules
 import Exporting from "highcharts/modules/exporting";
@@ -69,7 +69,7 @@ export default function AnalyticsChart() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const reportRef = useRef(null);
-
+  
 
   
 

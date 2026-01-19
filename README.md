@@ -1,375 +1,344 @@
 # CarbonXInsight
 
-## Executive Summary
+## Overview
 
-CarbonXInsight is an enterprise-grade market intelligence platform designed to analyze and forecast Coconut Shell Charcoal pricing dynamics across multiple countries. The system provides analytical capabilities for pricing trends, comparative analysis, and forecasting to support strategic decision-making in commodity procurement and sales operations.
+CarbonXInsight is an internal analytics platform designed to provide real-time market intelligence and pricing analytics for coconut shell charcoal manufacturing and export operations. The application enables data-driven decision-making through comprehensive visualization of production metrics, market trends, and financial performance indicators.
 
-This platform processes historical pricing data (USD/MT) and delivers interactive visualizations, statistical analysis, and export capabilities for business intelligence workflows.
+## Business Context
 
-## Problem Definition
+In the competitive landscape of coconut shell charcoal export, timely access to accurate market data and pricing trends is critical for maintaining competitive advantage. CarbonXInsight consolidates disparate data sources into a unified analytics interface, enabling stakeholders to:
 
-Organizations operating in the coconut shell charcoal market face several analytical challenges:
+- Monitor real-time pricing fluctuations across international markets
+- Track production efficiency and capacity utilization
+- Analyze export volume trends and seasonal patterns
+- Generate executive reports for strategic planning
+- Identify cost optimization opportunities
 
-- **Data Fragmentation**: Pricing data exists in disparate Excel/CSV files across regions
-- **Limited Visibility**: No centralized view of cross-country price movements
-- **Manual Analysis**: Time-intensive manual processing of pricing trends
-- **Forecast Gaps**: Absence of statistical forecasting for procurement planning
-- **Reporting Overhead**: Manual generation of charts and reports for stakeholders
+## Problem Statement
 
-CarbonXInsight addresses these gaps by providing a unified analytics platform with automated data processing, interactive visualizations, and standardized export capabilities.
+Prior to CarbonXInsight, the organization faced several operational challenges:
 
-## Design Principles
+- **Data Fragmentation**: Market data, production metrics, and financial information existed in isolated systems
+- **Manual Reporting**: Executive reports required manual compilation from multiple sources, introducing delays and errors
+- **Limited Visibility**: Lack of real-time insights into pricing trends and market conditions
+- **Decision Latency**: Strategic decisions were based on outdated or incomplete information
+- **Export Complexity**: No streamlined mechanism for generating presentation-ready reports
 
-The system architecture adheres to the following principles:
+CarbonXInsight addresses these challenges by providing a centralized, real-time analytics platform with automated reporting capabilities.
 
-1. **Data Integrity**: All pricing data is validated and normalized before processing
-2. **Performance**: Client-side rendering with optimized data transfer
-3. **Extensibility**: Modular design supports addition of new data sources and analytics
-4. **Usability**: Self-service interface for non-technical business users
-5. **Reliability**: Fail-safe data ingestion with rollback capabilities
-6. **Auditability**: All data transformations are logged and traceable
+## Core Features
 
-## Core Capabilities
+### Analytics & Visualization
 
-### Price Analysis
+- **Time-Series Analysis**: Historical trend visualization for pricing, production volume, and market demand
+- **Key Performance Indicators**: Real-time dashboard displaying critical business metrics
+- **Comparative Analytics**: Side-by-side comparison of performance across time periods, markets, or product lines
+- **Interactive Charts**: Drill-down capabilities for detailed exploration of underlying data
 
-- Country-level price tracking (USD/MT)
-- Historical trend visualization
-- Year-over-year comparison
-- Statistical summary (min, max, mean, median)
-- Percentage change calculation
+### Data Management
 
-### Forecasting
+- **Automated Data Ingestion**: Scheduled synchronization with production and market data sources
+- **Data Validation**: Built-in integrity checks and anomaly detection
+- **Historical Data Retention**: Configurable retention policies for trend analysis
 
-- Time series forecasting using statistical models
-- Confidence interval visualization
-- Forecast accuracy metrics
-- Scenario analysis support
+### Export & Reporting
 
-### Interactive Visualization
-
-- Highcharts Stock integration for financial-grade charting
-- Drill-down by country and time period
-- Custom date range selection
-- Responsive layout for desktop and tablet
-
-### Export & Distribution
-
-- PNG export (charts)
-- PDF report generation
-- CSV data export
-- XLS format support
-- Batch export capabilities
+- **PDF Report Generation**: High-fidelity export of charts and dashboards
+- **Multi-Format Support**: Export to PDF, PNG, and CSV formats
+- **Scheduled Reports**: Automated distribution of periodic reports to stakeholders
+- **Custom Report Templates**: Configurable layouts for different audiences
 
 ## System Architecture
-
-```mermaid
-graph TB
-    subgraph Client["Client Layer"]
-        UI[React Application]
-        Charts[Highcharts Stock]
-    end
-    
-    subgraph API["API Layer"]
-        FastAPI[FastAPI Server]
-        Validation[Data Validation]
-        Transform[Data Transformation]
-    end
-    
-    subgraph Data["Data Layer"]
-        MongoDB[(MongoDB)]
-        FileStore[File Storage]
-    end
-    
-    subgraph Processing["Processing Pipeline"]
-        Ingest[Data Ingestion]
-        Normalize[Normalization]
-        Aggregate[Aggregation]
-        Forecast[Forecasting Engine]
-    end
-    
-    UI --> FastAPI
-    Charts --> UI
-    FastAPI --> Validation
-    Validation --> Transform
-    Transform --> MongoDB
-    FastAPI --> MongoDB
-    
-    Ingest --> FileStore
-    FileStore --> Normalize
-    Normalize --> Aggregate
-    Aggregate --> MongoDB
-    Aggregate --> Forecast
-    Forecast --> MongoDB
 ```
-
-## Analytics Methodology
-
-### Data Processing
-
-1. **Ingestion**: Excel/CSV files uploaded via API endpoint
-2. **Validation**: Schema validation, type checking, range validation
-3. **Normalization**: Currency standardization, unit conversion, date formatting
-4. **Aggregation**: Monthly/quarterly rollups, country-level grouping
-5. **Storage**: Persisted to MongoDB with versioning
-
-### Statistical Methods
-
-- **Trend Analysis**: Moving averages (7-day, 30-day, 90-day)
-- **Forecasting**: ARIMA, Exponential Smoothing, Prophet
-- **Anomaly Detection**: Z-score based outlier identification
-- **Correlation Analysis**: Cross-country price correlation matrix
-
-### Visualization Standards
-
-- Line charts for time series
-- Area charts for comparative analysis
-- Candlestick charts for OHLC data (if applicable)
-- Box plots for distribution analysis
-- Heat maps for correlation matrices
-
-## Data Freshness & Reliability
-
-| Metric | Target | Current |
-|--------|--------|---------|
-| Data Update Frequency | Daily | Daily |
-| API Response Time (p95) | <500ms | 320ms |
-| UI Load Time | <2s | 1.8s |
-| Data Completeness | >95% | 97.2% |
-| Forecast Accuracy (MAPE) | <15% | 12.3% |
-
-Data quality checks run on every ingestion. Failed validations trigger alerts to the data steward team.
-
-## Export & Reporting Standards
-
-### Supported Formats
-
-| Format | Use Case | Implementation |
-|--------|----------|----------------|
-| PNG | Dashboard snapshots | Highcharts export module |
-| PDF | Executive reports | Server-side rendering |
-| CSV | Raw data analysis | Backend data serialization |
-| XLS | Excel integration | SheetJS library |
-
-### Report Scheduling
-
-- On-demand generation via UI
-- Scheduled reports (daily/weekly/monthly)
-- Email distribution via SMTP
-- Archive retention: 90 days
+┌─────────────────────────────────────────────────────────────────┐
+│                         Client Layer                            │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │  React Application (SPA)                                  │  │
+│  │  - Highcharts Visualization                               │  │
+│  │  - Report Generation (html2canvas + jsPDF)                │  │
+│  │  - State Management                                       │  │
+│  └──────────────────────────────────────────────────────────┘  │
+└───────────────────────────────┬─────────────────────────────────┘
+                                │ HTTPS/REST
+┌───────────────────────────────▼─────────────────────────────────┐
+│                      Application Layer                          │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │  FastAPI Backend                                          │  │
+│  │  - RESTful API Endpoints                                  │  │
+│  │  - Business Logic Layer                                   │  │
+│  │  - Data Aggregation & Processing                          │  │
+│  │  - Authentication & Authorization                         │  │
+│  └──────────────────────────────────────────────────────────┘  │
+└───────────────────────────────┬─────────────────────────────────┘
+                                │ MongoDB Protocol
+┌───────────────────────────────▼─────────────────────────────────┐
+│                         Data Layer                              │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │  MongoDB Database                                         │  │
+│  │  - Time-Series Collections                                │  │
+│  │  - Aggregation Pipelines                                  │  │
+│  │  - Indexed Queries                                        │  │
+│  └──────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ## Technology Stack
 
-| Component | Technology | Version | Purpose |
-|-----------|-----------|---------|---------|
-| Frontend Framework | React | 18.x | UI component library |
-| Charting Library | Highcharts Stock | 11.x | Financial visualizations |
-| Backend Framework | FastAPI | 0.104.x | REST API server |
-| Database | MongoDB | 7.x | Document storage |
-| Data Processing | Pandas | 2.x | Data transformation |
-| Forecasting | Prophet | 1.1.x | Time series forecasting |
-| Code Formatting | Prettier | 3.x | Code style enforcement |
-| CI/CD | GitHub Actions | N/A | Automated testing & deployment |
-| Language (Frontend) | JavaScript (ES6+) | N/A | Client-side logic |
-| Language (Backend) | Python | 3.11+ | Server-side logic |
+### Frontend
+
+- **Framework**: React 18.x
+- **Charting Library**: Highcharts
+- **Styling**: CSS3 with modular architecture
+- **Export Utilities**: 
+  - html2canvas for DOM rendering
+  - jsPDF for PDF generation
+- **HTTP Client**: Axios or Fetch API
+- **Build Tool**: Vite or Create React App
+
+### Backend
+
+- **Framework**: FastAPI (Python 3.9+)
+- **API Design**: RESTful architecture
+- **Data Validation**: Pydantic models
+- **Async Processing**: asyncio for concurrent operations
+- **CORS**: Configured for internal network access
+
+### Database
+
+- **Primary Store**: MongoDB 5.x+
+- **ODM**: Motor (async MongoDB driver) or PyMongo
+- **Data Modeling**: Document-oriented schema optimized for analytics queries
+- **Indexing**: Compound indexes on time-series and categorical fields
+
+### Deployment
+
+- **Containerization**: Docker
+- **Orchestration**: Docker Compose (development) or Kubernetes (production)
+- **Reverse Proxy**: Nginx
+- **Process Management**: Uvicorn with Gunicorn
+
+## Data Flow
+
+1. **Data Ingestion**
+   - External data sources push updates to backend API endpoints
+   - Backend validates and normalizes incoming data
+   - Processed records are persisted to MongoDB
+
+2. **Query Processing**
+   - Frontend requests analytics data via REST endpoints
+   - Backend executes MongoDB aggregation pipelines
+   - Results are cached and returned as JSON
+
+3. **Visualization**
+   - React components consume API responses
+   - Highcharts renders interactive visualizations
+   - User interactions trigger dynamic re-queries
+
+4. **Report Generation**
+   - User initiates export action
+   - html2canvas captures rendered DOM elements
+   - jsPDF compiles captures into formatted PDF
+   - Document is downloaded to client
+
+## Report Generation Workflow
+
+The export functionality follows a multi-stage process:
+
+1. **Capture Phase**: html2canvas traverses the target DOM elements and generates raster images
+2. **Composition Phase**: jsPDF creates a new document and positions captured images
+3. **Metadata Injection**: Report metadata (timestamp, user, filters) is embedded
+4. **Output Generation**: Final PDF is compiled and streamed to the browser
+
+Exported reports include:
+- Executive summary with key metrics
+- Time-series charts with configurable date ranges
+- Comparative analysis tables
+- Data source attribution and timestamp
 
 ## Project Structure
-
 ```
-CarbonXInsight/
-├── .github/
-│   └── workflows/
-│       ├── ci.yml
-│       └── deploy.yml
+carbonxinsight/
+├── frontend/
+│   ├── public/
+│   │   └── index.html
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── charts/
+│   │   │   │   ├── TimeSeriesChart.jsx
+│   │   │   │   ├── KPIDashboard.jsx
+│   │   │   │   └── ComparisonChart.jsx
+│   │   │   ├── reports/
+│   │   │   │   ├── ReportGenerator.jsx
+│   │   │   │   └── ExportButton.jsx
+│   │   │   └── layout/
+│   │   │       ├── Header.jsx
+│   │   │       ├── Sidebar.jsx
+│   │   │       └── Footer.jsx
+│   │   ├── services/
+│   │   │   ├── api.js
+│   │   │   └── export.js
+│   │   ├── utils/
+│   │   │   ├── dateFormatter.js
+│   │   │   └── chartConfig.js
+│   │   ├── styles/
+│   │   │   ├── global.css
+│   │   │   └── components.css
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── package.json
+│   └── vite.config.js
 ├── backend/
 │   ├── app/
 │   │   ├── api/
 │   │   │   ├── endpoints/
 │   │   │   │   ├── analytics.py
-│   │   │   │   ├── data.py
-│   │   │   │   └── exports.py
-│   │   │   └── routes.py
+│   │   │   │   ├── reports.py
+│   │   │   │   └── data.py
+│   │   │   └── router.py
 │   │   ├── core/
 │   │   │   ├── config.py
-│   │   │   └── security.py
+│   │   │   └── database.py
 │   │   ├── models/
-│   │   │   ├── pricing.py
-│   │   │   └── forecasts.py
+│   │   │   ├── market_data.py
+│   │   │   └── production.py
 │   │   ├── services/
-│   │   │   ├── data_ingestion.py
-│   │   │   ├── analytics_engine.py
-│   │   │   └── export_service.py
-│   │   └── utils/
-│   │       ├── validators.py
-│   │       └── transformers.py
-│   ├── tests/
-│   │   ├── test_api.py
-│   │   ├── test_services.py
-│   │   └── test_models.py
-│   ├── main.py
-│   └── requirements.txt
-├── frontend/
-│   ├── public/
-│   │   ├── index.html
-│   │   └── favicon.ico
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── charts/
-│   │   │   │   ├── PriceChart.jsx
-│   │   │   │   ├── ForecastChart.jsx
-│   │   │   │   └── ComparisonChart.jsx
-│   │   │   ├── common/
-│   │   │   │   ├── Header.jsx
-│   │   │   │   ├── Sidebar.jsx
-│   │   │   │   └── Footer.jsx
-│   │   │   └── exports/
-│   │   │       └── ExportPanel.jsx
-│   │   ├── pages/
-│   │   │   ├── Dashboard.jsx
-│   │   │   ├── Analytics.jsx
-│   │   │   ├── Forecasting.jsx
-│   │   │   └── DataManagement.jsx
-│   │   ├── services/
-│   │   │   ├── api.js
-│   │   │   └── chartConfig.js
-│   │   ├── utils/
-│   │   │   ├── formatters.js
-│   │   │   └── validators.js
-│   │   ├── App.js
-│   │   ├── App.css
-│   │   └── index.js
-│   ├── package.json
-│   └── .prettierrc
-├── data/
-│   ├── raw/
-│   └── processed/
-├── docs/
-│   ├── API.md
-│   ├── DEPLOYMENT.md
-│   └── USER_GUIDE.md
-├── .gitignore
-├── README.md
-└── LICENSE
+│   │   │   ├── analytics_service.py
+│   │   │   └── aggregation_service.py
+│   │   └── main.py
+│   ├── requirements.txt
+│   └── Dockerfile
+├── docker-compose.yml
+└── README.md
 ```
 
-## Running the System
+## Installation & Setup
 
 ### Prerequisites
 
-- Python 3.11+
-- Node.js 18+
-- MongoDB 7.x
-- npm or yarn
-
-### Backend Setup
-
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-Backend API: `http://localhost:8000`
-API Documentation: `http://localhost:8000/docs`
+- Node.js 16.x or higher
+- Python 3.9 or higher
+- MongoDB 5.x or higher
+- Docker (optional, recommended for production)
 
 ### Frontend Setup
-
 ```bash
 cd frontend
+
+# Install dependencies
 npm install
-npm start
+
+# Configure environment variables
+cp .env.example .env
+# Edit .env with appropriate API_BASE_URL
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
 ```
 
-Frontend Application: `http://localhost:3000`
+The frontend application will be available at `http://localhost:5173` (Vite default).
 
-### Environment Configuration
+### Backend Setup
+```bash
+cd backend
 
-Create `.env` files in both `backend/` and `frontend/` directories:
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-**Backend `.env`:**
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment variables
+cp .env.example .env
+# Edit .env with MongoDB connection string and other settings
+
+# Start development server
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
-MONGODB_URL=mongodb://localhost:27017
+
+The backend API will be available at `http://localhost:8000`. API documentation is automatically generated at `http://localhost:8000/docs` (Swagger UI).
+
+### Database Setup
+```bash
+# Start MongoDB instance
+mongod --dbpath /path/to/data/directory
+
+# Or using Docker
+docker run -d -p 27017:27017 --name mongodb mongo:5
+```
+
+### Docker Deployment
+```bash
+# Build and start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+## Configuration
+
+### Environment Variables
+
+**Frontend (.env)**
+```
+VITE_API_BASE_URL=http://localhost:8000
+VITE_ENABLE_ANALYTICS=true
+```
+
+**Backend (.env)**
+```
+MONGODB_URI=mongodb://localhost:27017
 DATABASE_NAME=carbonxinsight
-API_KEY=your_api_key_here
-CORS_ORIGINS=http://localhost:3000
+API_PORT=8000
+CORS_ORIGINS=http://localhost:5173
 LOG_LEVEL=INFO
 ```
 
-**Frontend `.env`:**
-```
-REACT_APP_API_URL=http://localhost:8000
-REACT_APP_ENV=development
-```
+## Intended Usage
 
-### Testing
+CarbonXInsight is designed for internal use by the following stakeholder groups:
 
-```bash
-# Backend tests
-cd backend
-pytest tests/ -v --cov=app
+- **Executive Leadership**: Strategic decision-making based on market trends and financial performance
+- **Operations Managers**: Production planning and capacity optimization
+- **Sales Teams**: Pricing strategy and market opportunity identification
+- **Finance Department**: Revenue forecasting and cost analysis
+- **Business Analysts**: Ad-hoc analysis and custom reporting
 
-# Frontend tests
-cd frontend
-npm test
-```
+The application is accessible only within the corporate network and requires authenticated access. Role-based access controls ensure data confidentiality and segregation of duties.
 
-### Production Deployment
+## Security Considerations
 
-Refer to `docs/DEPLOYMENT.md` for production deployment procedures, including:
-- Environment configuration
-- Database migrations
-- Reverse proxy setup (Nginx)
-- SSL certificate installation
-- Monitoring and alerting setup
+- All API endpoints require authentication tokens
+- HTTPS enforced in production environments
+- Database credentials stored in secure vault
+- Regular security audits and dependency updates
+- Audit logging for compliance tracking
 
-## Contributors
+## Performance Characteristics
 
-![Contributors](https://contrib.rocks/image?repo=YOUR_ORG/CarbonXInsight)
+- **Query Response Time**: < 500ms for standard analytics queries
+- **Dashboard Load Time**: < 2 seconds for initial render
+- **Report Generation**: < 5 seconds for multi-page PDF exports
+- **Data Refresh Rate**: Real-time for critical metrics, hourly for historical trends
+- **Concurrent Users**: Supports up to 100 simultaneous users
 
-## Contribution Activity
+## Future Roadmap
 
-![Activity Graph](https://repobeats.axiom.co/api/embed/YOUR_ACTIVITY_HASH.svg)
+Planned enhancements include:
 
-## Usage & Governance
-
-### Access Control
-
-- **Administrators**: Full system access, user management, data ingestion
-- **Analysts**: Read access, export capabilities, custom report generation
-- **Viewers**: Dashboard access, pre-defined reports
-
-### Data Governance
-
-- Data retention: 5 years
-- Backup frequency: Daily
-- Disaster recovery RTO: 4 hours
-- Disaster recovery RPO: 1 hour
-
-### Support
-
-For technical issues or feature requests:
-- Internal Slack: `#carbonxinsight-support`
-- Email: analytics-platform@yourorg.com
-- Jira Project: `CXIN`
-
-### Change Management
-
-All changes to the platform follow standard SDLC procedures:
-1. Feature request via Jira
-2. Technical design review
-3. Development and testing
-4. Staging deployment
-5. UAT approval
-6. Production deployment
-
-### License
-
-Internal use only. All rights reserved.
+- **Predictive Analytics**: Machine learning models for demand forecasting and price prediction
+- **Mobile Application**: Native iOS and Android apps for executive dashboard access
+- **Advanced Alerting**: Configurable thresholds with email and SMS notifications
+- **Data Integration**: Connectors for ERP systems and third-party market data providers
+- **Collaborative Features**: Shared workspaces and annotated reports
+- **API Expansion**: Public API for integration with external business intelligence tools
 
 ---
 
-**Maintained by**: Enterprise Analytics Team  
-**Last Updated**: January 2026  
-**Version**: 1.0.0

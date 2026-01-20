@@ -501,6 +501,14 @@
 .chart-card {
   padding: 22px;
 }
+.chart-card::before {
+  content: "Price Trend";
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
 
 /* Highcharts light overrides */
 .highcharts-background {

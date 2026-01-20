@@ -67,6 +67,9 @@ body {
     Arial,
     sans-serif;
 }
+html {
+  font-size: 14px; /* 👈 change this */
+}
 
 
 @keyframes appFadeIn {

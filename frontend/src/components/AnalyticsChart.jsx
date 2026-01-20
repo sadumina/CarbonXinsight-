@@ -391,10 +391,11 @@ const downloadReportImage = async () => {
   const chartOptions = useMemo(
     () => ({
       chart: {
-        backgroundColor: "#1a2128",
-        height: 520,
-        zoomType: "x",
-      },
+  backgroundColor: "#ffffff",
+  height: 520,
+  zoomType: "x",
+},
+
 
       tooltip: {
         useHTML: true,

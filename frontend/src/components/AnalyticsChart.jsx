@@ -698,6 +698,34 @@ return (
         REPORT CONTAINER
     ========================= */}
     <div ref={reportRef} className="report-container">
+      {/* ===== EXPORT HEADER ===== */}
+<div className="export-header">
+  <div className="export-header-left">
+    <img src={HaycarbLogo} alt="Haycarb" className="export-logo" />
+    <div>
+      <div className="export-title">
+        Coconut Shell Charcoal Pricing
+      </div>
+      <div className="export-subtitle">
+        Country-Level Market Analytics
+      </div>
+    </div>
+  </div>
+
+  <div className="export-header-right">
+    <div className="export-period">
+      <strong>Period:</strong>{" "}
+      {fromDate && toDate
+        ? `${fromDate} → ${toDate}`
+        : "All Available Data"}
+    </div>
+    <div className="export-meta">
+      Unit: USD / MT<br />
+      Generated: {new Date().toLocaleDateString("en-GB")}
+    </div>
+  </div>
+</div>
+
 
       {/* 🔝 TIME PERIOD BANNER (TOP) */}
       {hasDateRange && (

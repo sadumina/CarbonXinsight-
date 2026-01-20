@@ -552,6 +552,33 @@
   box-shadow: var(--shadow-2);
   animation: popIn 160ms ease-out;
 }
+/* =========================
+   REPORT EXPORT HEADER
+========================= */
+.report-export-header {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.report-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.report-subtitle {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.report-meta {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #64748b;
+}
 
 @keyframes popIn {
   from {

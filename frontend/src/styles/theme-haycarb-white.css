@@ -1,0 +1,25 @@
+/* =====================================================
+   Haycarb White Theme (Tokens)
+===================================================== */
+
+:root {
+  --page-bg: #f6f8f7;
+  --panel: #ffffff;
+  --panel-soft: #f1f5f3;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+
+  --brand: #178a33;
+  --brand-soft: #e6f4eb;
+  --brand-border: rgba(23, 138, 51, 0.25);
+
+  --separator: #e5e7eb;
+
+  --radius: 12px;
+  --radius-lg: 16px;
+
+  --shadow-1: 0 6px 18px rgba(15, 23, 42, 0.06);
+  --shadow-2: 0 12px 32px rgba(15, 23, 42, 0.08);
+}

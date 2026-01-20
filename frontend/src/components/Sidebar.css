@@ -1,92 +1,120 @@
 /* =====================================================
-   CarbonXInsight — Professional Sidebar
+   CarbonXInsight — Professional Sidebar (Light / Haycarb)
 ===================================================== */
 
-/* Reset inside sidebar only */
+/* Reset (sidebar scope only) */
 .sidebar,
 .sidebar * {
   box-sizing: border-box;
 }
 
-/* Sidebar container */
+/* =========================
+   SIDEBAR CONTAINER
+========================= */
 .sidebar {
   width: 240px;
   min-height: 100vh;
   padding: 20px 16px;
 
-  background: linear-gradient(180deg, #0d1513, #0a100f);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: #ffffff;
+  border-right: 1px solid rgba(15, 23, 42, 0.12);
 
   display: flex;
   flex-direction: column;
 
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  color: #c7d0d9;
+  color: #334155;
 }
 
-/* ---------- Brand ---------- */
+/* =========================
+   BRAND
+========================= */
 .sidebar-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 28px;
+
+  padding-bottom: 18px;
+  margin-bottom: 14px;
+
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .sidebar-logo {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
 }
 
 .app-name {
   font-size: 15px;
-  font-weight: 600;
-  color: #e6f4ea;
+  font-weight: 700;
+  color: #0f172a;
   letter-spacing: 0.2px;
 }
 
-/* ---------- Menu ---------- */
+/* =========================
+   MENU
+========================= */
 .sidebar-menu {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
-/* Menu item */
+/* =========================
+   MENU ITEM
+========================= */
 .sidebar-item {
   display: flex;
   align-items: center;
+  gap: 10px;
 
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 11px 14px;
+  border-radius: 12px;
 
-  font-size: 14px;
-  color: #c7d0d9;
+  font-size: 13px;
+  font-weight: 600;
+
+  color: #475569;
   text-decoration: none;
 
   cursor: pointer;
+
   transition:
-    background 140ms ease,
-    color 140ms ease;
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.08s ease;
 }
 
-/* Hover (subtle) */
+/* Hover (calm, professional) */
 .sidebar-item:hover {
   background: rgba(23, 138, 51, 0.08);
-  color: #eef7f1;
+  color: #14532d;
 }
 
-/* Active (calm, authoritative) */
+/* Active (VERY IMPORTANT) */
 .sidebar-item.active {
-  background: linear-gradient(
-    135deg,
-    rgba(23, 138, 51, 0.18),
-    rgba(23, 138, 51, 0.08)
-  );
-  color: #eef7f1;
-  font-weight: 500;
+  background: rgba(23, 138, 51, 0.14);
+  color: #14532d;
+  font-weight: 700;
+  position: relative;
 }
 
-/* Disabled */
+/* Active indicator bar */
+.sidebar-item.active::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  border-radius: 6px;
+  background: #178a33;
+}
+
+/* =========================
+   DISABLED
+========================= */
 .sidebar-item.disabled {
   opacity: 0.45;
   cursor: not-allowed;
@@ -94,22 +122,29 @@
 
 .sidebar-item.disabled:hover {
   background: none;
+  color: #475569;
 }
 
-/* Label */
+/* =========================
+   LABEL
+========================= */
 .nav-label {
-  line-height: 1;
+  line-height: 1.2;
 }
 
-/* Separator */
+/* =========================
+   SEPARATOR
+========================= */
 .sidebar-separator {
   height: 1px;
   margin: 14px 8px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(15, 23, 42, 0.08);
 }
 
-/* Accessibility */
+/* =========================
+   ACCESSIBILITY
+========================= */
 .sidebar-item:focus-visible {
-  outline: 2px solid rgba(23, 138, 51, 0.4);
+  outline: 2px solid rgba(23, 138, 51, 0.35);
   outline-offset: 2px;
 }

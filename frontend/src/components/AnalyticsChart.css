@@ -169,19 +169,12 @@ body {
 /* ===== Date input calendar icon (white) ===== */
 /* ===== Date input polish ===== */
 .date-input {
-  background: linear-gradient(
-    180deg,
-    rgba(15, 23, 32, 0.9),
-    rgba(2, 6, 23, 0.95)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: #f4f7fa;
+  background: var(--panel);
+  border: 1px solid var(--separator);
+  color: var(--text-primary);
   padding: 9px 12px;
   border-radius: 10px;
   font-size: 13px;
-  min-width: 140px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease,
-    background 0.2s ease;
 }
 
 /* =========================

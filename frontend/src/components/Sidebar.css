@@ -140,6 +140,17 @@
   margin: 14px 8px;
   background: rgba(15, 23, 42, 0.08);
 }
+.sidebar-section {
+  margin-top: 14px;
+  margin-bottom: 6px;
+  padding: 0 14px;
+
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(199, 208, 217, 0.55);
+}
+
 
 /* =========================
    ACCESSIBILITY

@@ -570,6 +570,12 @@ body {
 }
 
 /* Header */
+.point-pop-card {
+  background: var(--panel);
+  border: 1px solid var(--separator);
+  color: var(--text-primary);
+}
+
 .point-pop-header {
   display: flex;
   justify-content: space-between;

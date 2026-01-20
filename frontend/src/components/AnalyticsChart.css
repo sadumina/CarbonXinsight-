@@ -59,8 +59,9 @@ body {
   max-width: 1280px;
   margin: 24px auto;
   padding: 24px 26px;
+
   background: var(--panel);
-  border: 1px solid var(--brand-border);
+  border: 1px solid var(--separator);
   border-radius: 18px;
   box-shadow: var(--shadow-1);
 }

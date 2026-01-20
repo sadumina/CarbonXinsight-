@@ -220,12 +220,12 @@ body {
 
 /* Toolbar: date inputs (left) + presets (right) */
 .date-toolbar {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 18px;
+  background: var(--panel);
+  border: 1px solid var(--separator);
+  border-radius: 12px;
+  padding: 14px;
 }
+
 
 /* Keep existing styles */
 .date-row {

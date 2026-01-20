@@ -34,7 +34,7 @@
 /* =========================
    GLOBAL
 ========================= */
-* {
+/* * {
   box-sizing: border-box;
 }
 
@@ -50,7 +50,7 @@ body {
   color: var(--text-primary);
   font-family: Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial,
     sans-serif;
-}
+} */
 
 /* =========================
    PANEL

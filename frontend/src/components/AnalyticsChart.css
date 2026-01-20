@@ -498,6 +498,9 @@
   padding: 18px;
   box-shadow: var(--shadow-1);
 }
+.chart-card {
+  padding: 22px;
+}
 
 /* Highcharts light overrides */
 .highcharts-background {

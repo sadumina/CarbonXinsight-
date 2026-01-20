@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import "./ViewDataPage.css";
 
 const API = "http://localhost:8000";
 

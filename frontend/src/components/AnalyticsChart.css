@@ -43,6 +43,18 @@
   --text-xl: 22px;
   --text-2xl: 26px;
 }
+.header-title {
+  font-size: var(--text-xl); /* 22px */
+  font-weight: 700;
+}
+
+.header-subtitle {
+  font-size: var(--text-sm); /* 12px */
+}
+
+.header-meta {
+  font-size: var(--text-xs); /* 11px */
+}
 
 
 /* =========================

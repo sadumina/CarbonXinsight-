@@ -1,0 +1,125 @@
+/* =========================
+   VIEW DATA — PROFESSIONAL
+========================= */
+
+.view-data {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* HEADER */
+.view-header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.view-header p {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* FILTER BAR */
+.view-filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+
+  padding: 14px;
+  background: var(--panel-soft);
+  border: 1px solid var(--separator);
+  border-radius: 14px;
+}
+
+.filter-input {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--separator);
+  background: var(--panel);
+  color: var(--text-primary);
+}
+
+.primary-btn {
+  height: 38px;
+  padding: 0 18px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* SUMMARY */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.summary-card {
+  background: var(--panel);
+  border: 1px solid var(--separator);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.summary-card span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.summary-card strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+/* TABLE */
+.table-card {
+  background: var(--panel);
+  border: 1px solid var(--separator);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead {
+  background: var(--panel-soft);
+}
+
+th,
+td {
+  padding: 12px 14px;
+  text-align: left;
+}
+
+th {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+tbody tr {
+  border-top: 1px solid var(--separator);
+}
+
+tbody tr:hover td {
+  background: rgba(23, 138, 51, 0.04);
+}
+
+/* EMPTY STATE */
+.empty-cell {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+}

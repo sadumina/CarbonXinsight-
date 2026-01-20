@@ -398,17 +398,18 @@ const downloadReportImage = async () => {
 
 
       tooltip: {
-        useHTML: true,
-        backgroundColor: "#020617",
-        borderColor: "#1f2937",
-        borderRadius: 10,
-        shadow: false,
-        padding: 12,
-        style: {
-          color: "#e5e7eb",
-          fontSize: "12px",
-        },
-      },
+  useHTML: true,
+  backgroundColor: "#ffffff",
+  borderColor: "#e5e7eb",
+  borderRadius: 10,
+  shadow: true,
+  padding: 12,
+  style: {
+    color: "#0f172a",
+    fontSize: "12px",
+  },
+},
+
 
             xAxis: {
         type: "datetime",

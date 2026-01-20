@@ -1,74 +1,189 @@
-.page{
-  padding:24px;
-  display:flex;
-  flex-direction:column;
-  gap:22px;
+/* =====================================================
+   Upload + Analytics — Haycarb White Theme (FINAL)
+===================================================== */
+
+.page {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-/* Panels */
-.panel{
-  background:linear-gradient(135deg,#0f141b 0%, rgba(20,26,34,.9) 100%);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:22px;
-  border-width: 2000px;
+/* =========================
+   PANELS (WHITE)
+========================= */
+.panel {
+  background: #ffffff; /* 🔥 FIX: remove dark gradient */
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.12);
 }
 
-.panel-title{margin:0 0 6px 0;font-size:20px;color:#bfffe8}
-.panel-sub{margin:0 0 12px 0;color:var(--muted)}
-
-/* Prevent upload wrapper border from affecting analytics */
-.upload-panel.panel {
-  border: 1px dashed rgba(0,255,213,.35); /* or keep your dashed style */
+/* Upload panels subtle accent */
+.upload-panel {
+  border-style: dashed;
+  border-color: rgba(23, 138, 51, 0.35);
 }
 
-
-/* Dropzone */
-.drop{
-  border:2px dashed rgba(0,255,213,.35);
-  border-radius:14px;
-  padding:26px;
-  display:flex; align-items:center; justify-content:center;
-  background:rgba(0,255,213,.02);
-  cursor:pointer; transition:.25s;
+/* =========================
+   TITLES
+========================= */
+.panel-title {
+  margin: 0 0 6px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
 }
-.drop:hover{background:rgba(0,255,213,.05)}
-.drop.dragging{background:rgba(0,255,213,.1); box-shadow:0 0 0 4px rgba(0,255,213,.08) inset}
-.drop-inner{text-align:center}
-.drop-icon{font-size:26px; margin-bottom:6px; color:var(--accent)}
-.drop-title{font-size:16px}
-.drop-hint{color:var(--muted); font-size:12px; margin-top:4px}
 
-/* Queue badges */
-.queue{margin-top:14px; display:grid; gap:8px}
-.queue-item{
-  background:#0d1117; border:1px dashed rgba(255,255,255,.06);
-  padding:10px 12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;
+.panel-sub {
+  margin: 0 0 14px 0;
+  color: #475569;
+  font-size: 13px;
 }
-.q-name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:10px}
-.q-badge{font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.12)}
-.q-badge.ok{border-color:#3fb950; color:#3fb950}
-.q-badge.err{border-color:#f85149; color:#f85149}
 
-/* Actions */
-.actions{margin-top:12px; display:flex; gap:10px; justify-content:flex-end}
-.btn{
-  padding:10px 16px; border-radius:10px; cursor:pointer; font-weight:600; letter-spacing:.3px;
-  background:transparent; border:1px solid var(--line); color:var(--text);
+/* =========================
+   DROPZONE
+========================= */
+.drop {
+  border: 2px dashed rgba(23, 138, 51, 0.35);
+  border-radius: 14px;
+  padding: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f3f7f5;
+  cursor: pointer;
+  transition: 0.25s;
 }
-.btn.primary{border-color:var(--accent); color:#001; background:var(--accent)}
-.btn.primary:hover{filter:brightness(1.05)}
-.btn.ghost:hover{background:rgba(255,255,255,.04)}
 
+.drop:hover {
+  background: #eaf4ee;
+}
+
+.drop.dragging {
+  background: #e1f0e8;
+  box-shadow: inset 0 0 0 4px rgba(23, 138, 51, 0.15);
+}
+
+.drop-inner {
+  text-align: center;
+}
+
+.drop-icon {
+  font-size: 26px;
+  margin-bottom: 6px;
+  color: #178a33;
+}
+
+.drop-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.drop-hint {
+  color: #64748b;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* =========================
+   QUEUE ITEMS
+========================= */
+.queue {
+  margin-top: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.queue-item {
+  background: #ffffff;
+  border: 1px dashed rgba(15, 23, 42, 0.15);
+  padding: 10px 12px;
+  border-radius: 10px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.q-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 10px;
+  color: #0f172a;
+}
+
+.q-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.2);
+}
+
+.q-badge.ok {
+  border-color: #16a34a;
+  color: #16a34a;
+}
+
+.q-badge.err {
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+/* =========================
+   ACTIONS / BUTTONS
+========================= */
+.actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.2);
+  color: #0f172a;
+}
+
+.btn.primary {
+  background: #178a33;
+  border-color: #178a33;
+  color: #ffffff;
+}
+
+.btn.primary:hover {
+  filter: brightness(1.05);
+}
+
+.btn.ghost:hover {
+  background: #f1f5f9;
+}
+
+/* =========================
+   EXCEL UPLOAD
+========================= */
 .excel-upload {
   display: inline-flex;
   align-items: center;
   padding: 10px 16px;
-  background: transparent;
-  border: 1px solid var(--brand-border);
+
+  background: #ffffff;
+  border: 1px solid rgba(23, 138, 51, 0.35);
   border-radius: 12px;
   cursor: pointer;
-  color: var(--brand-soft);
+
+  color: #0f172a;
   font-size: 15px;
   gap: 8px;
 }
@@ -80,20 +195,25 @@
 .download-template-btn {
   margin-top: 12px;
   display: inline-block;
+
   padding: 8px 14px;
   border-radius: 12px;
-  border: 1px dashed var(--brand-border);
-  color: var(--text-primary);
+  border: 1px dashed rgba(23, 138, 51, 0.35);
+
+  color: #178a33;
   text-decoration: none;
   font-size: 14px;
 }
 
 .download-template-btn:hover {
-  background: var(--brand-glow);
+  background: #eaf4ee;
 }
 
-
-/* Chart panel extra spacing on mobile */
-@media (max-width: 720px){
-  .panel{padding:18px}
+/* =========================
+   MOBILE
+========================= */
+@media (max-width: 720px) {
+  .panel {
+    padding: 18px;
+  }
 }

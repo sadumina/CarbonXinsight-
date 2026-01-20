@@ -371,20 +371,24 @@ const downloadReportImage = async () => {
   }
 
   try {
+    // ✅ ENTER EXPORT MODE
+    document.body.classList.add("export-mode");
+
     const canvas = await html2canvas(reportRef.current, {
       scale: 2,
-      backgroundColor: "#0f172a",
+      backgroundColor: "#ffffff",
       useCORS: true,
     });
 
     const link = document.createElement("a");
-    link.download = `CarbonXInsight_Report_${fromDate || "ALL"}_${
-      toDate || "ALL"
-    }.png`;
+    link.download = `CarbonXInsight_Report_${fromDate || "ALL"}_${toDate || "ALL"}.png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
   } catch (err) {
     console.error("Failed to generate image", err);
+  } finally {
+    // ✅ EXIT EXPORT MODE
+    document.body.classList.remove("export-mode");
   }
 };
 

@@ -604,6 +604,12 @@
   font-size: 11px;
   color: #64748b;
 }
+/* =========================
+   EXPORT MODE OVERRIDES
+========================= */
+.export-mode .time-period-banner {
+  display: none !important;
+}
 
 @keyframes popIn {
   from {

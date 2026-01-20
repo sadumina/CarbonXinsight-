@@ -484,6 +484,9 @@
   font-weight: 900;
   margin-top: 1px;
 }
+.kpi-item:nth-child(2) .kpi-value {
+  font-size: 22px;
+}
 
 /* =========================
    CHART CARD

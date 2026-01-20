@@ -388,174 +388,178 @@ const downloadReportImage = async () => {
   }
 };
 
-  const chartOptions = useMemo(
-    () => ({
-      chart: {
-  backgroundColor: "#ffffff",
-  height: 520,
-  zoomType: "x",
-},
-
-
-      tooltip: {
-  useHTML: true,
-  backgroundColor: "#ffffff",
-  borderColor: "#e5e7eb",
-  borderRadius: 10,
-  shadow: true,
-  padding: 12,
-  style: {
-    color: "#0f172a",
-    fontSize: "12px",
+  const chartOptions = useMemo(() => ({
+  chart: {
+    backgroundColor: "#ffffff", // ✅ force white
+    height: 520,
+    zoomType: "x",
   },
-},
 
+  title: { text: null },
 
-            xAxis: {
-        type: "datetime",
-
-        // ✅ NEW: detect real user drag / zoom / arrow movement
-        events: {
-          afterSetExtremes(e) {
-            // always track visible range
-            setVisibleRange({
-              min: e.min ?? null,
-              max: e.max ?? null,
-            });
-
-            // mark interaction ONLY if triggered by user
-            if (e?.trigger) {
-              setHasUserInteraction(true);
-            }
-          },
-        },
-      },
-
-
-      rangeSelector: {
-        enabled: false,
-      },
-
-      navigator: { enabled: false },
-      scrollbar: { enabled: false },
-
-      plotOptions: {
-        series: {
-          cursor: "pointer",
-          marker: { enabled: false },
-          point: {
-  events: {
-    click() {
-      setHasUserInteraction(true); // ✅ NEW
-      setPointDetails({
-        country: this.country,
-        price: this.y,
-        date: new Date(this.x),
-      });
+  tooltip: {
+    useHTML: true,
+    backgroundColor: "#ffffff",
+    borderColor: "#e5e7eb",
+    borderRadius: 10,
+    shadow: true,
+    padding: 12,
+    style: {
+      color: "#0f172a",
+      fontSize: "12px",
     },
   },
-},
 
-        },
+  xAxis: {
+    type: "datetime",
+    gridLineWidth: 0,
+    lineColor: "#e5e7eb",
+    tickColor: "#e5e7eb",
+
+    events: {
+      afterSetExtremes(e) {
+        setVisibleRange({
+          min: e.min ?? null,
+          max: e.max ?? null,
+        });
+
+        if (e?.trigger) {
+          setHasUserInteraction(true);
+        }
       },
-      exporting: {
-        enabled: true,
+    },
+  },
 
-        // Professional filename
-        filename: `CarbonXInsight_Price_Stats_${fromDate || "ALL"}_${
-          toDate || "ALL"
-        }`,
+  yAxis: {
+    title: { text: null },
+    gridLineColor: "rgba(15,23,42,0.08)",
+    labels: {
+      style: {
+        color: "#334155",
+        fontSize: "12px",
+      },
+    },
+  },
 
-        // Print-ready resolution
-        sourceWidth: 1400,
-        sourceHeight: 800,
+  rangeSelector: { enabled: false },
+  navigator: { enabled: false },
+  scrollbar: { enabled: false },
 
-        chartOptions: {
-          title: {
-            text: "Coconut Shell Charcoal Pricing",
-            style: {
-              fontSize: "20px",
-              fontWeight: "700",
-            },
-          },
+  plotOptions: {
+    series: {
+      cursor: "pointer",
+      marker: { enabled: false },
+      lineWidth: 3,
 
-          subtitle: {
-            text: [
-              "Unit: USD / MT",
-              fromDate && toDate
-                ? `Period: ${fromDate} → ${toDate}`
-                : "Period: All available data",
-            ].join(" • "),
-            style: {
-              fontSize: "13px",
-              color: "#9fb2c8",
-            },
-          },
-
-          caption: {
-            text: `Markets: ${selected.join(", ")}`,
-            style: {
-              fontSize: "11px",
-              color: "#94a3b8",
-            },
-          },
-        },
-
-        buttons: {
-          contextButton: {
-            menuItems: [
-              "viewFullscreen",
-              "printChart",
-              "separator",
-
-              {
-                text: "Download PNG (Report)",
-                onclick() {
-                  this.exportChart({ type: "image/png" });
-                },
-              },
-              {
-                text: "Download JPG (Email)",
-                onclick() {
-                  this.exportChart({ type: "image/jpeg" });
-                },
-              },
-              {
-                text: "Download PDF (Executive)",
-                onclick() {
-                  this.exportChart({ type: "application/pdf" });
-                },
-              },
-              {
-                text: "Download SVG (Design)",
-                onclick() {
-                  this.exportChart({ type: "image/svg+xml" });
-                },
-              },
-
-              "separator",
-
-              {
-                text: "Download CSV (Data)",
-                onclick() {
-                  this.downloadCSV();
-                },
-              },
-              {
-                text: "Download XLS (Excel)",
-                onclick() {
-                  this.downloadXLS();
-                },
-              },
-            ],
+      point: {
+        events: {
+          click() {
+            setHasUserInteraction(true);
+            setPointDetails({
+              country: this.country,
+              price: this.y,
+              date: new Date(this.x),
+            });
           },
         },
       },
+    },
+  },
 
-      series: seriesData,
-    }),
-    [seriesData]
-  );
+  exporting: {
+    enabled: true,
+
+    filename: `CarbonXInsight_Price_Stats_${fromDate || "ALL"}_${toDate || "ALL"}`,
+
+    sourceWidth: 1400,
+    sourceHeight: 800,
+
+    chartOptions: {
+      chart: {
+        backgroundColor: "#ffffff", // ✅ export stays white
+      },
+
+      title: {
+        text: "Coconut Shell Charcoal Pricing",
+        style: {
+          fontSize: "20px",
+          fontWeight: "700",
+          color: "#0f172a",
+        },
+      },
+
+      subtitle: {
+        text: [
+          "Unit: USD / MT",
+          fromDate && toDate
+            ? `Period: ${fromDate} → ${toDate}`
+            : "Period: All available data",
+        ].join(" • "),
+        style: {
+          fontSize: "13px",
+          color: "#475569",
+        },
+      },
+
+      caption: {
+        text: `Markets: ${selected.join(", ")}`,
+        style: {
+          fontSize: "11px",
+          color: "#64748b",
+        },
+      },
+    },
+
+    buttons: {
+      contextButton: {
+        menuItems: [
+          "viewFullscreen",
+          "printChart",
+          "separator",
+          {
+            text: "Download PNG (Report)",
+            onclick() {
+              this.exportChart({ type: "image/png" });
+            },
+          },
+          {
+            text: "Download JPG (Email)",
+            onclick() {
+              this.exportChart({ type: "image/jpeg" });
+            },
+          },
+          {
+            text: "Download PDF (Executive)",
+            onclick() {
+              this.exportChart({ type: "application/pdf" });
+            },
+          },
+          {
+            text: "Download SVG (Design)",
+            onclick() {
+              this.exportChart({ type: "image/svg+xml" });
+            },
+          },
+          "separator",
+          {
+            text: "Download CSV (Data)",
+            onclick() {
+              this.downloadCSV();
+            },
+          },
+          {
+            text: "Download XLS (Excel)",
+            onclick() {
+              this.downloadXLS();
+            },
+          },
+        ],
+      },
+    },
+  },
+
+  series: seriesData,
+}), [seriesData, fromDate, toDate, selected]);
 
   // ==========================
   // RENDER

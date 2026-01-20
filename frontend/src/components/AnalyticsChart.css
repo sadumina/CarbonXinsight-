@@ -601,6 +601,38 @@
 }
 
 /* =========================
+   DATA SOURCE PILL (WHITE)
+========================= */
+.data-source-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-top: 12px;
+  padding: 6px 12px;
+
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid var(--separator);
+
+  font-size: 12px;
+  color: var(--text-secondary);
+
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+}
+
+.data-source-pill a {
+  color: #0b5ed7;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.data-source-pill a:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================
    RESPONSIVE
 ========================= */
 @media (max-width: 768px) {

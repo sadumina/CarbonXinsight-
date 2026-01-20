@@ -398,11 +398,10 @@
 }
 
 .kpi-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
+  font-size: 10px;
+  opacity: 0.7;
 }
+
 
 .kpi-value {
   margin-top: 4px;

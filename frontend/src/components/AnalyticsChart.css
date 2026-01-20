@@ -257,12 +257,18 @@
   box-shadow: none;
 }
 
-.date-refresh-btn,
-.download-btn.secondary {
-  background: var(--panel);
-  border: 1px solid var(--separator);
-  color: var(--text-primary);
+.date-refresh-btn {
+  opacity: 0.85;
 }
+
+.download-btn.secondary {
+  opacity: 0.75;
+}
+
+.download-btn.secondary:hover {
+  opacity: 1;
+}
+
 
 .date-refresh-btn:hover:not(:disabled),
 .download-btn.secondary:hover:not(:disabled) {

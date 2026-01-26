@@ -1,6 +1,11 @@
 /* =====================================================
    CarbonXInsight — Professional Sidebar (Light / Haycarb)
 ===================================================== */
+/* FORCE POPPINS IN SIDEBAR (override global Inter) */
+.sidebar,
+.sidebar * {
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif !important;
+}
 
 /* Reset (sidebar scope only) */
 .sidebar,
@@ -158,4 +163,34 @@
 .sidebar-item:focus-visible {
   outline: 2px solid rgba(23, 138, 51, 0.35);
   outline-offset: 2px;
+}
+/* Toggle button */
+.sidebar-toggle {
+  margin-left: auto;
+  height: 32px;
+  width: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* Collapsed mode */
+.sidebar.collapsed {
+  width: 84px;
+  padding: 20px 12px;
+}
+
+.sidebar.collapsed .app-name {
+  display: none;
+}
+
+.sidebar.collapsed .nav-label {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-item {
+  justify-content: center;
+  padding: 12px 10px;
 }

@@ -729,6 +729,18 @@
 .data-source-pill a:hover {
   text-decoration: underline;
 }
+/* =========================
+   FORCE POPPINS FOR BUTTONS
+========================= */
+button,
+.btn,
+.date-apply-btn,
+.date-refresh-btn,
+.download-btn,
+.preset-btn {
+  font-family: "Poppins", sans-serif !important;
+  letter-spacing: 0.01em;
+}
 
 
 /* =========================

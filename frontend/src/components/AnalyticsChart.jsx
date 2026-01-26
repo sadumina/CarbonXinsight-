@@ -75,30 +75,28 @@ export default function AnalyticsChart() {
 
   
 
-useEffect(() => {
-  axios
-    .get(`${API}/meta/data-status`)
-    .then((res) => {
-      const raw = res.data?.last_updated;
-      if (!raw) return;
+// ==========================
+  // LOAD META STATUS
+  // ==========================
+  useEffect(() => {
+    axios
+      .get("/meta/data-status")
+      .then((res) => {
+        const raw = res.data?.last_updated;
+        if (!raw) return;
 
-      const parsed = new Date(raw);
-      if (!isNaN(parsed)) {
-        setLastUpdated(parsed);
-      }
-    })
-    .catch((err) => {
-      console.error("Failed to load data status", err);
-    });
-}, []);
-
+        const parsed = new Date(raw);
+        if (!isNaN(parsed)) setLastUpdated(parsed);
+      })
+      .catch((err) => console.error("Failed to load data status", err));
+  }, []);
 
   // ==========================
   // LOAD COUNTRIES
   // ==========================
   useEffect(() => {
     (async () => {
-      const { data = [] } = await axios.get(`${API}/countries`);
+      const { data = [] } = await axios.get("/countries");
       setCountries(data);
       setSelected(data);
     })();
@@ -110,10 +108,10 @@ useEffect(() => {
   useEffect(() => {
     if (!selected.length) return;
 
-    const url = new URL(`${API}/series/aggregated`);
-    selected.forEach((c) => url.searchParams.append("countries", c));
+    const params = new URLSearchParams();
+    selected.forEach((c) => params.append("countries", c));
 
-    axios.get(url.toString()).then((res) => {
+    axios.get(`/series/aggregated?${params.toString()}`).then((res) => {
       const grouped = {};
 
       (res.data || []).forEach((p) => {
@@ -122,10 +120,10 @@ useEffect(() => {
         grouped[p.country].push({ ts, price: p.price });
       });
 
-      // sort by time
-      Object.values(grouped).forEach((arr) => arr.sort((a, b) => a.ts - b.ts));
+      Object.values(grouped).forEach((arr) =>
+        arr.sort((a, b) => a.ts - b.ts)
+      );
 
-      // build series for Highcharts
       const series = Object.keys(grouped).map((country) => ({
         id: country,
         name: country,
@@ -151,18 +149,20 @@ useEffect(() => {
     chartRef.current.chart.xAxis[0].setExtremes(null, null);
   }, [seriesData]);
 
-  const loadKpisForRange = async (from, to) => {
-  if (!from || !to) return;
-
-  const res = await axios.get(`${API}/compare/summary`, {
-    params: { fromDate: from, toDate: to },
-  });
-
-  setKpis((res.data || []).filter((r) => selected.includes(r.country)));
-  setHasDateRange(true);
-};
-
   // ==========================
+  // KPI LOADER
+  // ==========================
+  const loadKpisForRange = async (from, to) => {
+    if (!from || !to) return;
+
+    const res = await axios.get("/compare/summary", {
+      params: { fromDate: from, toDate: to },
+    });
+
+    setKpis((res.data || []).filter((r) => selected.includes(r.country)));
+    setHasDateRange(true);
+  };
+
   // APPLY DATE RANGE + KPI
   // ==========================
 const applyCalendarRange = async () => {

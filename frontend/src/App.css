@@ -12,7 +12,7 @@
   width: 100%;
 
   /* 🔥 FIX: NEVER use theme bg for shell */
-  background: #f6f8f7;
+  background: #ffffff;
 }
 
 /* =========================
@@ -33,7 +33,7 @@
   padding: 24px 28px;
 
   /* 🔥 FIX: FORCE WHITE CANVAS */
-  background: #f6f8f7;
+  background: #ffffff;
 
   overflow-y: auto;
 }

@@ -5,7 +5,7 @@ import UploadPDF from "./UploadPDF";              // keep your existing file
 import AnalyticsChart from "./AnalyticsChart";    // TradingView/Highcharts chart
 import "./UploadAndAnalytics.css";
 
-const API = "http://localhost:8000";              // backend FastAPI
+         // backend FastAPI
 
 export default function UploadAndAnalytics() {
   const [refreshKey, setRefreshKey] = useState(0);

@@ -6,3 +6,4 @@ pydantic
 pandas
 openpyxl
 python-multipart
+pdfplumber

@@ -38,9 +38,9 @@ export default function Sidebar() {
 
         <div className="sidebar-separator" />
 
-        <div className="sidebar-item disabled">
+        {/* <div className="sidebar-item disabled">
           <span className="nav-label">Settings (soon)</span>
-        </div>
+        </div> */}
       </nav>
     </aside>
   );
